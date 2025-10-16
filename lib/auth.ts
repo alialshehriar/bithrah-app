@@ -10,6 +10,7 @@ export interface SessionUser {
   id: number;
   email: string;
   name: string;
+  role: string;
   avatar?: string | null;
 }
 
@@ -42,6 +43,7 @@ export async function createSession(userId: number) {
     id: user.id,
     email: user.email,
     name: user.name,
+    role: user.role,
     avatar: user.avatar,
   };
 
