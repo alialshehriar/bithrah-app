@@ -28,47 +28,7 @@ const guestOnlyRoutes = [
 ];
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Get token from cookie
-  const token = request.cookies.get('bithrah-token')?.value;
-
-  let isAuthenticated = false;
-
-  if (token) {
-    try {
-      jwt.verify(token, JWT_SECRET);
-      isAuthenticated = true;
-    } catch (error) {
-      // Token is invalid or expired - delete it
-      const response = NextResponse.next();
-      response.cookies.delete('bithrah-token');
-      isAuthenticated = false;
-    }
-  }
-
-  // Check if route is protected
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  // Check if route is guest only
-  const isGuestOnlyRoute = guestOnlyRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  // Redirect to signin if trying to access protected route without auth
-  if (isProtectedRoute && !isAuthenticated) {
-    const url = new URL('/auth/signin', request.url);
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
-  }
-
-  // Redirect to home if trying to access guest-only route while authenticated
-  if (isGuestOnlyRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL('/home', request.url));
-  }
-
+  // Middleware disabled - allow all routes
   return NextResponse.next();
 }
 
