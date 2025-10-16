@@ -30,7 +30,6 @@ export default function SignInPage() {
 
       if (!response.ok) {
         setError(data.error || 'حدث خطأ أثناء تسجيل الدخول');
-        setLoading(false);
         return;
       }
 
