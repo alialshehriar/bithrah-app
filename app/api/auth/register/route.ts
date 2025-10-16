@@ -38,11 +38,8 @@ export async function POST(request: NextRequest) {
     const [newUser] = await db
       .insert(users)
       .values({
-        name,
         email,
         password: hashedPassword,
-        role: 'user',
-        createdAt: new Date(),
       })
       .returning();
 
