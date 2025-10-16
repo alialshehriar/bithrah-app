@@ -145,7 +145,7 @@ export default function CreateProjectPage() {
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
-        return !!(formData.title && formData.description && formData.category);
+        return !!(formData.title && formData.publicDescription && formData.category);
       case 2:
         return !!(formData.fundingGoal && formData.endDate);
       case 3:
@@ -290,8 +290,8 @@ export default function CreateProjectPage() {
                       الوصف *
                     </label>
                     <textarea
-                      value={formData.description}
-                      onChange={(e) => handleInputChange('description', e.target.value)}
+                      value={formData.publicDescription}
+                      onChange={(e) => handleInputChange('publicDescription', e.target.value)}
                       placeholder="اشرح فكرة مشروعك بالتفصيل..."
                       rows={6}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors resize-none"

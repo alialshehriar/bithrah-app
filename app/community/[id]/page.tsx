@@ -7,7 +7,7 @@ import {
   Users, MessageSquare, Heart, Eye, Share2, Send, Image as ImageIcon,
   Smile, MoreVertical, Pin, Flag, Award, Star, Crown, Trophy,
   TrendingUp, Clock, CheckCircle, Plus, ArrowLeft, Sparkles,
-  ThumbsUp, Bookmark, Filter, Search, X, Paperclip, AtSign
+  ThumbsUp, Bookmark, Filter, Search, X, Paperclip, AtSign, Shield
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';

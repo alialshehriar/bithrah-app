@@ -5,7 +5,7 @@ import { userAchievements, achievements, userBadges, badges } from '@/lib/db/sch
 import { eq, and, sql } from 'drizzle-orm';
 
 // Achievement definitions
-export const ACHIEVEMENTS = [
+const ACHIEVEMENTS = [
   // Project Achievements
   { id: 'first_project', name: 'أول مشروع', description: 'أنشئ مشروعك الأول', icon: '🚀', category: 'projects', requirement: 1, points: 10 },
   { id: 'project_master', name: 'خبير المشاريع', description: 'أنشئ 5 مشاريع', icon: '🏆', category: 'projects', requirement: 5, points: 50 },

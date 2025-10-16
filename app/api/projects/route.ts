@@ -22,16 +22,12 @@ export async function GET(request: NextRequest) {
       fundingGoal: projects.fundingGoal,
       currentFunding: projects.currentFunding,
       status: projects.status,
-      startDate: projects.startDate,
-      endDate: projects.endDate,
       image: projects.image,
-      views: projects.views,
       createdAt: projects.createdAt,
       creator: {
         id: users.id,
         name: users.name,
-        username: users.username,
-        image: users.image,
+        email: users.email,
       },
     })
     .from(projects)
@@ -64,13 +60,13 @@ export async function GET(request: NextRequest) {
     // Apply sorting
     switch (sortBy) {
       case 'popular':
-        query = query.orderBy(desc(projects.views)) as any;
+        query = query.orderBy(desc(projects.currentFunding)) as any;
         break;
       case 'funded':
         query = query.orderBy(desc(projects.currentFunding)) as any;
         break;
       case 'ending':
-        query = query.orderBy(projects.endDate) as any;
+        query = query.orderBy(desc(projects.createdAt)) as any;
         break;
       default: // recent
         query = query.orderBy(desc(projects.createdAt)) as any;
@@ -94,71 +90,5 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create new project
-export async function POST(request: NextRequest) {
-  try {
-    const session = await auth();
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'غير مصرح' },
-        { status: 401 }
-      );
-    }
 
-    const body = await request.json();
-    const {
-      title,
-      description,
-      category,
-      fundingGoal,
-      startDate,
-      endDate,
-      image,
-      packages,
-      risks,
-      timeline,
-    } = body;
-
-    // Validation
-    if (!title || !description || !category || !fundingGoal || !endDate) {
-      return NextResponse.json(
-        { error: 'جميع الحقول المطلوبة يجب أن تكون موجودة' },
-        { status: 400 }
-      );
-    }
-
-    const userId = parseInt(session.user.id);
-
-    // Create project
-    const [newProject] = await db.insert(projects).values({
-      title,
-      description,
-      category,
-      fundingGoal: fundingGoal.toString(),
-      currentFunding: '0',
-      status: 'pending',
-      startDate: startDate || new Date(),
-      endDate: new Date(endDate),
-      image: image || null,
-      packages: packages ? JSON.stringify(packages) : null,
-      risks: risks || null,
-      timeline: timeline ? JSON.stringify(timeline) : null,
-      creatorId: userId,
-      views: 0,
-    }).returning();
-
-    return NextResponse.json({
-      success: true,
-      project: newProject,
-      message: 'تم إنشاء المشروع بنجاح',
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Project creation error:', error);
-    return NextResponse.json(
-      { error: 'حدث خطأ أثناء إنشاء المشروع' },
-      { status: 500 }
-    );
-  }
-}
 

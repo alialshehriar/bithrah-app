@@ -7,10 +7,11 @@ import { eq, sql } from 'drizzle-orm';
 // GET - Get project details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const projectId = parseInt(params.id);
+    const projectId = parseInt(id);
 
     // Get project with creator info
     const project = await db.query.projects.findFirst({
@@ -20,9 +21,7 @@ export async function GET(
           columns: {
             id: true,
             name: true,
-            username: true,
-            image: true,
-            level: true,
+            email: true,
           },
         },
       },
@@ -38,7 +37,7 @@ export async function GET(
     // Get investment stats
     const investmentStats = await db
       .select({
-        totalInvestors: sql<number>`COUNT(DISTINCT ${backings.investorId})`,
+        totalInvestors: sql<number>`COUNT(DISTINCT ${backings.userId})`,
         totalInvested: sql<string>`COALESCE(SUM(${backings.amount}), 0)`,
       })
       .from(backings)
@@ -46,11 +45,7 @@ export async function GET(
 
     const stats = investmentStats[0];
 
-    // Increment view count
-    await db
-      .update(projects)
-      .set({ views: sql`${projects.views} + 1` })
-      .where(eq(projects.id, projectId));
+      // Views tracking removed - field doesn't exist in schema));
 
     return NextResponse.json({
       success: true,
@@ -72,8 +67,9 @@ export async function GET(
 // PUT - Update project
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await auth();
     
@@ -84,7 +80,7 @@ export async function PUT(
       );
     }
 
-    const projectId = parseInt(params.id);
+    const projectId = parseInt(id);
     const userId = parseInt(session.user.id);
 
     // Check if user owns the project
@@ -134,7 +130,6 @@ export async function PUT(
         ...(risks !== undefined && { risks }),
         ...(timeline && { timeline: JSON.stringify(timeline) }),
         ...(status && { status }),
-        updatedAt: new Date(),
       })
       .where(eq(projects.id, projectId))
       .returning();
@@ -156,8 +151,9 @@ export async function PUT(
 // DELETE - Delete project
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await auth();
     
@@ -168,7 +164,7 @@ export async function DELETE(
       );
     }
 
-    const projectId = parseInt(params.id);
+    const projectId = parseInt(id);
     const userId = parseInt(session.user.id);
 
     // Check if user owns the project

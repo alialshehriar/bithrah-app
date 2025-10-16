@@ -13,7 +13,7 @@ import {
   Activity, Award, MessageSquare, Eye, Zap, Crown,
   Heart, Package, Calendar, Clock, CheckCircle, AlertCircle,
   BarChart3, PieChart as PieChartIcon, TrendingDown, Plus,
-  Sparkles, Gift, Star, Shield, ExternalLink
+  Sparkles, Gift, Star, Shield, ExternalLink, Trophy
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
