@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
-import { projects, users, investments } from '@/lib/db/schema';
+import { projects, users, backings } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
 
 // GET - Get project details
@@ -38,11 +38,11 @@ export async function GET(
     // Get investment stats
     const investmentStats = await db
       .select({
-        totalInvestors: sql<number>`COUNT(DISTINCT ${investments.investorId})`,
-        totalInvested: sql<string>`COALESCE(SUM(${investments.amount}), 0)`,
+        totalInvestors: sql<number>`COUNT(DISTINCT ${backings.investorId})`,
+        totalInvested: sql<string>`COALESCE(SUM(${backings.amount}), 0)`,
       })
-      .from(investments)
-      .where(eq(investments.projectId, projectId));
+      .from(backings)
+      .where(eq(backings.projectId, projectId));
 
     const stats = investmentStats[0];
 

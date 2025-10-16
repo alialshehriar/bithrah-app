@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
-import { projects, investments } from '@/lib/db/schema';
+import { projects, backings } from '@/lib/db/schema';
 import { eq, desc, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -29,8 +29,8 @@ export async function GET(request: NextRequest) {
         // Get investment count for this project
         const investmentCount = await db
           .select({ count: sql<number>`COUNT(*)` })
-          .from(investments)
-          .where(eq(investments.projectId, project.id));
+          .from(backings)
+          .where(eq(backings.projectId, project.id));
 
         const backersCount = investmentCount[0]?.count || 0;
 

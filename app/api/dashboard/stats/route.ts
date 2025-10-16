@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
-import { users, projects, investments, wallets, transactions } from '@/lib/db/schema';
+import { users, projects, backings, wallets, transactions } from '@/lib/db/schema';
 import { eq, sql, and, gte, desc } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -48,12 +48,12 @@ export async function GET(request: NextRequest) {
       totalGoal: userProjects.reduce((sum, p) => sum + parseFloat(p.fundingGoal), 0),
     };
 
-    // Get investments count and stats
-    const userInvestments = await db.query.investments.findMany({
-      where: eq(investments.investorId, userId),
+    // Get backings count and stats
+    const userInvestments = await db.query.backings.findMany({
+      where: eq(backings.investorId, userId),
     });
 
-    const investmentsStats = {
+    const backingsStats = {
       total: userInvestments.length,
       active: userInvestments.filter(i => i.status === 'active').length,
       totalAmount: userInvestments.reduce((sum, i) => sum + parseFloat(i.amount), 0),
@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
           pendingBalance: wallet?.pendingBalance || '0',
         },
         projects: projectsStats,
-        investments: investmentsStats,
+        backings: backingsStats,
         transactions: {
           recent: recentTransactions,
           monthly: monthlyData,

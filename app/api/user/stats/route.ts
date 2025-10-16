@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
-import { users, projects, investments, wallets, referrals } from '@/lib/db/schema';
+import { users, projects, backings, wallets, referrals } from '@/lib/db/schema';
 import { eq, sql, and } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -47,15 +47,15 @@ export async function GET(request: NextRequest) {
     let totalBackers = 0;
     if (projectIds.length > 0) {
       const backersResult = await db
-        .select({ count: sql<number>`COUNT(DISTINCT ${investments.investorId})` })
-        .from(investments)
-        .where(sql`${investments.projectId} IN (${sql.join(projectIds.map(id => sql`${id}`), sql`, `)})`);
+        .select({ count: sql<number>`COUNT(DISTINCT ${backings.investorId})` })
+        .from(backings)
+        .where(sql`${backings.projectId} IN (${sql.join(projectIds.map(id => sql`${id}`), sql`, `)})`);
       totalBackers = backersResult[0]?.count || 0;
     }
 
-    // Get investments stats
-    const userInvestments = await db.query.investments.findMany({
-      where: eq(investments.investorId, userId),
+    // Get backings stats
+    const userInvestments = await db.query.backings.findMany({
+      where: eq(backings.investorId, userId),
     });
 
     // Get referral earnings

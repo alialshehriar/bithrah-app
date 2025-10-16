@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const period = searchParams.get('period') || 'all'; // all, week, month, year
-    const type = searchParams.get('type') || 'points'; // points, level, projects, investments
+    const type = searchParams.get('type') || 'points'; // points, level, projects, backings
     const limit = parseInt(searchParams.get('limit') || '50');
 
     // Calculate date filter based on period
@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
         // This would need a join with projects table
         orderBy = [desc(users.points)]; // Fallback to points for now
         break;
-      case 'investments':
-        // This would need a join with investments table
+      case 'backings':
+        // This would need a join with backings table
         orderBy = [desc(users.points)]; // Fallback to points for now
         break;
       default:
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
       rank: index + 1,
       // Calculate additional stats (these would come from joins in a real implementation)
       projectsCount: 0,
-      investmentsCount: 0,
+      backingsCount: 0,
       totalEarnings: '0',
     }));
 

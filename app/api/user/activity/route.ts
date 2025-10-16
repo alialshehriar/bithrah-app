@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
-import { transactions, investments, projects } from '@/lib/db/schema';
+import { transactions, backings, projects } from '@/lib/db/schema';
 import { eq, desc, or, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -38,10 +38,10 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    // Get recent investments
-    const recentInvestments = await db.query.investments.findMany({
-      where: eq(investments.investorId, userId),
-      orderBy: [desc(investments.createdAt)],
+    // Get recent backings
+    const recentInvestments = await db.query.backings.findMany({
+      where: eq(backings.investorId, userId),
+      orderBy: [desc(backings.createdAt)],
       limit: 5,
       with: {
         project: {

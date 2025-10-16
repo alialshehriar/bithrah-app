@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
-import { projects, investments, wallets, transactions, users } from '@/lib/db/schema';
+import { projects, backings, wallets, transactions, users } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
 
 export async function POST(
@@ -80,7 +80,7 @@ export async function POST(
     }
 
     // Create investment
-    const [newInvestment] = await db.insert(investments).values({
+    const [newInvestment] = await db.insert(backings).values({
       projectId,
       investorId: userId,
       amount: amount.toString(),
