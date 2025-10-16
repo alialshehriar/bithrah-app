@@ -6,18 +6,56 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy, TrendingUp, Users, Zap, Crown, Medal, Award, Star,
   Flame, Target, Gift, ChevronRight, ArrowUp, ArrowDown,
-  Sparkles, BarChart3, Activity, TrendingDown
+  Sparkles, BarChart3, Activity, TrendingDown, Rocket, Heart,
+  MessageSquare, DollarSign, Calendar, Swords, Crosshair, PartyPopper
 } from 'lucide-react';
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 
+interface LeaderboardUser {
+  id: number;
+  name: string;
+  username: string;
+  avatar: string | null;
+  points: number;
+  level: number;
+  experience: number;
+  rank: number;
+  subscriptionTier: string;
+  projectsCount?: number;
+  investmentsCount?: number;
+  communitiesCount?: number;
+  eventsCount?: number;
+}
 
 export default function LeaderboardPage() {
   const [period, setPeriod] = useState<'all' | 'year' | 'month' | 'week'>('all');
-  const [activeTab, setActiveTab] = useState<'points' | 'level' | 'projects' | 'investments'>('points');
+  const [activeTab, setActiveTab] = useState<'points' | 'level' | 'projects' | 'investments' | 'communities' | 'events'>('points');
   const [loading, setLoading] = useState(true);
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+  const [challenges, setChallenges] = useState<any[]>([]);
+  const [rewards, setRewards] = useState<any[]>([]);
+
+  const tabs = [
+    { id: 'points', name: 'النقاط', icon: Star, color: 'yellow' },
+    { id: 'level', name: 'المستوى', icon: TrendingUp, color: 'blue' },
+    { id: 'projects', name: 'المشاريع', icon: Rocket, color: 'purple' },
+    { id: 'investments', name: 'الاستثمارات', icon: DollarSign, color: 'green' },
+    { id: 'communities', name: 'المجتمعات', icon: Users, color: 'teal' },
+    { id: 'events', name: 'الفعاليات', icon: Calendar, color: 'pink' },
+  ];
+
+  const periods = [
+    { id: 'all', name: 'كل الأوقات', icon: Sparkles },
+    { id: 'year', name: 'هذا العام', icon: Calendar },
+    { id: 'month', name: 'هذا الشهر', icon: Activity },
+    { id: 'week', name: 'هذا الأسبوع', icon: Flame },
+  ];
 
   useEffect(() => {
     fetchLeaderboard();
+    fetchChallenges();
+    fetchRewards();
   }, [period, activeTab]);
 
   const fetchLeaderboard = async () => {
@@ -33,229 +71,405 @@ export default function LeaderboardPage() {
     }
   };
 
+  const fetchChallenges = async () => {
+    // Mock challenges - في الإنتاج، استبدل بـ API call
+    setChallenges([
+      {
+        id: 1,
+        title: 'تحدي الأسبوع',
+        description: 'ادعم 5 مشاريع هذا الأسبوع',
+        reward: '500 نقطة',
+        progress: 2,
+        target: 5,
+        icon: '🎯',
+        color: 'teal',
+      },
+      {
+        id: 2,
+        title: 'تحدي المجتمع',
+        description: 'انضم لـ 3 مجتمعات جديدة',
+        reward: '300 نقطة',
+        progress: 1,
+        target: 3,
+        icon: '👥',
+        color: 'purple',
+      },
+      {
+        id: 3,
+        title: 'تحدي الفعاليات',
+        description: 'احضر فعاليتين',
+        reward: '400 نقطة',
+        progress: 0,
+        target: 2,
+        icon: '🎉',
+        color: 'pink',
+      },
+    ]);
+  };
 
+  const fetchRewards = async () => {
+    // Mock rewards - في الإنتاج، استبدل بـ API call
+    setRewards([
+      {
+        id: 1,
+        title: 'مكافأة الأسبوع',
+        description: 'للمركز الأول',
+        prize: '1000 نقطة + شارة',
+        icon: '🏆',
+        deadline: 'ينتهي خلال 3 أيام',
+      },
+      {
+        id: 2,
+        title: 'مكافأة الشهر',
+        description: 'للمراكز الثلاثة الأولى',
+        prize: 'جوائز نقدية',
+        icon: '💰',
+        deadline: 'ينتهي خلال 15 يوم',
+      },
+    ]);
+  };
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="w-8 h-8 text-yellow-500 drop-shadow-lg" />;
-    if (rank === 2) return <Medal className="w-8 h-8 text-gray-400 drop-shadow-lg" />;
-    if (rank === 3) return <Award className="w-8 h-8 text-amber-600 drop-shadow-lg" />;
+    if (rank === 1) return <Crown className="w-10 h-10 text-yellow-500 drop-shadow-2xl animate-pulse" />;
+    if (rank === 2) return <Medal className="w-10 h-10 text-gray-400 drop-shadow-xl" />;
+    if (rank === 3) return <Award className="w-10 h-10 text-amber-600 drop-shadow-xl" />;
     return <span className="text-2xl font-black text-gray-600">#{rank}</span>;
   };
 
   const getRankBg = (rank: number) => {
-    if (rank === 1) return 'bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 border-2 border-yellow-400 shadow-2xl scale-105';
-    if (rank === 2) return 'bg-gradient-to-br from-gray-50 via-slate-50 to-zinc-50 border-2 border-gray-400 shadow-xl scale-102';
-    if (rank === 3) return 'bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border-2 border-amber-400 shadow-xl scale-102';
-    return 'bg-white/80 backdrop-blur-sm border border-gray-200 hover:border-[#14B8A6] hover:shadow-lg';
+    if (rank === 1) return 'bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 border-4 border-yellow-500 shadow-2xl scale-105 relative overflow-hidden';
+    if (rank === 2) return 'bg-gradient-to-br from-gray-100 via-slate-100 to-zinc-100 border-4 border-gray-400 shadow-xl scale-102';
+    if (rank === 3) return 'bg-gradient-to-br from-amber-100 via-orange-100 to-yellow-100 border-4 border-amber-500 shadow-xl scale-102';
+    return 'bg-white border-2 border-gray-200 hover:border-teal-400 hover:shadow-lg';
   };
 
-  const getTrendIcon = (trend: string, change: number) => {
-    if (trend === 'up') return <ArrowUp className="w-4 h-4 text-green-500" />;
-    if (trend === 'down') return <ArrowDown className="w-4 h-4 text-red-500" />;
-    return <TrendingDown className="w-4 h-4 text-gray-400 rotate-90" />;
+  const getSubscriptionBadge = (tier: string) => {
+    if (tier === 'platinum') return <span className="px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold rounded-full">بلاتيني</span>;
+    if (tier === 'gold') return <span className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">ذهبي</span>;
+    if (tier === 'silver') return <span className="px-3 py-1 bg-gradient-to-r from-gray-400 to-gray-500 text-white text-xs font-bold rounded-full">فضي</span>;
+    return null;
   };
 
-  const tabs = [
-    { id: 'points', label: 'النقاط', icon: Zap, color: 'from-[#F59E0B] to-[#D97706]' },
-    { id: 'level', label: 'المستوى', icon: TrendingUp, color: 'from-[#8B5CF6] to-[#7C3AED]' },
-    { id: 'projects', label: 'المشاريع', icon: Sparkles, color: 'from-[#14B8A6] to-[#0D9488]' },
-    { id: 'investments', label: 'الاستثمارات', icon: Users, color: 'from-[#EC4899] to-[#DB2777]' },
-  ];
-
-  const periods = [
-    { id: 'all', label: 'كل الأوقات' },
-    { id: 'year', label: 'هذا العام' },
-    { id: 'month', label: 'هذا الشهر' },
-    { id: 'week', label: 'هذا الأسبوع' },
-  ];
-
-  const currentData = leaderboard;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-teal-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">جاري تحميل لوحة الصدارة...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-teal-50 pb-24">
-      
-      {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#14B8A6]/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#8B5CF6]/10 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-teal-50 to-purple-50">
+      <Navigation />
 
-      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#14B8A6]/20 to-[#8B5CF6]/20 rounded-full mb-6">
-            <Trophy className="w-6 h-6 text-[#14B8A6]" />
-            <span className="text-lg font-bold bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] bg-clip-text text-transparent">
+          <div className="inline-flex items-center gap-4 mb-4">
+            <Trophy className="w-16 h-16 text-yellow-500 animate-bounce" />
+            <h1 className="text-6xl font-black bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 bg-clip-text text-transparent">
               لوحة الصدارة
-            </span>
+            </h1>
+            <Trophy className="w-16 h-16 text-yellow-500 animate-bounce" />
           </div>
-          
-          <h1 className="text-5xl md:text-6xl font-black text-gray-900 mb-4">
-            الأبطال والمتميزون
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            تعرف على أبرز المبدعين والمستثمرين في منصة بذرة
+          <p className="text-gray-600 text-xl font-medium">
+            تنافس مع الأفضل واصعد للقمة 🚀
           </p>
         </motion.div>
 
+        {/* Challenges Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {challenges.map((challenge, index) => (
+            <motion.div
+              key={challenge.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1 }}
+              className={`bg-gradient-to-br from-${challenge.color}-500 to-${challenge.color}-600 rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden`}
+            >
+              <div className="absolute top-0 right-0 text-8xl opacity-10">{challenge.icon}</div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xl font-black">{challenge.title}</h3>
+                  <Crosshair className="w-6 h-6" />
+                </div>
+                <p className="text-sm opacity-90 mb-4">{challenge.description}</p>
+                
+                {/* Progress Bar */}
+                <div className="mb-3">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs font-bold">التقدم</span>
+                    <span className="text-xs font-bold">{challenge.progress}/{challenge.target}</span>
+                  </div>
+                  <div className="w-full bg-white/30 rounded-full h-3 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(challenge.progress / challenge.target) * 100}%` }}
+                      transition={{ duration: 1, delay: index * 0.1 }}
+                      className="h-full bg-white rounded-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm font-bold">
+                  <Gift className="w-4 h-4" />
+                  <span>{challenge.reward}</span>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Rewards Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          {rewards.map((reward, index) => (
+            <motion.div
+              key={reward.id}
+              initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-6 text-white shadow-2xl"
+            >
+              <div className="flex items-start gap-4">
+                <div className="text-5xl">{reward.icon}</div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-black mb-2">{reward.title}</h3>
+                  <p className="text-sm opacity-90 mb-3">{reward.description}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5" />
+                      <span className="font-bold">{reward.prize}</span>
+                    </div>
+                    <span className="text-xs bg-white/20 px-3 py-1 rounded-full">{reward.deadline}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
         {/* Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex flex-wrap justify-center gap-4 mb-8"
-        >
+        <div className="flex flex-wrap gap-3 justify-center mb-8">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`relative px-8 py-4 rounded-2xl font-bold transition-all duration-300 ${
+                className={`px-6 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 ${
                   activeTab === tab.id
-                    ? `bg-gradient-to-r ${tab.color} text-white shadow-2xl scale-105`
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                    ? `bg-gradient-to-r from-${tab.color}-500 to-${tab.color}-600 text-white shadow-2xl scale-110`
+                    : 'bg-white text-gray-700 hover:bg-gray-100 shadow-lg'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <Icon className="w-5 h-5" />
-                  <span>{tab.label}</span>
-                </div>
-                {activeTab === tab.id && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-2xl"
-                  />
-                )}
+                <Icon className="w-5 h-5" />
+                {tab.name}
               </button>
             );
           })}
-        </motion.div>
+        </div>
 
-        {/* Period Filter */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="flex justify-center gap-3 mb-12"
-        >
-          {periods.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setPeriod(p.id as any)}
-              className={`px-6 py-3 rounded-xl font-bold transition-all ${
-                period === p.id
-                  ? 'bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] text-white shadow-lg'
-                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
-        </motion.div>
-
-        {/* Leaderboard */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#14B8A6] border-t-transparent"></div>
-          </div>
-        ) : currentData.length === 0 ? (
-          <div className="text-center py-20">
-            <Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600 text-lg">لا توجد بيانات متاحة</p>
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="space-y-4"
-          >
-            <AnimatePresence mode="wait">
-              {currentData.map((user: any, index: number) => (
-              <motion.div
-                key={`${activeTab}-${user.id}`}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ delay: index * 0.05 }}
-                className={`relative rounded-3xl p-6 transition-all duration-300 ${getRankBg(index + 1)}`}
+        {/* Period Filters */}
+        <div className="flex flex-wrap gap-3 justify-center mb-12">
+          {periods.map((p) => {
+            const Icon = p.icon;
+            return (
+              <button
+                key={p.id}
+                onClick={() => setPeriod(p.id as any)}
+                className={`px-5 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                  period === p.id
+                    ? 'bg-gradient-to-r from-teal-600 to-purple-600 text-white shadow-lg'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                }`}
               >
-                <div className="flex items-center gap-6">
-                  {/* Rank */}
-                  <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center">
-                    {getRankIcon(index + 1)}
-                  </div>
+                <Icon className="w-4 h-4" />
+                {p.name}
+              </button>
+            );
+          })}
+        </div>
 
-                  {/* Avatar */}
-                  <div className="flex-shrink-0">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#14B8A6] to-[#8B5CF6] flex items-center justify-center text-white text-2xl font-black shadow-lg">
-                      {user.name.charAt(0)}
-                    </div>
+        {/* Podium - Top 3 */}
+        {leaderboard.length >= 3 && (
+          <div className="flex items-end justify-center gap-4 mb-12 px-4">
+            {/* 2nd Place */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex flex-col items-center"
+            >
+              <div className="relative mb-4">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 p-1">
+                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-4xl font-black">
+                    {leaderboard[1].avatar ? (
+                      <img src={leaderboard[1].avatar} alt={leaderboard[1].name} className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      leaderboard[1].name[0]
+                    )}
                   </div>
+                </div>
+                <div className="absolute -top-2 -right-2">
+                  <Medal className="w-10 h-10 text-gray-400 drop-shadow-xl" />
+                </div>
+              </div>
+              <h3 className="font-bold text-lg text-gray-900 mb-1">{leaderboard[1].name}</h3>
+              <div className="flex items-center gap-1 text-yellow-600 font-bold mb-2">
+                <Star className="w-4 h-4 fill-current" />
+                <span>{leaderboard[1].points.toLocaleString()}</span>
+              </div>
+              <div className="bg-gradient-to-br from-gray-300 to-gray-500 rounded-t-3xl px-8 py-6 text-center shadow-xl">
+                <p className="text-white text-4xl font-black">2</p>
+                <p className="text-white text-sm font-medium mt-1">المركز الثاني</p>
+              </div>
+            </motion.div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-black text-gray-900">{user.name}</h3>
-                      {index < 3 && (
-                        <div className="px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold">
-                          متميز
-                        </div>
+            {/* 1st Place */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex flex-col items-center"
+            >
+              <div className="relative mb-4">
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-300 via-yellow-500 to-orange-500 p-1 animate-pulse">
+                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-5xl font-black">
+                    {leaderboard[0].avatar ? (
+                      <img src={leaderboard[0].avatar} alt={leaderboard[0].name} className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      leaderboard[0].name[0]
+                    )}
+                  </div>
+                </div>
+                <div className="absolute -top-4 -right-2">
+                  <Crown className="w-14 h-14 text-yellow-500 drop-shadow-2xl animate-bounce" />
+                </div>
+              </div>
+              <h3 className="font-bold text-xl text-gray-900 mb-1">{leaderboard[0].name}</h3>
+              <div className="flex items-center gap-1 text-yellow-600 font-bold mb-2">
+                <Star className="w-5 h-5 fill-current" />
+                <span className="text-lg">{leaderboard[0].points.toLocaleString()}</span>
+              </div>
+              <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 rounded-t-3xl px-10 py-8 text-center shadow-2xl">
+                <p className="text-white text-5xl font-black">1</p>
+                <p className="text-white text-sm font-medium mt-1">البطل</p>
+              </div>
+            </motion.div>
+
+            {/* 3rd Place */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-col items-center"
+            >
+              <div className="relative mb-4">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 p-1">
+                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-3xl font-black">
+                    {leaderboard[2].avatar ? (
+                      <img src={leaderboard[2].avatar} alt={leaderboard[2].name} className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      leaderboard[2].name[0]
+                    )}
+                  </div>
+                </div>
+                <div className="absolute -top-2 -right-2">
+                  <Award className="w-9 h-9 text-amber-600 drop-shadow-xl" />
+                </div>
+              </div>
+              <h3 className="font-bold text-base text-gray-900 mb-1">{leaderboard[2].name}</h3>
+              <div className="flex items-center gap-1 text-yellow-600 font-bold mb-2">
+                <Star className="w-4 h-4 fill-current" />
+                <span>{leaderboard[2].points.toLocaleString()}</span>
+              </div>
+              <div className="bg-gradient-to-br from-amber-400 to-orange-600 rounded-t-3xl px-6 py-4 text-center shadow-xl">
+                <p className="text-white text-3xl font-black">3</p>
+                <p className="text-white text-xs font-medium mt-1">المركز الثالث</p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Leaderboard List */}
+        <div className="space-y-4">
+          {leaderboard.slice(3).map((user, index) => (
+            <motion.div
+              key={user.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className={`${getRankBg(user.rank)} rounded-2xl p-6 transition-all`}
+            >
+              <div className="flex items-center gap-4">
+                {/* Rank */}
+                <div className="flex-shrink-0 w-16 text-center">
+                  {getRankIcon(user.rank)}
+                </div>
+
+                {/* Avatar */}
+                <div className="flex-shrink-0">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-400 to-purple-600 p-1">
+                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-2xl font-black">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        user.name[0]
                       )}
                     </div>
-                    
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-yellow-500" />
-                        <span>{user.points?.toLocaleString() || 0} نقطة</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Trophy className="w-4 h-4 text-[#14B8A6]" />
-                        <span>المستوى {user.level || 1}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-[#8B5CF6]" />
-                        <span>{user.experience?.toLocaleString() || 0} خبرة</span>
-                      </div>
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-bold text-lg text-gray-900 truncate">{user.name}</h3>
+                    {getSubscriptionBadge(user.subscriptionTier)}
+                  </div>
+                  <p className="text-sm text-gray-600">@{user.username}</p>
+                </div>
+
+                {/* Stats */}
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <div className="flex items-center gap-1 text-yellow-600 font-bold mb-1">
+                      <Star className="w-5 h-5 fill-current" />
+                      <span className="text-lg">{user.points.toLocaleString()}</span>
                     </div>
+                    <p className="text-xs text-gray-500">نقطة</p>
                   </div>
 
-                  {/* Badge */}
-                  {user.subscriptionTier && user.subscriptionTier !== 'free' && (
-                    <div className="flex-shrink-0">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        user.subscriptionTier === 'platinum' ? 'bg-gradient-to-r from-purple-500 to-purple-700 text-white' :
-                        user.subscriptionTier === 'gold' ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white' :
-                        user.subscriptionTier === 'silver' ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-white' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {user.subscriptionTier === 'platinum' ? 'بلاتيني' :
-                         user.subscriptionTier === 'gold' ? 'ذهبي' :
-                         user.subscriptionTier === 'silver' ? 'فضي' : ''}
-                      </span>
+                  <div className="text-center">
+                    <div className="flex items-center gap-1 text-purple-600 font-bold mb-1">
+                      <TrendingUp className="w-5 h-5" />
+                      <span className="text-lg">{user.level}</span>
                     </div>
-                  )}
-
-                  {/* View Profile */}
-                  <Link
-                    href={`/profile/${user.id}`}
-                    className="flex-shrink-0 p-3 rounded-xl bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] text-white hover:shadow-lg transition-all"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </Link>
+                    <p className="text-xs text-gray-500">مستوى</p>
+                  </div>
                 </div>
-              </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </main>
 
+                {/* Arrow */}
+                <ChevronRight className="w-6 h-6 text-gray-400" />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {leaderboard.length === 0 && (
+          <div className="text-center py-12">
+            <Trophy className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 font-medium text-lg">لا توجد بيانات في لوحة الصدارة</p>
+          </div>
+        )}
+      </div>
+
+      <Footer />
     </div>
   );
 }
