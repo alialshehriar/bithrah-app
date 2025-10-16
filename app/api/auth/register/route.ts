@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { hash } from 'bcryptjs';
 import { eq } from 'drizzle-orm';
+import { randomBytes } from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,12 +35,16 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hash(password, 10);
 
+    // Generate verification token
+    const verificationToken = randomBytes(32).toString('hex');
+
     // Create user
     const [newUser] = await db
       .insert(users)
       .values({
         email,
         password: hashedPassword,
+        emailVerificationToken: verificationToken,
       })
       .returning();
 
@@ -50,6 +55,7 @@ export async function POST(request: NextRequest) {
       {
         message: 'تم إنشاء الحساب بنجاح',
         user: userWithoutPassword,
+        verificationToken,
       },
       { status: 201 }
     );
