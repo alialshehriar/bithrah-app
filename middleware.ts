@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
+import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || 'bithrah-super-secret-key-2025-production-v1'
-);
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'bithrah-super-secret-key-2025-production-v1';
 
 // Routes that require authentication
 const protectedRoutes = [
@@ -39,7 +37,7 @@ export async function middleware(request: NextRequest) {
 
   if (token) {
     try {
-      await jwtVerify(token, JWT_SECRET);
+      jwt.verify(token, JWT_SECRET);
       isAuthenticated = true;
     } catch (error) {
       // Token is invalid or expired - delete it
