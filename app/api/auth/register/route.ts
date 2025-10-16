@@ -34,18 +34,20 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hash(password, 10);
 
-    // Generate username from email
-    const username = email.split('@')[0] + Math.floor(Math.random() * 1000);
+    // Create user with only required fields
+    const insertData: any = {
+      email,
+      password: hashedPassword,
+    };
     
-    // Create user
+    // Add optional fields if provided
+    if (name) {
+      insertData.name = name;
+    }
+    
     const [newUser] = await db
       .insert(users)
-      .values({
-        email,
-        password: hashedPassword,
-        name: name || email.split('@')[0],
-        username,
-      })
+      .values(insertData)
       .returning();
 
     // Remove password from response
