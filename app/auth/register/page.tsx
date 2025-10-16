@@ -63,8 +63,10 @@ export default function RegisterPage() {
       if (!response.ok) {
         setError(data.error || 'حدث خطأ أثناء إنشاء الحساب');
       } else if (data.success) {
-        // Auto-login successful, redirect immediately
-        window.location.href = '/home';
+        // Auto-login successful, wait for cookie to be set then redirect
+        setTimeout(() => {
+          window.location.href = '/home';
+        }, 100);
       } else {
         setError(data.error || 'حدث خطأ أثناء إنشاء الحساب');
       }

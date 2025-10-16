@@ -58,7 +58,7 @@ export async function createSession(userId: number) {
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: '/',
-    domain: process.env.NODE_ENV === 'production' ? '.bithrahapp.com' : undefined,
+    // Don't set domain - let browser handle it automatically
   });
 
   return sessionData;
