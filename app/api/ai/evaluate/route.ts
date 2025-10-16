@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     let userId: number | null = null;
     try {
       const session = await verifySession(request);
-      userId = session?.userId || null;
+      userId = session?.id || null;
     } catch {
       // Continue without user session
     }

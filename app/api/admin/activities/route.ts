@@ -72,9 +72,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        activities: activities.rows,
-        stats: stats.rows,
-        hourlyStats: hourlyStats.rows,
+        activities: activities,
+        stats: stats,
+        hourlyStats: hourlyStats,
       },
     });
   } catch (error) {

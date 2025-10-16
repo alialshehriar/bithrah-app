@@ -68,3 +68,33 @@ export async function destroySession() {
   cookieStore.delete('bithrah-token');
 }
 
+
+
+export async function verifySession(request: Request): Promise<SessionUser> {
+  const cookieHeader = request.headers.get('cookie');
+  
+  if (!cookieHeader) {
+    throw new Error('Unauthorized');
+  }
+
+  // Parse cookie header to get token
+  const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+    const [key, value] = cookie.trim().split('=');
+    acc[key] = value;
+    return acc;
+  }, {} as Record<string, string>);
+
+  const token = cookies['bithrah-token'];
+
+  if (!token) {
+    throw new Error('Unauthorized');
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as SessionUser;
+    return decoded;
+  } catch (error) {
+    throw new Error('Unauthorized');
+  }
+}
+

@@ -9,3 +9,8 @@ if (!process.env.DATABASE_URL) {
 const sql = neon(process.env.DATABASE_URL);
 export const db = drizzle(sql, { schema });
 
+// Export query function for raw SQL queries
+export async function query(text: string, params?: any[]) {
+  return await sql(text, params);
+}
+

@@ -69,10 +69,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        evaluations: evaluations.rows,
-        stats: stats.rows[0],
-        topEvaluations: topEvaluations.rows,
-        byCategory: byCategory.rows,
+        evaluations: evaluations,
+        stats: stats[0],
+        topEvaluations: topEvaluations,
+        byCategory: byCategory,
       },
     });
   } catch (error) {
