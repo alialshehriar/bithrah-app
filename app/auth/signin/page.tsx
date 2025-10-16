@@ -35,7 +35,8 @@ export default function SignInPage() {
 
       // Success! Redirect to home
       if (data.success) {
-        router.push('/home');
+        // Use window.location to force page reload and cookie refresh
+        window.location.href = '/home';
       } else {
         setError(data.error || 'حدث خطأ أثناء تسجيل الدخول');
       }

@@ -63,13 +63,14 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         setError(data.error || 'حدث خطأ أثناء إنشاء الحساب');
-      } else {
+      } else if (data.success) {
         setSuccess(true);
-        setVerificationToken(data.verificationToken);
-        // Auto redirect to verification page after 3 seconds
+        // Auto-login successful, redirect to home
         setTimeout(() => {
-          router.push(`/auth/verify-email?token=${data.verificationToken}`);
-        }, 3000);
+          window.location.href = '/home';
+        }, 1500);
+      } else {
+        setError(data.error || 'حدث خطأ أثناء إنشاء الحساب');
       }
     } catch (err) {
       setError('حدث خطأ أثناء إنشاء الحساب');
