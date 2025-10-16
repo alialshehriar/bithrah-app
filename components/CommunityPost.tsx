@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart, MessageCircle, Share2, MoreVertical, Pin, Trash2,
-  ThumbsUp, Laugh, Surprised, Angry, Sad, Send
+  ThumbsUp, Smile, Frown, Send
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -55,10 +55,10 @@ interface CommunityPostProps {
 const reactions = [
   { type: 'like', icon: ThumbsUp, label: 'أعجبني', color: 'text-blue-500' },
   { type: 'love', icon: Heart, label: 'أحببته', color: 'text-red-500' },
-  { type: 'laugh', icon: Laugh, label: 'مضحك', color: 'text-yellow-500' },
-  { type: 'wow', icon: Surprised, label: 'رائع', color: 'text-purple-500' },
-  { type: 'sad', icon: Sad, label: 'محزن', color: 'text-gray-500' },
-  { type: 'angry', icon: Angry, label: 'غاضب', color: 'text-orange-500' },
+  { type: 'laugh', icon: Smile, label: 'مضحك', color: 'text-yellow-500' },
+  { type: 'wow', icon: Smile, label: 'رائع', color: 'text-purple-500' },
+  { type: 'sad', icon: Frown, label: 'محزن', color: 'text-gray-500' },
+  { type: 'angry', icon: Frown, label: 'غاضب', color: 'text-orange-500' },
 ];
 
 export default function CommunityPost({

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      gates: gates.rows || [],
+      gates: gates || [],
     });
   } catch (error) {
     console.error('Error fetching negotiation gates:', error);
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      gate: result.rows[0],
+      gate: result[0],
     });
   } catch (error) {
     console.error('Error creating negotiation gate:', error);

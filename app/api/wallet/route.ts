@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { wallets, transactions, commissions, referrals } from '@/lib/db/schema';
-import { eq, desc, sql as drizzleSql } from 'drizzle-orm';
+import { eq, desc, and, sql as drizzleSql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,9 +27,6 @@ export async function GET(request: NextRequest) {
       // Create wallet if doesn't exist
       const newWallet = await db.insert(wallets).values({
         userId,
-        balance: '0.00',
-        currency: 'SAR',
-        status: 'active',
       }).returning();
       
       return NextResponse.json({
@@ -51,13 +48,12 @@ export async function GET(request: NextRequest) {
       count: drizzleSql<number>`count(*)::int`,
       total: drizzleSql<number>`coalesce(sum(${commissions.amount}), 0)::decimal`,
     }).from(commissions)
-      .where(eq(commissions.userId, userId))
-      .where(eq(commissions.status, 'pending'));
+      .where(and(eq(commissions.userId, userId), eq(commissions.status, 'pending')));
 
     // Get referral stats
     const referralStats = await db.select({
       totalReferrals: drizzleSql<number>`count(*)::int`,
-      totalCommissions: drizzleSql<number>`coalesce(sum(${referrals.commissionAmount}), 0)::decimal`,
+      totalCommissions: drizzleSql<number>`coalesce(sum(${referrals.commissionEarned}), 0)::decimal`,
     }).from(referrals)
       .where(eq(referrals.referrerId, userId));
 

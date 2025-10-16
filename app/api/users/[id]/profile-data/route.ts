@@ -34,9 +34,9 @@ export async function GET(
     return NextResponse.json({
       success: true,
       data: {
-        skills: skillsResult.rows || [],
-        achievements: achievementsResult.rows || [],
-        portfolio: portfolioResult.rows || [],
+        skills: skillsResult || [],
+        achievements: achievementsResult || [],
+        portfolio: portfolioResult || [],
       },
     });
   } catch (error) {

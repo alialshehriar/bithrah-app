@@ -75,7 +75,7 @@ export async function GET(
       },
       referralCode: refCode?.code || null,
       rewards: userRewards,
-      activities: activities.rows || [],
+      activities: activities || [],
     });
   } catch (error) {
     console.error('Error fetching user:', error);

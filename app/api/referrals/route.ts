@@ -38,26 +38,22 @@ export async function GET(request: NextRequest) {
       .leftJoin(projects, eq(referralCodes.projectId, projects.id))
       .where(eq(referralCodes.userId, userId))
       .orderBy(desc(referralCodes.createdAt));
-
     // Get referral history
     const referralsData = await db.select({
       id: referrals.id,
       uuid: referrals.uuid,
-      amount: referrals.amount,
-      commissionAmount: referrals.commissionAmount,
-      commissionRate: referrals.commissionRate,
+      commissionEarned: referrals.commissionEarned,
+      commissionPaid: referrals.commissionPaid,
       status: referrals.status,
-      paidAt: referrals.paidAt,
+      rewardedAt: referrals.rewardedAt,
       createdAt: referrals.createdAt,
       referredUsername: users.username,
       referredEmail: users.email,
-      projectTitle: projects.title,
-      referralCode: referralCodes.code,
+      referralCode: referrals.referralCode,
+      source: referrals.source,
     })
       .from(referrals)
-      .leftJoin(users, eq(referrals.referredUserId, users.id))
-      .leftJoin(projects, eq(referrals.projectId, projects.id))
-      .leftJoin(referralCodes, eq(referrals.referralCodeId, referralCodes.id))
+      .leftJoin(users, eq(referrals.referredId, users.id))
       .where(eq(referrals.referrerId, userId))
       .orderBy(desc(referrals.createdAt))
       .limit(50);
@@ -65,11 +61,10 @@ export async function GET(request: NextRequest) {
     // Get summary stats
     const stats = await db.select({
       totalReferrals: drizzleSql<number>`count(distinct ${referrals.id})::int`,
-      uniqueUsers: drizzleSql<number>`count(distinct ${referrals.referredUserId})::int`,
-      totalAmount: drizzleSql<number>`coalesce(sum(${referrals.amount}), 0)::decimal`,
-      totalCommissions: drizzleSql<number>`coalesce(sum(${referrals.commissionAmount}), 0)::decimal`,
-      paidCommissions: drizzleSql<number>`coalesce(sum(case when ${referrals.status} = 'paid' then ${referrals.commissionAmount} else 0 end), 0)::decimal`,
-      pendingCommissions: drizzleSql<number>`coalesce(sum(case when ${referrals.status} = 'pending' then ${referrals.commissionAmount} else 0 end), 0)::decimal`,
+      uniqueUsers: drizzleSql<number>`count(distinct ${referrals.referredId})::int`,
+      totalCommissions: drizzleSql<number>`coalesce(sum(${referrals.commissionEarned}), 0)::decimal`,
+      paidCommissions: drizzleSql<number>`coalesce(sum(case when ${referrals.commissionPaid} = true then ${referrals.commissionEarned} else 0 end), 0)::decimal`,
+      pendingCommissions: drizzleSql<number>`coalesce(sum(case when ${referrals.commissionPaid} = false then ${referrals.commissionEarned} else 0 end), 0)::decimal`,
     }).from(referrals)
       .where(eq(referrals.referrerId, userId));
 
@@ -77,7 +72,7 @@ export async function GET(request: NextRequest) {
       success: true,
       codes: codesData,
       referrals: referralsData,
-      stats: stats[0] || { totalReferrals: 0, uniqueUsers: 0, totalAmount: 0, totalCommissions: 0, paidCommissions: 0, pendingCommissions: 0 },
+      stats: stats[0] || { totalReferrals: 0, uniqueUsers: 0, totalCommissions: 0, paidCommissions: 0, pendingCommissions: 0 },
     });
   } catch (error) {
     console.error('Referrals API error:', error);
@@ -111,10 +106,7 @@ export async function POST(request: NextRequest) {
     const newCode = await db.insert(referralCodes).values({
       userId,
       code,
-      type,
-      projectId,
-      commissionRate: commissionRate.toString(),
-      status: 'active',
+      ...(projectId && { projectId }),
     }).returning();
 
     return NextResponse.json({

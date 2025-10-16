@@ -8,10 +8,11 @@ import { eq, and, or, desc, sql as drizzleSql } from 'drizzle-orm';
 // GET - Get negotiation gate and negotiations for a project
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const projectId = parseInt(params.id);
+    const { id } = await params;
+    const projectId = parseInt(id);
 
     // Get negotiation gate
     const gateData = await db.select().from(negotiationGates)
@@ -33,11 +34,13 @@ export async function GET(
       id: negotiations.id,
       uuid: negotiations.uuid,
       status: negotiations.status,
-      amount: negotiations.amount,
       depositAmount: negotiations.depositAmount,
       depositStatus: negotiations.depositStatus,
       agreementReached: negotiations.agreementReached,
       agreedAmount: negotiations.agreedAmount,
+      startDate: negotiations.startDate,
+      endDate: negotiations.endDate,
+      hasFullAccess: negotiations.hasFullAccess,
       createdAt: negotiations.createdAt,
       updatedAt: negotiations.updatedAt,
       investorName: users.username,
@@ -66,7 +69,7 @@ export async function GET(
 // POST - Create new negotiation request
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -78,14 +81,15 @@ export async function POST(
 
     const session = await verifySession(request);
     const userId = session.id;
-    const projectId = parseInt(params.id);
+    const { id } = await params;
+    const projectId = parseInt(id);
 
     const body = await request.json();
-    const { amount, message } = body;
+    const { depositAmount, message } = body;
 
-    if (!amount || amount <= 0) {
+    if (!depositAmount || depositAmount <= 0) {
       return NextResponse.json(
-        { error: 'المبلغ غير صحيح' },
+        { error: 'مبلغ الإيداع غير صحيح' },
         { status: 400 }
       );
     }
@@ -144,20 +148,10 @@ export async function POST(
     const newNegotiation = await db.insert(negotiations).values({
       projectId,
       investorId: userId,
-      status: 'pending',
       startDate: new Date(),
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-      amount: amount.toString(),
-      depositAmount: gate.depositAmount || '0',
-      depositStatus: 'pending',
-      hasFullAccess: false,
-      metadata: { initial_message: message },
+      endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+      depositAmount: (gate.depositAmount || depositAmount).toString(),
     }).returning();
-
-    // Update current negotiators count
-    await db.update(negotiationGates)
-      .set({ currentNegotiators: drizzleSql`${negotiationGates.currentNegotiators} + 1` })
-      .where(eq(negotiationGates.projectId, projectId));
 
     return NextResponse.json({
       success: true,
