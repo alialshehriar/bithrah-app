@@ -48,7 +48,7 @@ export default function WalletPage() {
 
       if (data.success) {
         setWallet(data.wallet);
-        setTransactions(data.transactions);
+        setTransactions(data.recentTransactions || data.transactions || []);
       }
     } catch (error) {
       console.error('Error fetching wallet:', error);
