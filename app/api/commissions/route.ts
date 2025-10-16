@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { verifyToken } from '@/lib/auth';
-import pool from '@/lib/db';
+import { verifySession } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { commissions, backings, projects } from '@/lib/db/schema';
+import { eq, desc, and, sql as drizzleSql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,86 +14,40 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
     }
 
-    const payload = await verifyToken(token);
-    const userId = payload.userId;
+    const session = await verifySession(request);
+    const userId = session.id;
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'all';
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    const client = await pool.connect();
-    try {
-      let query = `
-        SELECT 
-          c.id,
-          c.uuid,
-          c.type,
-          c.source_type,
-          c.source_id,
-          c.amount,
-          c.rate,
-          c.base_amount,
-          c.status,
-          c.approved_at,
-          c.paid_at,
-          c.notes,
-          c.created_at,
-          CASE 
-            WHEN c.source_type = 'backing' THEN (
-              SELECT json_build_object(
-                'project_title', p.title,
-                'project_id', p.id
-              )
-              FROM backings b
-              JOIN projects p ON b.project_id = p.id
-              WHERE b.id = c.source_id
-            )
-            WHEN c.source_type = 'project' THEN (
-              SELECT json_build_object(
-                'project_title', p.title,
-                'project_id', p.id
-              )
-              FROM projects p
-              WHERE p.id = c.source_id
-            )
-          END as source_details
-        FROM commissions c
-        WHERE c.user_id = $1
-      `;
-
-      const params: any[] = [userId];
-
-      if (status !== 'all') {
-        query += ` AND c.status = $2`;
-        params.push(status);
-      }
-
-      query += ` ORDER BY c.created_at DESC LIMIT $${params.length + 1}`;
-      params.push(limit);
-
-      const commissionsResult = await client.query(query, params);
-
-      // Get summary stats
-      const statsResult = await client.query(
-        `SELECT 
-          COUNT(*) as total_count,
-          COALESCE(SUM(amount), 0) as total_amount,
-          COALESCE(SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END), 0) as pending_amount,
-          COALESCE(SUM(CASE WHEN status = 'approved' THEN amount ELSE 0 END), 0) as approved_amount,
-          COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as paid_amount
-        FROM commissions
-        WHERE user_id = $1`,
-        [userId]
-      );
-
-      return NextResponse.json({
-        success: true,
-        commissions: commissionsResult.rows,
-        stats: statsResult.rows[0],
-      });
-    } finally {
-      client.release();
+    // Build query conditions
+    const conditions = [eq(commissions.userId, userId)];
+    if (status !== 'all') {
+      conditions.push(eq(commissions.status, status));
     }
+
+    // Get commissions
+    const commissionsData = await db.select().from(commissions)
+      .where(and(...conditions))
+      .orderBy(desc(commissions.createdAt))
+      .limit(limit);
+
+    // Get summary stats
+    const stats = await db.select({
+      totalCount: drizzleSql<number>`count(*)::int`,
+      totalAmount: drizzleSql<number>`coalesce(sum(${commissions.amount}), 0)::decimal`,
+      pendingAmount: drizzleSql<number>`coalesce(sum(case when ${commissions.status} = 'pending' then ${commissions.amount} else 0 end), 0)::decimal`,
+      approvedAmount: drizzleSql<number>`coalesce(sum(case when ${commissions.status} = 'approved' then ${commissions.amount} else 0 end), 0)::decimal`,
+      paidAmount: drizzleSql<number>`coalesce(sum(case when ${commissions.status} = 'paid' then ${commissions.amount} else 0 end), 0)::decimal`,
+    }).from(commissions)
+      .where(eq(commissions.userId, userId));
+
+    return NextResponse.json({
+      success: true,
+      commissions: commissionsData,
+      stats: stats[0] || { totalCount: 0, totalAmount: 0, pendingAmount: 0, approvedAmount: 0, paidAmount: 0 },
+    });
   } catch (error) {
     console.error('Commissions API error:', error);
     return NextResponse.json(

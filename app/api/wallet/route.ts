@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { verifyToken } from '@/lib/auth';
-import pool from '@/lib/db';
+import { verifySession } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { wallets, transactions, commissions, referrals } from '@/lib/db/schema';
+import { eq, desc, sql as drizzleSql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,98 +14,60 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
     }
 
-    const payload = await verifyToken(token);
-    const userId = payload.userId;
+    const session = await verifySession(request);
+    const userId = session.id;
 
-    const client = await pool.connect();
-    try {
-      // Get wallet info
-      const walletResult = await client.query(
-        `SELECT 
-          w.id,
-          w.uuid,
-          w.balance,
-          w.pending_balance,
-          w.total_earned,
-          w.total_withdrawn,
-          w.currency,
-          w.status,
-          w.is_sandbox,
-          w.created_at,
-          w.updated_at
-        FROM wallets w
-        WHERE w.user_id = $1`,
-        [userId]
-      );
+    // Get wallet info
+    const walletData = await db.select().from(wallets)
+      .where(eq(wallets.userId, userId))
+      .limit(1);
 
-      if (walletResult.rows.length === 0) {
-        // Create wallet if doesn't exist
-        const createResult = await client.query(
-          `INSERT INTO wallets (user_id, balance, currency, status)
-           VALUES ($1, 0.00, 'SAR', 'active')
-           RETURNING *`,
-          [userId]
-        );
-        
-        return NextResponse.json({
-          success: true,
-          wallet: createResult.rows[0],
-        });
-      }
-
-      const wallet = walletResult.rows[0];
-
-      // Get recent transactions
-      const transactionsResult = await client.query(
-        `SELECT 
-          id,
-          uuid,
-          type,
-          amount,
-          balance_before,
-          balance_after,
-          status,
-          description,
-          reference_type,
-          reference_id,
-          created_at
-        FROM transactions
-        WHERE user_id = $1
-        ORDER BY created_at DESC
-        LIMIT 10`,
-        [userId]
-      );
-
-      // Get pending commissions
-      const commissionsResult = await client.query(
-        `SELECT 
-          COUNT(*) as count,
-          COALESCE(SUM(amount), 0) as total
-        FROM commissions
-        WHERE user_id = $1 AND status = 'pending'`,
-        [userId]
-      );
-
-      // Get referral stats
-      const referralStatsResult = await client.query(
-        `SELECT 
-          COUNT(*) as total_referrals,
-          COALESCE(SUM(commission_amount), 0) as total_commissions
-        FROM referrals
-        WHERE referrer_id = $1`,
-        [userId]
-      );
-
+    let wallet;
+    if (walletData.length === 0) {
+      // Create wallet if doesn't exist
+      const newWallet = await db.insert(wallets).values({
+        userId,
+        balance: '0.00',
+        currency: 'SAR',
+        status: 'active',
+      }).returning();
+      
       return NextResponse.json({
         success: true,
-        wallet,
-        recentTransactions: transactionsResult.rows,
-        pendingCommissions: commissionsResult.rows[0],
-        referralStats: referralStatsResult.rows[0],
+        wallet: newWallet[0],
       });
-    } finally {
-      client.release();
     }
+
+    wallet = walletData[0];
+
+    // Get recent transactions
+    const recentTransactions = await db.select().from(transactions)
+      .where(eq(transactions.userId, userId))
+      .orderBy(desc(transactions.createdAt))
+      .limit(10);
+
+    // Get pending commissions
+    const pendingCommissions = await db.select({
+      count: drizzleSql<number>`count(*)::int`,
+      total: drizzleSql<number>`coalesce(sum(${commissions.amount}), 0)::decimal`,
+    }).from(commissions)
+      .where(eq(commissions.userId, userId))
+      .where(eq(commissions.status, 'pending'));
+
+    // Get referral stats
+    const referralStats = await db.select({
+      totalReferrals: drizzleSql<number>`count(*)::int`,
+      totalCommissions: drizzleSql<number>`coalesce(sum(${referrals.commissionAmount}), 0)::decimal`,
+    }).from(referrals)
+      .where(eq(referrals.referrerId, userId));
+
+    return NextResponse.json({
+      success: true,
+      wallet,
+      recentTransactions,
+      pendingCommissions: pendingCommissions[0] || { count: 0, total: 0 },
+      referralStats: referralStats[0] || { totalReferrals: 0, totalCommissions: 0 },
+    });
   } catch (error) {
     console.error('Wallet API error:', error);
     return NextResponse.json(

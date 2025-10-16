@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { verifyToken } from '@/lib/auth';
-import pool from '@/lib/db';
+import { verifySession } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { negotiations, negotiationGates, projects, users } from '@/lib/db/schema';
+import { eq, and, or, desc, sql as drizzleSql } from 'drizzle-orm';
 
 // GET - Get negotiation gate and negotiations for a project
 export async function GET(
@@ -11,62 +13,47 @@ export async function GET(
   try {
     const projectId = parseInt(params.id);
 
-    const client = await pool.connect();
-    try {
-      // Get negotiation gate
-      const gateResult = await client.query(
-        `SELECT 
-          ng.*,
-          p.title as project_title,
-          p.funding_goal,
-          p.current_funding
-        FROM negotiation_gates ng
-        JOIN projects p ON ng.project_id = p.id
-        WHERE ng.project_id = $1`,
-        [projectId]
-      );
+    // Get negotiation gate
+    const gateData = await db.select().from(negotiationGates)
+      .where(eq(negotiationGates.projectId, projectId))
+      .limit(1);
 
-      if (gateResult.rows.length === 0) {
-        return NextResponse.json({
-          success: true,
-          gate: null,
-          negotiations: [],
-        });
-      }
-
-      const gate = gateResult.rows[0];
-
-      // Get negotiations for this project
-      const negotiationsResult = await client.query(
-        `SELECT 
-          n.id,
-          n.uuid,
-          n.status,
-          n.amount,
-          n.deposit_amount,
-          n.deposit_status,
-          n.agreement_reached,
-          n.agreed_amount,
-          n.created_at,
-          n.updated_at,
-          u.username as investor_name,
-          u.email as investor_email
-        FROM negotiations n
-        JOIN users u ON n.investor_id = u.id
-        WHERE n.project_id = $1
-        ORDER BY n.created_at DESC
-        LIMIT 50`,
-        [projectId]
-      );
-
+    if (gateData.length === 0) {
       return NextResponse.json({
         success: true,
-        gate,
-        negotiations: negotiationsResult.rows,
+        gate: null,
+        negotiations: [],
       });
-    } finally {
-      client.release();
     }
+
+    const gate = gateData[0];
+
+    // Get negotiations for this project
+    const negotiationsData = await db.select({
+      id: negotiations.id,
+      uuid: negotiations.uuid,
+      status: negotiations.status,
+      amount: negotiations.amount,
+      depositAmount: negotiations.depositAmount,
+      depositStatus: negotiations.depositStatus,
+      agreementReached: negotiations.agreementReached,
+      agreedAmount: negotiations.agreedAmount,
+      createdAt: negotiations.createdAt,
+      updatedAt: negotiations.updatedAt,
+      investorName: users.username,
+      investorEmail: users.email,
+    })
+      .from(negotiations)
+      .leftJoin(users, eq(negotiations.investorId, users.id))
+      .where(eq(negotiations.projectId, projectId))
+      .orderBy(desc(negotiations.createdAt))
+      .limit(50);
+
+    return NextResponse.json({
+      success: true,
+      gate,
+      negotiations: negotiationsData,
+    });
   } catch (error) {
     console.error('Get negotiations error:', error);
     return NextResponse.json(
@@ -89,8 +76,8 @@ export async function POST(
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
     }
 
-    const payload = await verifyToken(token);
-    const userId = payload.userId;
+    const session = await verifySession(request);
+    const userId = session.id;
     const projectId = parseInt(params.id);
 
     const body = await request.json();
@@ -103,103 +90,80 @@ export async function POST(
       );
     }
 
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
+    // Check if negotiation gate exists and is open
+    const gateData = await db.select().from(negotiationGates)
+      .where(eq(negotiationGates.projectId, projectId))
+      .limit(1);
 
-      // Check if negotiation gate exists and is open
-      const gateResult = await client.query(
-        `SELECT * FROM negotiation_gates WHERE project_id = $1`,
-        [projectId]
+    if (gateData.length === 0) {
+      return NextResponse.json(
+        { error: 'بوابة التفاوض غير موجودة' },
+        { status: 404 }
       );
-
-      if (gateResult.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return NextResponse.json(
-          { error: 'بوابة التفاوض غير موجودة' },
-          { status: 404 }
-        );
-      }
-
-      const gate = gateResult.rows[0];
-
-      if (!gate.is_open) {
-        await client.query('ROLLBACK');
-        return NextResponse.json(
-          { error: 'بوابة التفاوض مغلقة حالياً' },
-          { status: 400 }
-        );
-      }
-
-      // Check if user already has an active negotiation
-      const existingResult = await client.query(
-        `SELECT id FROM negotiations 
-         WHERE project_id = $1 AND investor_id = $2 AND status IN ('pending', 'active')`,
-        [projectId, userId]
-      );
-
-      if (existingResult.rows.length > 0) {
-        await client.query('ROLLBACK');
-        return NextResponse.json(
-          { error: 'لديك طلب تفاوض نشط بالفعل' },
-          { status: 400 }
-        );
-      }
-
-      // Check max negotiators limit
-      if (gate.max_negotiators && gate.current_negotiators >= gate.max_negotiators) {
-        await client.query('ROLLBACK');
-        return NextResponse.json(
-          { error: 'تم الوصول للحد الأقصى من المفاوضين' },
-          { status: 400 }
-        );
-      }
-
-      // Create negotiation
-      const negotiationResult = await client.query(
-        `INSERT INTO negotiations (
-          project_id,
-          investor_id,
-          status,
-          start_date,
-          end_date,
-          amount,
-          deposit_amount,
-          deposit_status,
-          has_full_access,
-          metadata
-        ) VALUES ($1, $2, 'pending', NOW(), NOW() + INTERVAL '30 days', $3, $4, 'pending', false, $5)
-        RETURNING *`,
-        [
-          projectId,
-          userId,
-          amount,
-          gate.deposit_amount || 0,
-          JSON.stringify({ initial_message: message }),
-        ]
-      );
-
-      // Update current negotiators count
-      await client.query(
-        `UPDATE negotiation_gates 
-         SET current_negotiators = current_negotiators + 1 
-         WHERE project_id = $1`,
-        [projectId]
-      );
-
-      await client.query('COMMIT');
-
-      return NextResponse.json({
-        success: true,
-        negotiation: negotiationResult.rows[0],
-        message: 'تم إرسال طلب التفاوض بنجاح',
-      });
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
     }
+
+    const gate = gateData[0];
+
+    if (!gate.isOpen) {
+      return NextResponse.json(
+        { error: 'بوابة التفاوض مغلقة حالياً' },
+        { status: 400 }
+      );
+    }
+
+    // Check if user already has an active negotiation
+    const existing = await db.select().from(negotiations)
+      .where(
+        and(
+          eq(negotiations.projectId, projectId),
+          eq(negotiations.investorId, userId),
+          or(
+            eq(negotiations.status, 'pending'),
+            eq(negotiations.status, 'active')
+          )
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      return NextResponse.json(
+        { error: 'لديك طلب تفاوض نشط بالفعل' },
+        { status: 400 }
+      );
+    }
+
+    // Check max negotiators limit
+    if (gate.maxNegotiators && gate.currentNegotiators >= gate.maxNegotiators) {
+      return NextResponse.json(
+        { error: 'تم الوصول للحد الأقصى من المفاوضين' },
+        { status: 400 }
+      );
+    }
+
+    // Create negotiation
+    const newNegotiation = await db.insert(negotiations).values({
+      projectId,
+      investorId: userId,
+      status: 'pending',
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      amount: amount.toString(),
+      depositAmount: gate.depositAmount || '0',
+      depositStatus: 'pending',
+      hasFullAccess: false,
+      metadata: { initial_message: message },
+    }).returning();
+
+    // Update current negotiators count
+    await db.update(negotiationGates)
+      .set({ currentNegotiators: drizzleSql`${negotiationGates.currentNegotiators} + 1` })
+      .where(eq(negotiationGates.projectId, projectId));
+
+    return NextResponse.json({
+      success: true,
+      negotiation: newNegotiation[0],
+      message: 'تم إرسال طلب التفاوض بنجاح',
+    });
   } catch (error) {
     console.error('Create negotiation error:', error);
     return NextResponse.json(
