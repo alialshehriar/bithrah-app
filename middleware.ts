@@ -42,7 +42,9 @@ export async function middleware(request: NextRequest) {
       await jwtVerify(token, JWT_SECRET);
       isAuthenticated = true;
     } catch (error) {
-      // Token is invalid or expired
+      // Token is invalid or expired - delete it
+      const response = NextResponse.next();
+      response.cookies.delete('bithrah-token');
       isAuthenticated = false;
     }
   }
