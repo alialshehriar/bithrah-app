@@ -10,6 +10,21 @@ export default function HomePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const handleOnboardingComplete = async (data: { username: string; interests: string[] }) => {
+    // Save onboarding data
+    try {
+      await fetch('/api/user/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      setShowOnboarding(false);
+    } catch (error) {
+      console.error('Failed to save onboarding data:', error);
+    }
+  };
 
   useEffect(() => {
     fetch('/api/user/stats')
@@ -44,7 +59,11 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <OnboardingPopup />
+      <OnboardingPopup 
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onComplete={handleOnboardingComplete}
+      />
       
       {/* Navigation */}
       <nav className="bg-white border-b border-slate-200">
