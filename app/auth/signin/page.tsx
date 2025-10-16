@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -21,17 +20,24 @@ export default function SignInPage() {
     setIsLoading(true);
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (result?.error) {
-        setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
-      } else {
-        router.push('/home');
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'حدث خطأ أثناء تسجيل الدخول');
+        return;
       }
+
+      // Success! Redirect to home
+      router.push('/home');
+      router.refresh();
     } catch (err) {
       setError('حدث خطأ أثناء تسجيل الدخول');
     } finally {
@@ -98,12 +104,11 @@ export default function SignInPage() {
                 <input
                   id="email"
                   type="email"
-                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-right"
+                  required
+                  className="block w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                   placeholder="example@email.com"
-                  dir="ltr"
                 />
               </div>
             </div>
@@ -120,10 +125,10 @@ export default function SignInPage() {
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pr-10 pl-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                  required
+                  className="block w-full pr-10 pl-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                   placeholder="••••••••"
                 />
                 <button
@@ -140,8 +145,8 @@ export default function SignInPage() {
               </div>
             </div>
 
-            {/* Forgot Password Link */}
-            <div className="flex justify-end">
+            {/* Forgot Password */}
+            <div className="flex items-center justify-between">
               <Link
                 href="/auth/forgot-password"
                 className="text-sm text-teal-600 hover:text-teal-700 font-medium"
@@ -156,7 +161,7 @@ export default function SignInPage() {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-teal-500 to-purple-600 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full bg-gradient-to-r from-teal-500 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-teal-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
                 <>
@@ -170,18 +175,18 @@ export default function SignInPage() {
           </form>
 
           {/* Divider */}
-          <div className="relative my-8">
+          <div className="mt-6 relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">أو</span>
+              <span className="px-2 bg-white text-gray-500">أو</span>
             </div>
           </div>
 
           {/* Sign Up Link */}
-          <div className="text-center">
-            <p className="text-gray-600">
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
               ليس لديك حساب؟{' '}
               <Link
                 href="/auth/register"
@@ -191,24 +196,19 @@ export default function SignInPage() {
               </Link>
             </p>
           </div>
-        </div>
 
-        {/* Footer */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center mt-8 text-white/80 text-sm"
-        >
-          بالمتابعة، أنت توافق على{' '}
-          <Link href="/terms" className="underline hover:text-white">
-            الشروط والأحكام
-          </Link>
-          {' '}و{' '}
-          <Link href="/privacy" className="underline hover:text-white">
-            سياسة الخصوصية
-          </Link>
-        </motion.p>
+          {/* Terms */}
+          <div className="mt-8 text-center text-xs text-gray-500">
+            بالمتابعة، أنت توافق على{' '}
+            <Link href="/terms" className="text-teal-600 hover:underline">
+              الشروط والأحكام
+            </Link>{' '}
+            و{' '}
+            <Link href="/privacy" className="text-teal-600 hover:underline">
+              سياسة الخصوصية
+            </Link>
+          </div>
+        </div>
       </motion.div>
     </div>
   );
