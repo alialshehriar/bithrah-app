@@ -191,9 +191,10 @@ export default function OnboardingPopup({ isOpen, onClose, onComplete }: Onboard
                         className="inline-block mb-6"
                       >
                         <div className={`w-24 h-24 bg-gradient-to-br ${steps[currentStep].color} rounded-3xl flex items-center justify-center mx-auto shadow-lg`}>
-                          {steps[currentStep].icon && (
-                            <steps[currentStep].icon className="w-12 h-12 text-white" />
-                          )}
+                          {steps[currentStep].icon && (() => {
+                            const Icon = steps[currentStep].icon;
+                            return <Icon className="w-12 h-12 text-white" />;
+                          })()}
                         </div>
                       </motion.div>
 
