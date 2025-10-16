@@ -1195,3 +1195,223 @@ export const projectAccessLogsRelations = relations(projectAccessLogs, ({ one })
   }),
 }));
 
+
+
+
+// ============================================
+// WALLET & COMMISSION SYSTEM
+// ============================================
+
+export const wallets = pgTable('wallets', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  userId: integer('user_id').references(() => users.id).notNull().unique(),
+  balance: numeric('balance', { precision: 12, scale: 2 }).default('0.00').notNull(),
+  pendingBalance: numeric('pending_balance', { precision: 12, scale: 2 }).default('0.00').notNull(),
+  totalEarned: numeric('total_earned', { precision: 12, scale: 2 }).default('0.00').notNull(),
+  totalWithdrawn: numeric('total_withdrawn', { precision: 12, scale: 2 }).default('0.00').notNull(),
+  currency: varchar('currency', { length: 3 }).default('SAR'),
+  status: varchar('status', { length: 50 }).default('active'),
+  isSandbox: boolean('is_sandbox').default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index('wallets_user_idx').on(table.userId),
+  statusIdx: index('wallets_status_idx').on(table.status),
+}));
+
+export const transactions = pgTable('transactions', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  walletId: integer('wallet_id').references(() => wallets.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  type: varchar('type', { length: 50 }).notNull(), // 'commission', 'withdrawal', 'refund', 'deposit', 'payment'
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+  balanceBefore: numeric('balance_before', { precision: 12, scale: 2 }).notNull(),
+  balanceAfter: numeric('balance_after', { precision: 12, scale: 2 }).notNull(),
+  status: varchar('status', { length: 50 }).default('completed'), // 'pending', 'completed', 'failed', 'cancelled'
+  description: text('description'),
+  referenceType: varchar('reference_type', { length: 50 }), // 'project', 'backing', 'negotiation', 'referral'
+  referenceId: integer('reference_id'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  processedAt: timestamp('processed_at'),
+}, (table) => ({
+  walletIdx: index('transactions_wallet_idx').on(table.walletId),
+  userIdx: index('transactions_user_idx').on(table.userId),
+  typeIdx: index('transactions_type_idx').on(table.type),
+  statusIdx: index('transactions_status_idx').on(table.status),
+  createdAtIdx: index('transactions_created_at_idx').on(table.createdAt),
+}));
+
+export const referralCodes = pgTable('referral_codes', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  code: varchar('code', { length: 50 }).unique().notNull(),
+  type: varchar('type', { length: 50 }).default('general'), // 'general', 'project', 'campaign'
+  projectId: integer('project_id').references(() => projects.id),
+  commissionRate: numeric('commission_rate', { precision: 5, scale: 2 }).default('5.00'), // percentage
+  usesCount: integer('uses_count').default(0),
+  maxUses: integer('max_uses'), // NULL = unlimited
+  totalEarned: numeric('total_earned', { precision: 12, scale: 2 }).default('0.00'),
+  status: varchar('status', { length: 50 }).default('active'), // 'active', 'inactive', 'expired'
+  expiresAt: timestamp('expires_at'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index('referral_codes_user_idx').on(table.userId),
+  codeIdx: index('referral_codes_code_idx').on(table.code),
+  projectIdx: index('referral_codes_project_idx').on(table.projectId),
+  statusIdx: index('referral_codes_status_idx').on(table.status),
+}));
+
+export const referrals = pgTable('referrals', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  referralCodeId: integer('referral_code_id').references(() => referralCodes.id).notNull(),
+  referrerId: integer('referrer_id').references(() => users.id).notNull(),
+  referredUserId: integer('referred_user_id').references(() => users.id),
+  backingId: integer('backing_id').references(() => backings.id),
+  projectId: integer('project_id').references(() => projects.id),
+  amount: numeric('amount', { precision: 12, scale: 2 }).default('0.00').notNull(),
+  commissionAmount: numeric('commission_amount', { precision: 12, scale: 2 }).default('0.00').notNull(),
+  commissionRate: numeric('commission_rate', { precision: 5, scale: 2 }).notNull(),
+  status: varchar('status', { length: 50 }).default('pending'), // 'pending', 'approved', 'paid', 'cancelled'
+  paidAt: timestamp('paid_at'),
+  ipAddress: varchar('ip_address', { length: 50 }),
+  userAgent: text('user_agent'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  codeIdx: index('referrals_code_idx').on(table.referralCodeId),
+  referrerIdx: index('referrals_referrer_idx').on(table.referrerId),
+  referredUserIdx: index('referrals_referred_user_idx').on(table.referredUserId),
+  backingIdx: index('referrals_backing_idx').on(table.backingId),
+  statusIdx: index('referrals_status_idx').on(table.status),
+  createdAtIdx: index('referrals_created_at_idx').on(table.createdAt),
+}));
+
+export const commissions = pgTable('commissions', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  walletId: integer('wallet_id').references(() => wallets.id).notNull(),
+  type: varchar('type', { length: 50 }).notNull(), // 'referral', 'marketing', 'platform'
+  sourceType: varchar('source_type', { length: 50 }).notNull(), // 'backing', 'project', 'subscription'
+  sourceId: integer('source_id').notNull(),
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+  rate: numeric('rate', { precision: 5, scale: 2 }).notNull(),
+  baseAmount: numeric('base_amount', { precision: 12, scale: 2 }).notNull(),
+  status: varchar('status', { length: 50 }).default('pending'), // 'pending', 'approved', 'paid', 'cancelled'
+  approvedAt: timestamp('approved_at'),
+  paidAt: timestamp('paid_at'),
+  approvedBy: integer('approved_by').references(() => users.id),
+  notes: text('notes'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index('commissions_user_idx').on(table.userId),
+  walletIdx: index('commissions_wallet_idx').on(table.walletId),
+  typeIdx: index('commissions_type_idx').on(table.type),
+  sourceIdx: index('commissions_source_idx').on(table.sourceType, table.sourceId),
+  statusIdx: index('commissions_status_idx').on(table.status),
+  createdAtIdx: index('commissions_created_at_idx').on(table.createdAt),
+}));
+
+export const negotiationGates = pgTable('negotiation_gates', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  projectId: integer('project_id').references(() => projects.id).notNull().unique(),
+  isOpen: boolean('is_open').default(true).notNull(),
+  depositAmount: numeric('deposit_amount', { precision: 12, scale: 2 }).default('0.00').notNull(),
+  maxNegotiators: integer('max_negotiators'),
+  currentNegotiators: integer('current_negotiators').default(0).notNull(),
+  requirements: jsonb('requirements'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  projectIdx: index('negotiation_gates_project_idx').on(table.projectId),
+  isOpenIdx: index('negotiation_gates_is_open_idx').on(table.isOpen),
+}));
+
+// Relations for wallet system
+export const walletsRelations = relations(wallets, ({ one, many }) => ({
+  user: one(users, {
+    fields: [wallets.userId],
+    references: [users.id],
+  }),
+  transactions: many(transactions),
+  commissions: many(commissions),
+}));
+
+export const transactionsRelations = relations(transactions, ({ one }) => ({
+  wallet: one(wallets, {
+    fields: [transactions.walletId],
+    references: [wallets.id],
+  }),
+  user: one(users, {
+    fields: [transactions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const referralCodesRelations = relations(referralCodes, ({ one, many }) => ({
+  user: one(users, {
+    fields: [referralCodes.userId],
+    references: [users.id],
+  }),
+  project: one(projects, {
+    fields: [referralCodes.projectId],
+    references: [projects.id],
+  }),
+  referrals: many(referrals),
+}));
+
+export const referralsRelations = relations(referrals, ({ one }) => ({
+  referralCode: one(referralCodes, {
+    fields: [referrals.referralCodeId],
+    references: [referralCodes.id],
+  }),
+  referrer: one(users, {
+    fields: [referrals.referrerId],
+    references: [users.id],
+  }),
+  referredUser: one(users, {
+    fields: [referrals.referredUserId],
+    references: [users.id],
+  }),
+  backing: one(backings, {
+    fields: [referrals.backingId],
+    references: [backings.id],
+  }),
+  project: one(projects, {
+    fields: [referrals.projectId],
+    references: [projects.id],
+  }),
+}));
+
+export const commissionsRelations = relations(commissions, ({ one }) => ({
+  user: one(users, {
+    fields: [commissions.userId],
+    references: [users.id],
+  }),
+  wallet: one(wallets, {
+    fields: [commissions.walletId],
+    references: [wallets.id],
+  }),
+  approver: one(users, {
+    fields: [commissions.approvedBy],
+    references: [users.id],
+  }),
+}));
+
+export const negotiationGatesRelations = relations(negotiationGates, ({ one }) => ({
+  project: one(projects, {
+    fields: [negotiationGates.projectId],
+    references: [projects.id],
+  }),
+}));
+
