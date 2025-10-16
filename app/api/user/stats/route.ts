@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import jwt from 'jsonwebtoken';
 import { neon } from '@neondatabase/serverless';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || 'bithrah-super-secret-key-2025-production-v1'
-);
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'bithrah-super-secret-key-2025-production-v1';
+
+interface JWTPayload {
+  id: number;
+  email: string;
+  name: string;
+  role: string;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,9 +23,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Verify token
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    const userId = payload.userId as string;
+    // Verify token using jsonwebtoken (same as createSession)
+    let decoded: JWTPayload;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'غير مصرح' },
+        { status: 401 }
+      );
+    }
+
+    const userId = decoded.id;
 
     if (!userId) {
       return NextResponse.json(
