@@ -18,8 +18,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [verificationToken, setVerificationToken] = useState('');
+  // Removed success state - now redirects immediately
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -64,11 +63,8 @@ export default function RegisterPage() {
       if (!response.ok) {
         setError(data.error || 'حدث خطأ أثناء إنشاء الحساب');
       } else if (data.success) {
-        setSuccess(true);
-        // Auto-login successful, redirect to home
-        setTimeout(() => {
-          window.location.href = '/home';
-        }, 1500);
+        // Auto-login successful, redirect immediately
+        window.location.href = '/home';
       } else {
         setError(data.error || 'حدث خطأ أثناء إنشاء الحساب');
       }
@@ -79,38 +75,7 @@ export default function RegisterPage() {
     }
   };
 
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-500 via-purple-600 to-purple-800 p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-10 max-w-md w-full text-center"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="inline-block mb-6"
-          >
-            <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-10 h-10 text-white" />
-            </div>
-          </motion.div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">تم إنشاء الحساب بنجاح!</h2>
-          <p className="text-gray-600 mb-6">
-            تم إرسال رابط التحقق إلى بريدك الإلكتروني. يرجى التحقق من بريدك لتفعيل حسابك.
-          </p>
-          <Link
-            href={`/auth/verify-email?token=${verificationToken}`}
-            className="inline-block bg-gradient-to-r from-teal-500 to-purple-600 text-white py-3 px-6 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            التحقق من البريد الإلكتروني
-          </Link>
-        </motion.div>
-      </div>
-    );
-  }
+  // Success page removed - now redirects immediately to /home
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-500 via-purple-600 to-purple-800 p-4">
