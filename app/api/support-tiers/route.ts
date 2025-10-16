@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       [projectId]
     );
 
-    if (project.length === 0 || project[0].creator_id !== session.userId) {
+    if (project.length === 0 || project[0].creator_id !== session.id) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -104,7 +104,7 @@ export async function PUT(request: NextRequest) {
       [id]
     );
 
-    if (tier.length === 0 || tier[0].creator_id !== session.userId) {
+    if (tier.length === 0 || tier[0].creator_id !== session.id) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -164,7 +164,7 @@ export async function DELETE(request: NextRequest) {
       [id]
     );
 
-    if (tier.length === 0 || tier[0].creator_id !== session.userId) {
+    if (tier.length === 0 || tier[0].creator_id !== session.id) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
     }
 

@@ -116,7 +116,7 @@ export default function Navigation() {
                     )}
                   </Link>
                 );
-              })
+              })}
             </div>
 
             {/* Right Side Actions */}

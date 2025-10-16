@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId');
-    const userId = searchParams.get('userId') || session.userId;
+    const userId = searchParams.get('userId') || session?.id.toString() || '';
 
     let backings;
     if (projectId) {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         [projectId]
       );
 
-      if (project.length === 0 || project[0].creator_id !== session.userId) {
+      if (project.length === 0 || project[0].creator_id !== session.id) {
         return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
       }
 
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       [
         projectId,
         tierId,
-        session.userId,
+        session.id,
         amount,
         shippingAddress,
         paymentMethod
@@ -157,7 +157,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Backing not found' }, { status: 404 });
     }
 
-    if (backing[0].backer_id !== session.userId && backing[0].creator_id !== session.userId) {
+      if (backing[0].backer_id !== session.id && backing[0].creator_id !== session.id) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
     }
 
