@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
   }
   
   // Redirect non-logged-in users from protected routes to signin page
-  const protectedRoutes = ['/home', '/dashboard', '/wallet', '/profile', '/negotiations', '/projects/create', '/projects/edit'];
+  const protectedRoutes = ['/home', '/dashboard', '/wallet', '/profile', '/negotiations', '/projects/create', '/projects/edit', '/communities/create', '/investments', '/settings'];
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
   
   if (isProtectedRoute && !isLoggedIn) {
@@ -36,8 +36,10 @@ export const config = {
     '/wallet',
     '/profile',
     '/negotiations/:path*',
-    '/projects/create',
-    '/projects/edit/:path*',
+    '/projects/:path*',
+    '/communities/create',
+    '/investments/:path*',
+    '/settings/:path*',
   ],
 };
 
