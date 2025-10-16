@@ -35,9 +35,15 @@ export default function SignInPage() {
       }
 
       // Success! Redirect to home
-      router.push('/home');
+      if (data.success) {
+        router.push('/home');
+      } else {
+        setError(data.error || 'حدث خطأ أثناء تسجيل الدخول');
+      }
     } catch (err) {
+      console.error('Login error:', err);
       setError('حدث خطأ أثناء تسجيل الدخول');
+    } finally {
       setLoading(false);
     }
   };
