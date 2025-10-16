@@ -81,7 +81,7 @@ export default function LeaderboardPage() {
         reward: '500 نقطة',
         progress: 2,
         target: 5,
-        icon: '🎯',
+        icon: 'Target',
         color: 'teal',
       },
       {
@@ -91,7 +91,7 @@ export default function LeaderboardPage() {
         reward: '300 نقطة',
         progress: 1,
         target: 3,
-        icon: '👥',
+        icon: 'Users',
         color: 'purple',
       },
       {
@@ -101,7 +101,7 @@ export default function LeaderboardPage() {
         reward: '400 نقطة',
         progress: 0,
         target: 2,
-        icon: '🎉',
+        icon: 'Trophy',
         color: 'pink',
       },
     ]);
@@ -115,7 +115,7 @@ export default function LeaderboardPage() {
         title: 'مكافأة الأسبوع',
         description: 'للمركز الأول',
         prize: '1000 نقطة + شارة',
-        icon: '🏆',
+        icon: 'Award',
         deadline: 'ينتهي خلال 3 أيام',
       },
       {
@@ -123,7 +123,7 @@ export default function LeaderboardPage() {
         title: 'مكافأة الشهر',
         description: 'للمراكز الثلاثة الأولى',
         prize: 'جوائز نقدية',
-        icon: '💰',
+        icon: 'DollarSign',
         deadline: 'ينتهي خلال 15 يوم',
       },
     ]);
@@ -180,7 +180,7 @@ export default function LeaderboardPage() {
             <Trophy className="w-16 h-16 text-yellow-500 animate-bounce" />
           </div>
           <p className="text-gray-600 text-xl font-medium">
-            تنافس مع الأفضل واصعد للقمة 🚀
+            تنافس مع الأفضل واصعد للقمة
           </p>
         </motion.div>
 

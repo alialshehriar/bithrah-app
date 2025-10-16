@@ -197,7 +197,7 @@ export default function AchievementsPage() {
             <Flame className="w-10 h-10 mb-3" />
             <p className="text-sm opacity-90 mb-1">الحماس</p>
             <p className="text-3xl font-black">
-              {stats.unlockedAchievements > 10 ? '🔥' : stats.unlockedAchievements > 5 ? '⭐' : '💪'}
+              {stats.unlockedAchievements > 10 ? 'Fire' : stats.unlockedAchievements > 5 ? 'Star' : 'Zap'}
             </p>
           </motion.div>
         </div>

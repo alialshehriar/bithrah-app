@@ -123,8 +123,25 @@ export const projects = pgTable('projects', {
   verified: boolean('verified').default(false),
   
   // Package & rewards
-  packageType: varchar('package_type', { length: 50 }),
+  platformPackage: varchar('platform_package', { length: 50 }).default('basic'), // basic, bithrah_plus
   packages: jsonb('packages'), // Array of reward packages
+  
+  // Privacy & IP Protection (3 levels)
+  publicDescription: text('public_description'), // Level 1: Visitors (not logged in)
+  registeredDescription: text('registered_description'), // Level 2: Registered users
+  fullDescription: text('full_description'), // Level 3: Negotiators only
+  confidentialDocs: jsonb('confidential_docs'), // Only for negotiators
+  
+  // Negotiation settings
+  negotiationEnabled: boolean('negotiation_enabled').default(false),
+  negotiationDeposit: numeric('negotiation_deposit', { precision: 12, scale: 2 }),
+  
+  // Funding timeline (60 days)
+  fundingDuration: integer('funding_duration').default(60), // days
+  fundingStartDate: timestamp('funding_start_date'),
+  fundingEndDate: timestamp('funding_end_date'),
+  autoRefundOnFailure: boolean('auto_refund_on_failure').default(true),
+  paymentGatewayFee: numeric('payment_gateway_fee', { precision: 5, scale: 2 }).default('2.00'), // 2%
   
   // Engagement metrics
   viewsCount: integer('views_count').default(0),
@@ -403,6 +420,11 @@ export const backings = pgTable('backings', {
   currency: varchar('currency', { length: 10 }).default('SAR'),
   packageId: varchar('package_id', { length: 100 }),
   packageDetails: jsonb('package_details'),
+  
+  // Marketing commission (0.5%)
+  referrerId: integer('referrer_id').references(() => users.id), // Marketer who referred
+  marketingCommission: numeric('marketing_commission', { precision: 12, scale: 2 }).default('0'), // 0.5% of amount
+  commissionPaid: boolean('commission_paid').default(false),
   
   // Status
   status: varchar('status', { length: 50 }).default('pending'), // pending, confirmed, refunded
@@ -1005,13 +1027,17 @@ export const negotiations = pgTable('negotiations', {
   investorId: integer('investor_id').references(() => users.id).notNull(),
   
   // Negotiation details
-  status: varchar('status', { length: 50 }).default('active').notNull(), // active, completed, cancelled
+  status: varchar('status', { length: 50 }).default('active').notNull(), // active, accepted, rejected, cancelled, expired
   startDate: timestamp('start_date').notNull(),
-  endDate: timestamp('end_date').notNull(),
+  endDate: timestamp('end_date').notNull(), // 3 days from start
   
-  // Payment
-  amount: numeric('amount', { precision: 10, scale: 2 }).notNull(), // Negotiation fee
-  paymentStatus: varchar('payment_status', { length: 50 }).default('pending'), // pending, paid, refunded
+  // Deposit (refundable)
+  depositAmount: numeric('deposit_amount', { precision: 12, scale: 2 }).notNull(), // Refundable deposit
+  depositStatus: varchar('deposit_status', { length: 50 }).default('held'), // held, refunded, forfeited
+  depositRefundedAt: timestamp('deposit_refunded_at'),
+  
+  // Access level
+  hasFullAccess: boolean('has_full_access').default(false), // Access to confidential details
   
   // Agreement
   agreedAmount: numeric('agreed_amount', { precision: 12, scale: 2 }),
@@ -1080,4 +1106,92 @@ export const negotiationMessagesRelations = relations(negotiationMessages, ({ on
 
 
 
+
+
+
+
+// ============================================
+// NDA (Non-Disclosure Agreement) System
+// ============================================
+
+export const ndaAgreements = pgTable('nda_agreements', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  projectId: integer('project_id').references(() => projects.id),
+  
+  // Agreement details
+  agreementType: varchar('agreement_type', { length: 50 }).default('platform'), // platform, project
+  agreementVersion: varchar('agreement_version', { length: 20 }).notNull(),
+  agreementText: text('agreement_text').notNull(),
+  
+  // Signature
+  signedAt: timestamp('signed_at').defaultNow().notNull(),
+  ipAddress: varchar('ip_address', { length: 50 }),
+  userAgent: text('user_agent'),
+  signatureData: jsonb('signature_data'),
+  
+  // Status
+  status: varchar('status', { length: 50 }).default('active'), // active, revoked, expired
+  revokedAt: timestamp('revoked_at'),
+  revokedReason: text('revoked_reason'),
+  
+  // Metadata
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index('nda_agreements_user_idx').on(table.userId),
+  projectIdx: index('nda_agreements_project_idx').on(table.projectId),
+  statusIdx: index('nda_agreements_status_idx').on(table.status),
+}));
+
+export const projectAccessLogs = pgTable('project_access_logs', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id').references(() => projects.id).notNull(),
+  userId: integer('user_id').references(() => users.id),
+  
+  // Access details
+  accessLevel: varchar('access_level', { length: 50 }).notNull(), // public, registered, negotiator
+  accessType: varchar('access_type', { length: 50 }).notNull(), // view, download, share
+  
+  // What was accessed
+  contentType: varchar('content_type', { length: 100 }),
+  contentId: varchar('content_id', { length: 255 }),
+  
+  // Context
+  ipAddress: varchar('ip_address', { length: 50 }),
+  userAgent: text('user_agent'),
+  referrer: varchar('referrer', { length: 500 }),
+  
+  // Metadata
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  projectUserIdx: index('project_access_logs_project_user_idx').on(table.projectId, table.userId),
+  userIdx: index('project_access_logs_user_idx').on(table.userId),
+  createdAtIdx: index('project_access_logs_created_at_idx').on(table.createdAt),
+}));
+
+// Relations for NDA
+export const ndaAgreementsRelations = relations(ndaAgreements, ({ one }) => ({
+  user: one(users, {
+    fields: [ndaAgreements.userId],
+    references: [users.id],
+  }),
+  project: one(projects, {
+    fields: [ndaAgreements.projectId],
+    references: [projects.id],
+  }),
+}));
+
+export const projectAccessLogsRelations = relations(projectAccessLogs, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectAccessLogs.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [projectAccessLogs.userId],
+    references: [users.id],
+  }),
+}));
 

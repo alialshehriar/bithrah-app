@@ -6,69 +6,49 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Heart, Share2, Flag, CheckCircle, Users, Target,
-  Calendar, DollarSign, TrendingUp, MessageSquare, Shield, Award,
-  Sparkles, Clock, Eye, Star, Check, Package, Zap, Crown, Gift,
-  ExternalLink, Info, BarChart3, MapPin, Globe, Mail, Phone,
-  Bookmark, Play, Image as ImageIcon, FileText, Link as LinkIcon,
-  AlertCircle, ThumbsUp, MessageCircle, Send, User
+  Calendar, DollarSign, TrendingUp, Shield, Clock, Eye, Star,
+  Package, ExternalLink, Info, BarChart3, MapPin, Mail,
+  Bookmark, AlertCircle, Lock, Handshake, FileText, Download
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import NDAModal from '@/components/NDAModal';
+import NegotiationModal from '@/components/NegotiationModal';
 
 interface Project {
-  id: string;
+  id: number;
   title: string;
-  description: string;
+  publicDescription: string;
+  registeredDescription?: string;
+  fullDescription?: string;
   category: string;
-  goalAmount: number;
-  currentAmount: number;
-  backers: number;
-  daysLeft: number;
+  fundingGoal: string;
+  currentFunding: string;
+  backersCount: number;
+  fundingEndDate: string;
   image: string;
-  images: string[];
-  video: string;
   creator: {
-    id: string;
+    id: number;
     name: string;
     avatar: string;
-    bio: string;
-    projects: number;
-    followers: number;
   };
-  location: string;
-  website: string;
-  featured: boolean;
-  trending: boolean;
-  views: number;
-  likes: number;
-  updates: any[];
-  faqs: any[];
-  risks: string[];
-  timeline: any[];
-}
-
-interface PackageType {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  features: string[];
-  delivery: string;
-  available: number;
-  sold: number;
+  packages?: any[];
+  confidentialDocs?: any[];
+  negotiationEnabled?: boolean;
+  negotiationDeposit?: string;
 }
 
 export default function ProjectDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [project, setProject] = useState<Project | null>(null);
-  const [packages, setPackages] = useState<PackageType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPackage, setSelectedPackage] = useState<PackageType | null>(null);
+  const [accessLevel, setAccessLevel] = useState<'public' | 'registered' | 'negotiator'>('public');
+  const [needsNDA, setNeedsNDA] = useState(false);
+  const [canNegotiate, setCanNegotiate] = useState(false);
+  const [showNDAModal, setShowNDAModal] = useState(false);
+  const [showNegotiationModal, setShowNegotiationModal] = useState(false);
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
-  const [activeTab, setActiveTab] = useState<'details' | 'updates' | 'comments' | 'faqs'>('details');
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [comment, setComment] = useState('');
 
   useEffect(() => {
     fetchProjectDetails();
@@ -76,14 +56,14 @@ export default function ProjectDetails({ params }: { params: Promise<{ id: strin
 
   const fetchProjectDetails = async () => {
     try {
-      const response = await fetch(`/api/projects/${id}`);
+      const response = await fetch(`/api/projects/${id}/view`);
       const data = await response.json();
+      
       if (data.success) {
         setProject(data.project);
-        setPackages(data.packages || []);
-        if (data.packages && data.packages.length > 0) {
-          setSelectedPackage(data.packages[0]);
-        }
+        setAccessLevel(data.accessLevel);
+        setNeedsNDA(data.needsNDA);
+        setCanNegotiate(data.canNegotiate);
       }
     } catch (error) {
       console.error(error);
@@ -92,38 +72,22 @@ export default function ProjectDetails({ params }: { params: Promise<{ id: strin
     }
   };
 
-  const handleLike = () => {
-    setLiked(!liked);
-    // TODO: API call
+  const handleNDASign = () => {
+    // Refresh project data after signing NDA
+    fetchProjectDetails();
   };
 
-  const handleBookmark = () => {
-    setBookmarked(!bookmarked);
-    // TODO: API call
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: project?.title,
-        text: project?.description,
-        url: window.location.href,
-      });
-    }
-  };
-
-  const handleSupport = () => {
-    if (selectedPackage) {
-      window.location.href = `/payment?projectId=${id}&packageId=${selectedPackage.id}`;
-    }
+  const handleNegotiationSuccess = () => {
+    // Refresh project data after opening negotiation
+    fetchProjectDetails();
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-20 h-20 border-4 border-[#14B8A6] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <p className="text-xl font-bold text-gray-600">جاري التحميل...</p>
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="flex items-center justify-center h-screen">
+          <div className="w-16 h-16 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -131,460 +95,349 @@ export default function ProjectDetails({ params }: { params: Promise<{ id: strin
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-24 h-24 text-gray-300 mx-auto mb-6" />
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">المشروع غير موجود</h2>
-          <Link
-            href="/explore"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] text-white rounded-xl font-bold hover:shadow-lg transition-all"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>العودة للمشاريع</span>
-          </Link>
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">المشروع غير موجود</h2>
+            <Link href="/projects" className="text-teal-600 hover:underline">
+              العودة إلى المشاريع
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
-  const fundingPercentage = project.goalAmount > 0
-    ? Math.min((project.currentAmount / project.goalAmount) * 100, 100)
-    : 0;
-
-  const tabs = [
-    { id: 'details', label: 'التفاصيل', icon: FileText },
-    { id: 'updates', label: 'التحديثات', icon: Sparkles },
-    { id: 'comments', label: 'التعليقات', icon: MessageCircle },
-    { id: 'faqs', label: 'الأسئلة الشائعة', icon: Info },
-  ];
+  const progress = (Number(project.currentFunding) / Number(project.fundingGoal)) * 100;
+  const daysLeft = Math.ceil((new Date(project.fundingEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
 
-      <div className="pt-24 pb-20">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Back Button */}
-          <Link
-            href="/explore"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-[#14B8A6] mb-8 transition-colors font-bold"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>العودة للمشاريع</span>
-          </Link>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Back Button */}
+        <Link
+          href="/projects"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>العودة إلى المشاريع</span>
+        </Link>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Hero Image & Gallery */}
-              <div className="bg-white rounded-3xl overflow-hidden shadow-lg">
-                <div className="relative h-96">
-                  <Image
-                    src={project.images?.[selectedImage] || project.image || '/placeholder-project.jpg'}
-                    alt={project.title}
-                    fill
-                    className="object-cover"
-                  />
-                  
-                  {/* Badges */}
-                  <div className="absolute top-6 right-6 flex flex-col gap-2">
-                    {project.featured && (
-                      <span className="px-4 py-2 bg-amber-500 text-white text-sm font-bold rounded-full flex items-center gap-2 shadow-lg">
-                        <Star className="w-4 h-4" />
-                        مميز
-                      </span>
-                    )}
-                    {project.trending && (
-                      <span className="px-4 py-2 bg-red-500 text-white text-sm font-bold rounded-full flex items-center gap-2 shadow-lg">
-                        <TrendingUp className="w-4 h-4" />
-                        رائج
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="absolute top-6 left-6 flex gap-2">
-                    <button
-                      onClick={handleLike}
-                      className={`p-3 rounded-full backdrop-blur-sm transition-all ${
-                        liked
-                          ? 'bg-red-500 text-white'
-                          : 'bg-white/90 text-gray-700 hover:bg-white'
-                      }`}
-                    >
-                      <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
-                    </button>
-                    <button
-                      onClick={handleBookmark}
-                      className={`p-3 rounded-full backdrop-blur-sm transition-all ${
-                        bookmarked
-                          ? 'bg-[#14B8A6] text-white'
-                          : 'bg-white/90 text-gray-700 hover:bg-white'
-                      }`}
-                    >
-                      <Bookmark className={`w-5 h-5 ${bookmarked ? 'fill-current' : ''}`} />
-                    </button>
-                    <button
-                      onClick={handleShare}
-                      className="p-3 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white transition-all"
-                    >
-                      <Share2 className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Stats Overlay */}
-                  <div className="absolute bottom-6 left-6 flex items-center gap-4">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm rounded-full text-white text-sm">
-                      <Eye className="w-4 h-4" />
-                      <span>{project.views || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm rounded-full text-white text-sm">
-                      <Heart className="w-4 h-4" />
-                      <span>{project.likes || 0}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Image Gallery */}
-                {project.images && project.images.length > 1 && (
-                  <div className="p-4 flex gap-2 overflow-x-auto">
-                    {project.images.map((img, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedImage(index)}
-                        className={`relative w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 transition-all ${
-                          selectedImage === index
-                            ? 'ring-4 ring-[#14B8A6] scale-105'
-                            : 'opacity-60 hover:opacity-100'
-                        }`}
-                      >
-                        <Image src={img} alt={`Image ${index + 1}`} fill className="object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Title & Category */}
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="px-4 py-2 bg-[#14B8A6]/10 text-[#14B8A6] text-sm font-bold rounded-full">
-                    {project.category}
-                  </span>
-                  {project.location && (
-                    <div className="flex items-center gap-1 text-gray-600 text-sm">
-                      <MapPin className="w-4 h-4" />
-                      <span>{project.location}</span>
-                    </div>
-                  )}
-                </div>
-
-                <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
-                  {project.title}
-                </h1>
-
-                <p className="text-xl text-gray-600 leading-relaxed">
-                  {project.description}
+        {/* Access Level Banner */}
+        <div className="mb-6">
+          {accessLevel === 'public' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+              <Lock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-semibold text-amber-900 mb-1">
+                  وصول محدود - عرض عام فقط
+                </p>
+                <p className="text-sm text-amber-800">
+                  للوصول إلى التفاصيل الكاملة، يجب عليك التسجيل وتوقيع اتفاقية عدم الإفشاء
                 </p>
               </div>
-
-              {/* Creator Info */}
-              <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">صاحب المشروع</h3>
-                
-                <div className="flex items-start gap-6">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#14B8A6] to-[#8B5CF6] flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
-                    {project.creator?.name?.[0] || 'A'}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <h4 className="text-2xl font-bold text-gray-900 mb-2">
-                      {project.creator?.name || 'مجهول'}
-                    </h4>
-                    <p className="text-gray-600 mb-4">
-                      {project.creator?.bio || 'لا يوجد وصف'}
-                    </p>
-                    
-                    <div className="flex items-center gap-6 mb-6">
-                      <div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {project.creator?.projects || 0}
-                        </div>
-                        <div className="text-sm text-gray-600">مشروع</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {project.creator?.followers || 0}
-                        </div>
-                        <div className="text-sm text-gray-600">متابع</div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3">
-                      <Link
-                        href={`/profile/${project.creator?.id}`}
-                        className="px-6 py-3 bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] text-white rounded-xl font-bold hover:shadow-lg transition-all"
-                      >
-                        عرض الملف الشخصي
-                      </Link>
-                      <button className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-all">
-                        إرسال رسالة
-                      </button>
-                    </div>
-                  </div>
-                </div>
+            </div>
+          )}
+          
+          {accessLevel === 'registered' && (
+            <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 flex items-start gap-3">
+              <Shield className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-semibold text-teal-900 mb-1">
+                  وصول مسجل - تفاصيل كاملة
+                </p>
+                <p className="text-sm text-teal-800">
+                  يمكنك الآن رؤية جميع التفاصيل والباقات. لرؤية المعلومات السرية، افتح بوابة التفاوض
+                </p>
               </div>
+            </div>
+          )}
+          
+          {accessLevel === 'negotiator' && (
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 flex items-start gap-3">
+              <Handshake className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-semibold text-purple-900 mb-1">
+                  وصول كامل - مفاوض
+                </p>
+                <p className="text-sm text-purple-800">
+                  لديك وصول كامل لجميع التفاصيل السرية والمستندات الكاملة
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
 
-              {/* Tabs */}
-              <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
-                <div className="flex border-b border-gray-200 overflow-x-auto">
-                  {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex items-center gap-2 px-8 py-4 font-bold whitespace-nowrap transition-all ${
-                          activeTab === tab.id
-                            ? 'text-[#14B8A6] border-b-4 border-[#14B8A6]'
-                            : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span>{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="p-8">
-                  {activeTab === 'details' && (
-                    <div className="space-y-8">
-                      <div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-4">وصف المشروع</h3>
-                        <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-                          <p>{project.description}</p>
-                        </div>
-                      </div>
-
-                      {project.timeline && project.timeline.length > 0 && (
-                        <div>
-                          <h3 className="text-2xl font-bold text-gray-900 mb-6">الجدول الزمني</h3>
-                          <div className="space-y-4">
-                            {project.timeline.map((item: any, index: number) => (
-                              <div key={index} className="flex gap-4">
-                                <div className="w-12 h-12 rounded-full bg-[#14B8A6]/10 flex items-center justify-center flex-shrink-0">
-                                  <CheckCircle className="w-6 h-6 text-[#14B8A6]" />
-                                </div>
-                                <div>
-                                  <h4 className="font-bold text-gray-900 mb-1">{item.title}</h4>
-                                  <p className="text-gray-600">{item.description}</p>
-                                  <p className="text-sm text-gray-500 mt-1">{item.date}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {project.risks && project.risks.length > 0 && (
-                        <div>
-                          <h3 className="text-2xl font-bold text-gray-900 mb-4">المخاطر والتحديات</h3>
-                          <div className="space-y-3">
-                            {project.risks.map((risk: string, index: number) => (
-                              <div key={index} className="flex gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
-                                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                                <p className="text-gray-700">{risk}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {activeTab === 'updates' && (
-                    <div className="space-y-6">
-                      {project.updates && project.updates.length > 0 ? (
-                        project.updates.map((update: any, index: number) => (
-                          <div key={index} className="p-6 bg-gray-50 rounded-2xl">
-                            <div className="flex items-center gap-3 mb-3">
-                              <Sparkles className="w-5 h-5 text-[#14B8A6]" />
-                              <span className="text-sm text-gray-600">{update.date}</span>
-                            </div>
-                            <h4 className="text-xl font-bold text-gray-900 mb-2">{update.title}</h4>
-                            <p className="text-gray-700">{update.content}</p>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-12">
-                          <Sparkles className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                          <p className="text-gray-600">لا توجد تحديثات حتى الآن</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {activeTab === 'comments' && (
-                    <div className="space-y-6">
-                      <div className="flex gap-4">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#14B8A6] to-[#8B5CF6] flex items-center justify-center text-white font-bold flex-shrink-0">
-                          A
-                        </div>
-                        <div className="flex-1">
-                          <textarea
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            placeholder="اكتب تعليقك..."
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-[#14B8A6]/20 focus:border-[#14B8A6] transition-all resize-none"
-                            rows={3}
-                          />
-                          <button className="mt-3 px-6 py-3 bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] text-white rounded-xl font-bold hover:shadow-lg transition-all flex items-center gap-2">
-                            <Send className="w-5 h-5" />
-                            <span>إرسال</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="text-center py-12">
-                        <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-600">لا توجد تعليقات حتى الآن</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === 'faqs' && (
-                    <div className="space-y-4">
-                      {project.faqs && project.faqs.length > 0 ? (
-                        project.faqs.map((faq: any, index: number) => (
-                          <div key={index} className="p-6 bg-gray-50 rounded-2xl">
-                            <h4 className="text-lg font-bold text-gray-900 mb-2">{faq.question}</h4>
-                            <p className="text-gray-700">{faq.answer}</p>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-12">
-                          <Info className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                          <p className="text-gray-600">لا توجد أسئلة شائعة حتى الآن</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Project Image */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="relative h-96">
+                <Image
+                  src={project.image || '/placeholder-project.jpg'}
+                  alt={project.title}
+                  fill
+                  className="object-cover"
+                />
               </div>
             </div>
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Funding Card - Sticky */}
-              <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 sticky top-24">
-                <div className="mb-6">
-                  <div className="text-4xl font-black text-gray-900 mb-2">
-                    {(project.currentAmount / 1000).toFixed(0)}K ر.س
-                  </div>
-                  <div className="text-gray-600">
-                    من {(project.goalAmount / 1000).toFixed(0)}K ر.س
-                  </div>
+            {/* Project Info */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <span className="inline-block px-3 py-1 bg-teal-100 text-teal-700 rounded-lg text-sm font-medium mb-3">
+                    {project.category}
+                  </span>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    {project.title}
+                  </h1>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setLiked(!liked)}
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                      liked ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
+                  </button>
+                  <button
+                    onClick={() => setBookmarked(!bookmarked)}
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                      bookmarked ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Bookmark className={`w-5 h-5 ${bookmarked ? 'fill-current' : ''}`} />
+                  </button>
+                  <button className="w-10 h-10 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Creator */}
+              <div className="flex items-center gap-3 pb-6 border-b border-gray-200">
+                <div className="w-12 h-12 bg-gradient-to-r from-teal-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                  {project.creator.name.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">{project.creator.name}</p>
+                  <p className="text-sm text-gray-600">صاحب المشروع</p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="mt-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">نبذة عن المشروع</h2>
+                
+                {/* Public Description (Level 1) */}
+                <div className="prose prose-sm max-w-none text-gray-700">
+                  <p>{project.publicDescription}</p>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-lg font-bold text-[#14B8A6]">
-                      {fundingPercentage.toFixed(0)}%
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      {project.daysLeft} يوم متبقي
-                    </span>
-                  </div>
-                  <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] rounded-full transition-all"
-                      style={{ width: `${fundingPercentage}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200">
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">{project.backers}</div>
-                    <div className="text-sm text-gray-600">داعم</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">{project.daysLeft}</div>
-                    <div className="text-sm text-gray-600">يوم متبقي</div>
-                  </div>
-                </div>
-
-                {/* Packages */}
-                {packages.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="font-bold text-gray-900 mb-4">اختر باقة الدعم</h4>
-                    <div className="space-y-3">
-                      {packages.map((pkg) => (
-                        <button
-                          key={pkg.id}
-                          onClick={() => setSelectedPackage(pkg)}
-                          className={`w-full p-4 rounded-2xl border-2 transition-all text-right ${
-                            selectedPackage?.id === pkg.id
-                              ? 'border-[#14B8A6] bg-[#14B8A6]/5'
-                              : 'border-gray-200 hover:border-[#14B8A6]/50'
-                          }`}
-                        >
-                          <div className="font-bold text-gray-900 mb-1">{pkg.title}</div>
-                          <div className="text-2xl font-black text-[#14B8A6] mb-2">
-                            {pkg.price.toLocaleString()} ر.س
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            متبقي: {pkg.available - pkg.sold}
-                          </div>
-                        </button>
-                      ))}
+                {/* Registered Description (Level 2) */}
+                {accessLevel === 'registered' && project.registeredDescription && (
+                  <div className="mt-4 p-4 bg-teal-50 rounded-xl border border-teal-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Shield className="w-5 h-5 text-teal-600" />
+                      <span className="font-semibold text-teal-900">تفاصيل إضافية (للمسجلين)</span>
+                    </div>
+                    <div className="prose prose-sm max-w-none text-gray-700">
+                      <p>{project.registeredDescription}</p>
                     </div>
                   </div>
                 )}
 
-                {/* CTA Buttons */}
-                <button
-                  onClick={handleSupport}
-                  className="w-full py-4 bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] text-white rounded-2xl font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2"
-                >
-                   <Zap className="w-5 h-5" />
-                  <span>ادعم المشروع</span>
-                </button>
-
-                {/* Premium Negotiation Button */}
-                <div className="mt-4 relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#8B5CF6] to-[#14B8A6] rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-300" />
-                  <Link
-                    href={`/negotiations/start?projectId=${project.id}`}
-                    className="relative w-full flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-[#8B5CF6] text-[#8B5CF6] rounded-2xl font-bold hover:bg-gradient-to-r hover:from-[#8B5CF6] hover:to-[#14B8A6] hover:text-white hover:border-transparent transition-all shadow-lg hover:shadow-2xl hover:scale-105"
-                  >
-                    <MessageSquare className="w-5 h-5" />
-                    <span>فتح باب التفاوض</span>
-                    <Sparkles className="w-4 h-4" />
-                  </Link>
-                </div>
-                
-                {/* Negotiation Info Badge */}
-                <div className="mt-4 p-4 bg-gradient-to-br from-purple-50 to-teal-50 rounded-2xl border border-purple-200/50">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#14B8A6] flex items-center justify-center flex-shrink-0">
-                      <Shield className="w-5 h-5 text-white" />
+                {/* Full Description (Level 3) */}
+                {accessLevel === 'negotiator' && project.fullDescription && (
+                  <div className="mt-4 p-4 bg-purple-50 rounded-xl border border-purple-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Handshake className="w-5 h-5 text-purple-600" />
+                      <span className="font-semibold text-purple-900">الوصف الكامل (للمفاوضين)</span>
                     </div>
-                    <div className="flex-1">
-                      <h5 className="font-bold text-gray-900 text-sm mb-1">تفاوض آمن ومراقب</h5>
-                      <p className="text-xs text-gray-600 leading-relaxed">
-                        3 أيام للتفاوض المباشر مع حماية كاملة للملكية الفكرية
-                      </p>
+                    <div className="prose prose-sm max-w-none text-gray-700">
+                      <p>{project.fullDescription}</p>
                     </div>
                   </div>
+                )}
+
+                {/* Locked Content Indicator */}
+                {accessLevel === 'public' && (
+                  <div className="mt-4 p-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 text-center">
+                    <Lock className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <p className="font-semibold text-gray-900 mb-2">محتوى محمي</p>
+                    <p className="text-sm text-gray-600 mb-4">
+                      للوصول إلى التفاصيل الكاملة، يجب التسجيل وتوقيع اتفاقية عدم الإفشاء
+                    </p>
+                    <button
+                      onClick={() => setShowNDAModal(true)}
+                      className="px-6 py-2 bg-gradient-to-r from-teal-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                    >
+                      توقيع اتفاقية عدم الإفشاء
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Confidential Documents (Level 3 only) */}
+              {accessLevel === 'negotiator' && project.confidentialDocs && (
+                <div className="mt-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">المستندات السرية</h2>
+                  <div className="space-y-3">
+                    {project.confidentialDocs.map((doc: any, index: number) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-4 bg-purple-50 rounded-xl border border-purple-200"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-purple-600" />
+                          <div>
+                            <p className="font-semibold text-gray-900">{doc.name}</p>
+                            <p className="text-sm text-gray-600">{doc.size}</p>
+                          </div>
+                        </div>
+                        <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2">
+                          <Download className="w-4 h-4" />
+                          <span>تحميل</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Packages (Level 2+) */}
+              {(accessLevel === 'registered' || accessLevel === 'negotiator') && project.packages && (
+                <div className="mt-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">الباقات المتاحة</h2>
+                  <div className="space-y-4">
+                    {project.packages.map((pkg: any, index: number) => (
+                      <div
+                        key={index}
+                        className="p-4 bg-gradient-to-r from-teal-50 to-purple-50 rounded-xl border border-teal-200"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h3 className="font-bold text-gray-900">{pkg.title}</h3>
+                            <p className="text-sm text-gray-600 mt-1">{pkg.description}</p>
+                          </div>
+                          <span className="text-2xl font-bold text-teal-600">
+                            {pkg.price} <span className="text-sm">ريال</span>
+                          </span>
+                        </div>
+                        <button className="w-full px-6 py-3 bg-gradient-to-r from-teal-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all">
+                          دعم المشروع
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Funding Stats */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="mb-6">
+                <div className="flex items-baseline justify-between mb-2">
+                  <span className="text-3xl font-bold text-gray-900">
+                    {Number(project.currentFunding).toLocaleString('ar-SA')}
+                  </span>
+                  <span className="text-sm text-gray-600">ريال</span>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  من {Number(project.fundingGoal).toLocaleString('ar-SA')} ريال
+                </p>
+                
+                {/* Progress Bar */}
+                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-4">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(progress, 100)}%` }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                    className="h-full bg-gradient-to-r from-teal-600 to-purple-600"
+                  />
                 </div>
 
-                <p className="text-xs text-center text-gray-500 mt-4">
-                  معاملات آمنة 100% • حماية كاملة للمستثمرين
-                </p>
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <p className="text-2xl font-bold text-gray-900">{project.backersCount}</p>
+                    <p className="text-sm text-gray-600">داعم</p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <p className="text-2xl font-bold text-gray-900">{daysLeft}</p>
+                    <p className="text-sm text-gray-600">يوم متبقي</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                {needsNDA && (
+                  <button
+                    onClick={() => setShowNDAModal(true)}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-teal-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  >
+                    <Shield className="w-5 h-5" />
+                    <span>توقيع اتفاقية عدم الإفشاء</span>
+                  </button>
+                )}
+
+                {canNegotiate && project.negotiationEnabled && (
+                  <button
+                    onClick={() => setShowNegotiationModal(true)}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  >
+                    <Handshake className="w-5 h-5" />
+                    <span>فتح بوابة التفاوض</span>
+                  </button>
+                )}
+
+                {(accessLevel === 'registered' || accessLevel === 'negotiator') && (
+                  <button className="w-full px-6 py-3 bg-teal-600 text-white rounded-xl font-semibold hover:bg-teal-700 transition-colors">
+                    دعم المشروع
+                  </button>
+                )}
+              </div>
+
+              {/* Negotiation Info */}
+              {project.negotiationEnabled && project.negotiationDeposit && (
+                <div className="mt-6 p-4 bg-purple-50 rounded-xl border border-purple-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Handshake className="w-5 h-5 text-purple-600" />
+                    <span className="font-semibold text-purple-900">التفاوض متاح</span>
+                  </div>
+                  <p className="text-sm text-purple-800">
+                    مبلغ الجدية: {Number(project.negotiationDeposit).toLocaleString('ar-SA')} ريال
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Platform Info */}
+            <div className="bg-gradient-to-r from-teal-50 to-purple-50 rounded-2xl shadow-sm p-6 border border-teal-200">
+              <h3 className="font-bold text-gray-900 mb-4">حماية الملكية الفكرية</h3>
+              <div className="space-y-3 text-sm text-gray-700">
+                <div className="flex items-start gap-2">
+                  <Shield className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                  <p>جميع الأفكار محمية باتفاقية عدم إفشاء</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Lock className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                  <p>3 مستويات وصول لحماية التفاصيل السرية</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                  <p>منصة وساطة ذكية معتمدة</p>
+                </div>
               </div>
             </div>
           </div>
@@ -592,6 +445,24 @@ export default function ProjectDetails({ params }: { params: Promise<{ id: strin
       </div>
 
       <Footer />
+
+      {/* Modals */}
+      <NDAModal
+        isOpen={showNDAModal}
+        onClose={() => setShowNDAModal(false)}
+        onSign={handleNDASign}
+      />
+
+      {project.negotiationEnabled && project.negotiationDeposit && (
+        <NegotiationModal
+          isOpen={showNegotiationModal}
+          onClose={() => setShowNegotiationModal(false)}
+          onSuccess={handleNegotiationSuccess}
+          projectId={project.id}
+          projectTitle={project.title}
+          depositAmount={Number(project.negotiationDeposit)}
+        />
+      )}
     </div>
   );
 }

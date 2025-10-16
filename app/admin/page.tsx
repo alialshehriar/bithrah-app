@@ -102,7 +102,7 @@ export default function AdminPage() {
 
       const data = await response.json();
       if (data.success) {
-        alert('تم توليد البيانات الوهمية بنجاح! 🎉');
+        alert('تم توليد البيانات الوهمية بنجاح!');
         fetchSandboxStatus();
         fetchStats();
       }
@@ -172,7 +172,7 @@ export default function AdminPage() {
             <Shield className="w-16 h-16 text-purple-500 animate-pulse" />
           </div>
           <p className="text-gray-300 text-xl font-medium">
-            تحكم كامل في كل شيء 👑
+            تحكم كامل في كل شيء
           </p>
         </motion.div>
 

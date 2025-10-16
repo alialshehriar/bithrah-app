@@ -26,9 +26,7 @@ export default function CreateProjectPage() {
   // Form data
   const [formData, setFormData] = useState({
     title: '',
-    publicDescription: '', // Level 1: Public
-    registeredDescription: '', // Level 2: Registered + NDA
-    fullDescription: '', // Level 3: Negotiators only
+    description: '',
     category: 'technology',
     fundingGoal: '',
     endDate: '',
@@ -36,10 +34,6 @@ export default function CreateProjectPage() {
     risks: '',
     packages: [] as ProjectPackage[],
     timeline: [] as { title: string; date: string; description: string }[],
-    // New fields for mediation platform
-    platformPackage: 'basic' as 'basic' | 'bithrah_plus',
-    negotiationEnabled: false,
-    negotiationDeposit: '',
   });
 
   const categories = [
