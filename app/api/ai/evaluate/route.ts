@@ -1,15 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { verifySession } from '@/lib/auth';
+import { query } from '@/lib/db';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
   baseURL: process.env.OPENAI_API_BASE,
 });
 
+// Helper function to log user activity
+async function logActivity(
+  userId: number | null,
+  activityType: string,
+  activityData: any,
+  request: NextRequest
+) {
+  try {
+    const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const userAgent = request.headers.get('user-agent') || 'unknown';
+
+    await query(
+      `INSERT INTO user_activities (user_id, activity_type, activity_data, ip_address, user_agent) 
+       VALUES ($1, $2, $3, $4, $5)`,
+      [userId, activityType, JSON.stringify(activityData), ipAddress, userAgent]
+    );
+  } catch (error) {
+    console.error('Error logging activity:', error);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
+    // Get user session (optional - can evaluate without login)
+    let userId: number | null = null;
+    try {
+      const session = await verifySession(request);
+      userId = session?.userId || null;
+    } catch {
+      // Continue without user session
+    }
+
     const body = await request.json();
     const { title, description, category, fundingGoal, targetMarket, competitiveAdvantage } = body;
+
+    // Log evaluation request
+    await logActivity(userId, 'ai_evaluation_request', {
+      title,
+      category,
+      fundingGoal,
+    }, request);
 
     if (!title || !description || !fundingGoal) {
       return NextResponse.json(
@@ -85,12 +124,60 @@ export async function POST(request: NextRequest) {
 
     const evaluation = JSON.parse(evaluationText);
 
+    // Save evaluation to database
+    try {
+      await query(
+        `INSERT INTO project_evaluations (
+          user_id, title, description, category, funding_goal, target_market, competitive_advantage,
+          overall_score, innovation_score, market_viability_score, financial_viability_score,
+          feasibility_score, competitive_advantage_score, strengths, weaknesses, recommendations,
+          evaluation_data
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+        [
+          userId,
+          title,
+          description,
+          category,
+          parseFloat(fundingGoal),
+          targetMarket || null,
+          competitiveAdvantage || null,
+          evaluation.overallScore,
+          evaluation.detailedScores.innovation,
+          evaluation.detailedScores.marketViability,
+          evaluation.detailedScores.financialViability,
+          evaluation.detailedScores.feasibility,
+          evaluation.detailedScores.competitiveAdvantage,
+          JSON.stringify(evaluation.strengths),
+          JSON.stringify(evaluation.weaknesses),
+          JSON.stringify(evaluation.recommendations),
+          JSON.stringify(evaluation),
+        ]
+      );
+
+      // Log successful evaluation
+      await logActivity(userId, 'ai_evaluation_success', {
+        title,
+        overallScore: evaluation.overallScore,
+      }, request);
+    } catch (dbError) {
+      console.error('Error saving evaluation to database:', dbError);
+      // Continue even if DB save fails
+    }
+
     return NextResponse.json({
       success: true,
       evaluation,
     });
   } catch (error) {
     console.error('Error in AI evaluation:', error);
+    
+    // Log evaluation error
+    try {
+      await logActivity(null, 'ai_evaluation_error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }, request);
+    } catch {}
+
     return NextResponse.json(
       { success: false, error: 'حدث خطأ في التقييم. الرجاء المحاولة مرة أخرى.' },
       { status: 500 }
