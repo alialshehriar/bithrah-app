@@ -57,14 +57,18 @@ export async function POST(request: NextRequest) {
     // Remove password from response
     const { password: _, ...userWithoutPassword } = newUser;
 
-    return NextResponse.json(
+    // Return success with redirect instruction
+    const response = NextResponse.json(
       {
         success: true,
         message: 'تم إنشاء الحساب بنجاح',
         user: userWithoutPassword,
+        redirect: '/home',
       },
       { status: 201 }
     );
+    
+    return response;
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(
