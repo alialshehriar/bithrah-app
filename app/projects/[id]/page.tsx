@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import {
   ArrowLeft, Heart, Share2, CheckCircle, Users, Target,
   Calendar, DollarSign, TrendingUp, Clock, Gift, Crown,
-  Handshake, Lock, Sparkles, Package as PackageIcon
+  Handshake, Lock, Sparkles, Package as PackageIcon, DoorOpen, Shield, Zap
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -46,6 +46,7 @@ export default function ProjectDetails({ params }: { params: Promise<{ id: strin
   const [project, setProject] = useState<Project | null>(null);
   const [supportTiers, setSupportTiers] = useState<SupportTier[]>([]);
   const [platformPackage, setPlatformPackage] = useState<any>(null);
+  const [negotiationGate, setNegotiationGate] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [selectedTier, setSelectedTier] = useState<number | null>(null);
@@ -53,6 +54,7 @@ export default function ProjectDetails({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     fetchProjectDetails();
     fetchSupportTiers();
+    fetchNegotiationGate();
   }, [id]);
 
   const fetchProjectDetails = async () => {
@@ -89,6 +91,19 @@ export default function ProjectDetails({ params }: { params: Promise<{ id: strin
           ...tier,
           rewards: JSON.parse(tier.rewards || '[]')
         })));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchNegotiationGate = async () => {
+    try {
+      const response = await fetch(`/api/negotiation-gates?projectId=${id}`);
+      const data = await response.json();
+      
+      if (data.success && data.gates.length > 0) {
+        setNegotiationGate(data.gates[0]);
       }
     } catch (error) {
       console.error(error);
@@ -296,6 +311,87 @@ export default function ProjectDetails({ params }: { params: Promise<{ id: strin
                   })}
                 </div>
               </div>
+            )}
+
+            {/* Negotiation Gate */}
+            {negotiationGate && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 rounded-3xl shadow-2xl p-8 border-2 border-yellow-200"
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center">
+                    <DoorOpen className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{negotiationGate.title || 'باب التفاوض'}</h2>
+                    <p className="text-gray-600">للمستثمرين الجادين فقط</p>
+                  </div>
+                </div>
+
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-6">
+                  <p className="text-gray-700 mb-4">
+                    {negotiationGate.description || 'ادفع وديعة قابلة للاسترداد وادخل في تفاوض مباشر مع صاحب المشروع. الوديعة تُحسب من الاستثمار عند النجاح، وتُرجع كاملة عند الفشل.'}
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <DollarSign className="w-5 h-5 text-green-600" />
+                        <span className="text-sm font-medium text-gray-700">الوديعة</span>
+                      </div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {parseFloat(negotiationGate.depositAmount || '0').toLocaleString()} ر.س
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">قابلة للاسترداد 100%</div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Users className="w-5 h-5 text-blue-600" />
+                        <span className="text-sm font-medium text-gray-700">المفاوضين</span>
+                      </div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {negotiationGate.currentNegotiators || 0} / {negotiationGate.maxNegotiators || '∞'}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">مقاعد متاحة</div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Shield className="w-5 h-5 text-purple-600" />
+                        <span className="text-sm font-medium text-gray-700">الضمان</span>
+                      </div>
+                      <div className="text-lg font-bold text-purple-600">100%</div>
+                      <div className="text-xs text-gray-600 mt-1">استرداد كامل</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 mb-4">
+                    <Zap className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-gray-700">
+                      <strong>كيف يعمل:</strong> ادفع الوديعة للدخول في غرفة تفاوض خاصة مع صاحب المشروع. تفاوض على حجم الاستثمار والشروط. إذا نجح التفاوض، الوديعة تُحسب من استثمارك. إذا فشل، تُرجع كاملة.
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 mb-6">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-gray-700">
+                      <strong>المزايا:</strong> تفاوض مباشر • شروط مرنة • فرصة استثمارية حصرية • وديعة مضمونة
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => alert('سيتم فتح غرفة التفاوض قريباً')}
+                    className="w-full py-4 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all flex items-center justify-center gap-3 group"
+                  >
+                    <DoorOpen className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                    ادخل باب التفاوض - وديعة {parseFloat(negotiationGate.depositAmount || '0').toLocaleString()} ر.س
+                  </button>
+                </div>
+              </motion.div>
             )}
           </div>
 
