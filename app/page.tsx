@@ -53,7 +53,7 @@ export default function LandingPage() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               href="/auth/register"
               className="group relative px-8 py-4 bg-gradient-to-r from-teal-500 to-purple-600 text-white font-bold rounded-xl overflow-hidden transition-all hover:shadow-2xl hover:shadow-purple-500/50 hover:scale-105"
@@ -67,22 +67,6 @@ export default function LandingPage() {
             >
               استكشف المشاريع
             </Link>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-white mb-2">+1000</div>
-              <div className="text-white/60">مشروع ناجح</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-white mb-2">+5000</div>
-              <div className="text-white/60">مستخدم نشط</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-white mb-2">+50M</div>
-              <div className="text-white/60">ريال تمويل</div>
-            </div>
           </div>
         </div>
       </div>
