@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Brain, Sparkles, Shield, TrendingUp, Rocket, Users, Award, Zap } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -45,27 +46,83 @@ export default function LandingPage() {
           </h1>
           
           <p className="text-2xl text-white/80 mb-4 max-w-3xl mx-auto">
-            منصة وساطة ذكية مدعومة بالذكاء الاصطناعي
+            منصة تمويل جماعي ذكية مدعومة بالذكاء الاصطناعي
           </p>
           
           <p className="text-lg text-white/60 mb-12 max-w-2xl mx-auto">
-            نربط أصحاب الأفكار المبتكرة بالداعمين والمستثمرين في بيئة آمنة وموثوقة
+            نربط أصحاب الأفكار المبتكرة بالداعمين والمستثمرين مع تقييم ذكي متقدم
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
-              href="/auth/register"
-              className="group relative px-8 py-4 bg-gradient-to-r from-teal-500 to-purple-600 text-white font-bold rounded-xl overflow-hidden transition-all hover:shadow-2xl hover:shadow-purple-500/50 hover:scale-105"
+              href="/evaluate"
+              className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-teal-600 text-white font-bold rounded-xl overflow-hidden transition-all hover:shadow-2xl hover:shadow-purple-500/50 hover:scale-105 flex items-center gap-2"
             >
-              <span className="relative z-10">ابدأ رحلتك الآن</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-teal-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Brain className="w-6 h-6" />
+              <span className="relative z-10">قيّم فكرتك بالذكاء الاصطناعي</span>
+              <Sparkles className="w-5 h-5" />
             </Link>
             <Link
               href="/projects"
               className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold rounded-xl border-2 border-white/20 hover:bg-white/20 hover:border-white/40 transition-all"
             >
               استكشف المشاريع
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Evaluation Highlight */}
+      <div className="py-20 px-6 bg-gradient-to-r from-purple-900/50 to-pink-900/50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white mb-4">
+              <Sparkles className="w-5 h-5" />
+              <span className="font-semibold">الميزة الأساسية</span>
+            </div>
+            <h2 className="text-5xl font-bold text-white mb-4">
+              تقييم الأفكار بالذكاء الاصطناعي
+            </h2>
+            <p className="text-xl text-white/80 max-w-3xl mx-auto">
+              احصل على تقييم شامل ودقيق لفكرتك في دقائق معدودة باستخدام أحدث تقنيات الذكاء الاصطناعي
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4">
+                <Award className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">دقة عالية</h3>
+              <p className="text-white/70">تقييم دقيق بنسبة 98% باستخدام نماذج ذكاء اصطناعي متقدمة</p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-4">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">تحليل شامل</h3>
+              <p className="text-white/70">15+ معيار تقييم تشمل السوق والجدوى المالية والتنفيذ</p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-4">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">سريع وفوري</h3>
+              <p className="text-white/70">احصل على نتائج التقييم في أقل من 5 دقائق</p>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <Link
+              href="/evaluate"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-purple-900 font-bold rounded-xl hover:shadow-2xl hover:shadow-white/30 transition-all hover:scale-105"
+            >
+              <Brain className="w-6 h-6" />
+              <span>ابدأ التقييم الآن</span>
+              <Sparkles className="w-5 h-5" />
             </Link>
           </div>
         </div>
@@ -82,11 +139,9 @@ export default function LandingPage() {
             {/* Feature 1 */}
             <div className="group bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all hover:scale-105">
               <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-teal-500/50 transition-all">
-                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
+                <Rocket className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">أفكار مبتكرة</h3>
+              <h3 className="text-2xl font-bold text-white mb-4">مشاريع مبتكرة</h3>
               <p className="text-white/70 leading-relaxed">
                 اكتشف مشاريع ريادية واعدة من رواد أعمال طموحين في السوق السعودي
               </p>
@@ -95,9 +150,7 @@ export default function LandingPage() {
             {/* Feature 2 */}
             <div className="group bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all hover:scale-105">
               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-purple-500/50 transition-all">
-                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+                <Shield className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">حماية متقدمة</h3>
               <p className="text-white/70 leading-relaxed">
@@ -108,14 +161,36 @@ export default function LandingPage() {
             {/* Feature 3 */}
             <div className="group bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all hover:scale-105">
               <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-pink-500/50 transition-all">
-                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+                <Users className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">ذكاء اصطناعي</h3>
+              <h3 className="text-2xl font-bold text-white mb-4">مجتمع نشط</h3>
               <p className="text-white/70 leading-relaxed">
-                تقييم ذكي للأفكار وتوصيات مخصصة لضمان نجاح استثماراتك
+                انضم لمجتمع من رواد الأعمال والمستثمرين والداعمين المتحمسين
               </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div className="py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white mb-2">1000+</div>
+              <div className="text-white/60">مشروع ممول</div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white mb-2">50M+</div>
+              <div className="text-white/60">ريال تمويل</div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white mb-2">5000+</div>
+              <div className="text-white/60">مستثمر نشط</div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white mb-2">98%</div>
+              <div className="text-white/60">رضا المستخدمين</div>
             </div>
           </div>
         </div>

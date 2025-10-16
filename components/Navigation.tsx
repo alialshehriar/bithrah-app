@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import {
   Home, Rocket, Users, Sparkles, Gift, Bell,
   Wallet, User, Menu, X, TrendingUp, Trophy, MessageCircle,
-  Calendar, Award, Settings, Shield, Crown
+  Calendar, Award, Settings, Shield, Crown, Brain
 } from 'lucide-react';
 import DemoBanner from './DemoBanner';
 
@@ -49,8 +49,10 @@ export default function Navigation() {
 
   const navLinks = isLoggedIn ? [
     { href: '/home', label: 'الرئيسية', icon: Home },
+    { href: '/evaluate', label: 'تقييم AI', icon: Brain, highlight: true },
     { href: '/dashboard', label: 'لوحة التحكم', icon: TrendingUp },
     { href: '/projects', label: 'المشاريع', icon: Rocket },
+    { href: '/packages', label: 'الباقات', icon: Crown },
     { href: '/communities', label: 'المجتمعات', icon: Users },
     { href: '/events', label: 'الفعاليات', icon: Calendar },
     { href: '/leaderboard', label: 'لوحة الصدارة', icon: Trophy },
@@ -58,7 +60,9 @@ export default function Navigation() {
     { href: '/messages', label: 'المحادثات', icon: MessageCircle },
   ] : [
     { href: '/', label: 'الرئيسية', icon: Home },
+    { href: '/evaluate', label: 'تقييم AI', icon: Brain, highlight: true },
     { href: '/projects', label: 'المشاريع', icon: Rocket },
+    { href: '/packages', label: 'الباقات', icon: Crown },
     { href: '/communities', label: 'المجتمعات', icon: Users },
     { href: '/events', label: 'الفعاليات', icon: Calendar },
     { href: '/leaderboard', label: 'لوحة الصدارة', icon: Trophy },
@@ -92,6 +96,7 @@ export default function Navigation() {
             <div className="hidden lg:flex items-center gap-2">
               {navLinks.map((link) => {
                 const Icon = link.icon;
+                const isHighlight = 'highlight' in link && link.highlight;
                 return (
                   <Link
                     key={link.href}
@@ -99,14 +104,19 @@ export default function Navigation() {
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
                       isActive(link.href)
                         ? 'bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] text-white shadow-lg'
+                        : isHighlight
+                        ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 hover:from-purple-200 hover:to-pink-200 border-2 border-purple-300'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className={`w-5 h-5 ${isHighlight && !isActive(link.href) ? 'animate-pulse' : ''}`} />
                     <span>{link.label}</span>
+                    {isHighlight && !isActive(link.href) && (
+                      <Sparkles className="w-4 h-4 text-purple-600" />
+                    )}
                   </Link>
                 );
-              })}
+              })
             </div>
 
             {/* Right Side Actions */}

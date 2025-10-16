@@ -1,20 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, ArrowLeft, Check, Upload, X, Plus, Minus,
   DollarSign, Calendar, FileText, Image as ImageIcon, Package,
-  AlertCircle, Sparkles, Target, Clock, Users, TrendingUp
+  AlertCircle, Sparkles, Target, Clock, Users, TrendingUp, Shield, Crown, Gift
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 
-interface ProjectPackage {
-  name: string;
-  price: string;
+interface SupportTier {
+  title: string;
+  amount: string;
   description: string;
-  benefits: string[];
+  rewards: string[];
+  maxBackers?: string;
+  deliveryDate?: string;
+  shippingIncluded: boolean;
+}
+
+interface PlatformPackage {
+  id: string;
+  name: string;
+  type: string;
+  commission_percentage: number;
+  equity_percentage?: number;
+  features: string[];
+  color: string;
+  icon: string;
+  badge: string;
 }
 
 export default function CreateProjectPage() {
@@ -22,25 +37,39 @@ export default function CreateProjectPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [platformPackages, setPlatformPackages] = useState<PlatformPackage[]>([]);
 
   // Form data
   const [formData, setFormData] = useState({
     title: '',
-    publicDescription: '', // Level 1: Public
-    registeredDescription: '', // Level 2: Registered + NDA
-    fullDescription: '', // Level 3: Negotiators only
+    publicDescription: '',
+    registeredDescription: '',
+    fullDescription: '',
     category: 'technology',
     fundingGoal: '',
     endDate: '',
     image: '',
     risks: '',
-    packages: [] as ProjectPackage[],
+    platformPackageId: 'basic',
+    supportTiers: [] as SupportTier[],
     timeline: [] as { title: string; date: string; description: string }[],
-    // New fields for mediation platform
-    platformPackage: 'basic' as 'basic' | 'bithrah_plus',
-    negotiationEnabled: false,
-    negotiationDeposit: '',
   });
+
+  useEffect(() => {
+    fetchPlatformPackages();
+  }, []);
+
+  const fetchPlatformPackages = async () => {
+    try {
+      const response = await fetch('/api/platform-packages');
+      const data = await response.json();
+      if (data.success) {
+        setPlatformPackages(data.packages);
+      }
+    } catch (error) {
+      console.error('Error fetching packages:', error);
+    }
+  };
 
   const categories = [
     { value: 'technology', label: 'التقنية' },
@@ -53,577 +82,603 @@ export default function CreateProjectPage() {
 
   const steps = [
     { number: 1, title: 'المعلومات الأساسية', icon: FileText },
-    { number: 2, title: 'التمويل والمدة', icon: DollarSign },
-    { number: 3, label: 'الباقات والمكافآت', icon: Package },
-    { number: 4, title: 'المراجعة والنشر', icon: Check },
+    { number: 2, title: 'باقة المنصة', icon: Crown },
+    { number: 3, title: 'باقات الدعم', icon: Gift },
+    { number: 4, title: 'التمويل والمدة', icon: DollarSign },
+    { number: 5, title: 'المراجعة والنشر', icon: Check },
   ];
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const addPackage = () => {
+  const addSupportTier = () => {
     setFormData(prev => ({
       ...prev,
-      packages: [...prev.packages, { name: '', price: '', description: '', benefits: [''] }],
+      supportTiers: [...prev.supportTiers, {
+        title: '',
+        amount: '',
+        description: '',
+        rewards: [''],
+        shippingIncluded: false
+      }],
     }));
   };
 
-  const removePackage = (index: number) => {
+  const removeSupportTier = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      packages: prev.packages.filter((_, i) => i !== index),
+      supportTiers: prev.supportTiers.filter((_, i) => i !== index),
     }));
   };
 
-  const updatePackage = (index: number, field: string, value: any) => {
+  const updateSupportTier = (index: number, field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
-      packages: prev.packages.map((pkg, i) =>
-        i === index ? { ...pkg, [field]: value } : pkg
+      supportTiers: prev.supportTiers.map((tier, i) =>
+        i === index ? { ...tier, [field]: value } : tier
       ),
     }));
   };
 
-  const addBenefit = (packageIndex: number) => {
+  const addReward = (tierIndex: number) => {
     setFormData(prev => ({
       ...prev,
-      packages: prev.packages.map((pkg, i) =>
-        i === packageIndex ? { ...pkg, benefits: [...pkg.benefits, ''] } : pkg
+      supportTiers: prev.supportTiers.map((tier, i) =>
+        i === tierIndex ? { ...tier, rewards: [...tier.rewards, ''] } : tier
       ),
     }));
   };
 
-  const removeBenefit = (packageIndex: number, benefitIndex: number) => {
+  const removeReward = (tierIndex: number, rewardIndex: number) => {
     setFormData(prev => ({
       ...prev,
-      packages: prev.packages.map((pkg, i) =>
-        i === packageIndex
-          ? { ...pkg, benefits: pkg.benefits.filter((_, bi) => bi !== benefitIndex) }
-          : pkg
+      supportTiers: prev.supportTiers.map((tier, i) =>
+        i === tierIndex ? {
+          ...tier,
+          rewards: tier.rewards.filter((_, ri) => ri !== rewardIndex)
+        } : tier
       ),
     }));
   };
 
-  const updateBenefit = (packageIndex: number, benefitIndex: number, value: string) => {
+  const updateReward = (tierIndex: number, rewardIndex: number, value: string) => {
     setFormData(prev => ({
       ...prev,
-      packages: prev.packages.map((pkg, i) =>
-        i === packageIndex
-          ? {
-              ...pkg,
-              benefits: pkg.benefits.map((b, bi) => (bi === benefitIndex ? value : b)),
-            }
-          : pkg
+      supportTiers: prev.supportTiers.map((tier, i) =>
+        i === tierIndex ? {
+          ...tier,
+          rewards: tier.rewards.map((r, ri) => ri === rewardIndex ? value : r)
+        } : tier
       ),
     }));
-  };
-
-  const addTimelineItem = () => {
-    setFormData(prev => ({
-      ...prev,
-      timeline: [...prev.timeline, { title: '', date: '', description: '' }],
-    }));
-  };
-
-  const removeTimelineItem = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      timeline: prev.timeline.filter((_, i) => i !== index),
-    }));
-  };
-
-  const updateTimelineItem = (index: number, field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      timeline: prev.timeline.map((item, i) =>
-        i === index ? { ...item, [field]: value } : item
-      ),
-    }));
-  };
-
-  const validateStep = (step: number): boolean => {
-    switch (step) {
-      case 1:
-        return !!(formData.title && formData.publicDescription && formData.category);
-      case 2:
-        return !!(formData.fundingGoal && formData.endDate);
-      case 3:
-        return true; // Packages are optional
-      case 4:
-        return true;
-      default:
-        return false;
-    }
-  };
-
-  const nextStep = () => {
-    if (validateStep(currentStep)) {
-      setError('');
-      setCurrentStep(prev => Math.min(4, prev + 1));
-    } else {
-      setError('يرجى ملء جميع الحقول المطلوبة');
-    }
-  };
-
-  const prevStep = () => {
-    setCurrentStep(prev => Math.max(1, prev - 1));
-    setError('');
   };
 
   const handleSubmit = async () => {
-    try {
-      setLoading(true);
-      setError('');
+    setLoading(true);
+    setError('');
 
-      const response = await fetch('/api/projects', {
+    try {
+      // Create project
+      const projectResponse = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          platform_package_id: formData.platformPackageId,
+        }),
       });
 
-      const data = await response.json();
+      const projectData = await projectResponse.json();
 
-      if (data.success) {
-        router.push(`/projects/${data.project.id}`);
-      } else {
-        setError(data.error || 'حدث خطأ أثناء إنشاء المشروع');
+      if (!projectData.success) {
+        throw new Error(projectData.error || 'Failed to create project');
       }
-    } catch (err) {
-      setError('حدث خطأ أثناء إنشاء المشروع');
+
+      const projectId = projectData.project.id;
+
+      // Create support tiers
+      for (const tier of formData.supportTiers) {
+        await fetch('/api/support-tiers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectId,
+            ...tier,
+          }),
+        });
+      }
+
+      router.push(`/projects/${projectId}`);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
+  const nextStep = () => {
+    if (currentStep < steps.length) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const selectedPackage = platformPackages.find(p => p.id === formData.platformPackageId);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Navigation />
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">أنشئ مشروعك</h1>
-          <p className="text-lg text-gray-600">
-            شارك فكرتك مع العالم واحصل على التمويل الذي تحتاجه
-          </p>
-        </motion.div>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">إنشاء مشروع جديد</h1>
+          <p className="text-gray-600">أطلق فكرتك واحصل على التمويل من المجتمع</p>
+        </div>
 
-        {/* Progress Steps */}
-        <div className="max-w-4xl mx-auto mb-12">
+        {/* Steps */}
+        <div className="mb-12">
           <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.number} className="flex items-center flex-1">
-                <div className="flex flex-col items-center flex-1">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${
-                      currentStep >= step.number
-                        ? 'bg-gradient-to-r from-teal-500 to-purple-600 text-white shadow-lg'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}
-                  >
-                    {currentStep > step.number ? (
-                      <Check className="w-6 h-6" />
-                    ) : (
-                      <step.icon className="w-6 h-6" />
-                    )}
-                  </motion.div>
-                  <span className={`text-sm mt-2 font-medium ${
-                    currentStep >= step.number ? 'text-teal-600' : 'text-gray-500'
-                  }`}>
-                    {step.title}
-                  </span>
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              const isActive = currentStep === step.number;
+              const isCompleted = currentStep > step.number;
+
+              return (
+                <div key={step.number} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center flex-1">
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                        isActive
+                          ? 'bg-gradient-to-r from-teal-500 to-purple-600 text-white shadow-lg'
+                          : isCompleted
+                          ? 'bg-green-500 text-white'
+                          : 'bg-gray-200 text-gray-500'
+                      }`}
+                    >
+                      {isCompleted ? <Check className="w-6 h-6" /> : <Icon className="w-6 h-6" />}
+                    </div>
+                    <span className={`mt-2 text-sm font-medium ${isActive ? 'text-purple-600' : 'text-gray-600'}`}>
+                      {step.title}
+                    </span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`h-1 flex-1 mx-4 transition-all ${
+                        isCompleted ? 'bg-green-500' : 'bg-gray-200'
+                      }`}
+                    />
+                  )}
                 </div>
-                {index < steps.length - 1 && (
-                  <div className={`h-1 flex-1 mx-2 rounded transition-all ${
-                    currentStep > step.number
-                      ? 'bg-gradient-to-r from-teal-500 to-purple-600'
-                      : 'bg-gray-200'
-                  }`} />
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Form */}
-        <div className="max-w-3xl mx-auto">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="bg-white rounded-2xl shadow-xl p-8"
-          >
-            <AnimatePresence mode="wait">
-              {/* Step 1: Basic Info */}
-              {currentStep === 1 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-6"
-                >
+        <div className="bg-white rounded-3xl shadow-xl p-8">
+          <AnimatePresence mode="wait">
+            {/* Step 1: Basic Info */}
+            {currentStep === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">المعلومات الأساسية</h2>
+
+                <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      عنوان المشروع *
-                    </label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">عنوان المشروع</label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => handleInputChange('title', e.target.value)}
-                      placeholder="أدخل عنواناً جذاباً لمشروعك"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                      placeholder="اسم مشروعك المميز"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      الوصف *
-                    </label>
-                    <textarea
-                      value={formData.publicDescription}
-                      onChange={(e) => handleInputChange('publicDescription', e.target.value)}
-                      placeholder="اشرح فكرة مشروعك بالتفصيل..."
-                      rows={6}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors resize-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      التصنيف *
-                    </label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">التصنيف</label>
                     <select
                       value={formData.category}
                       onChange={(e) => handleInputChange('category', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors appearance-none cursor-pointer"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
                     >
-                      {categories.map((cat) => (
-                        <option key={cat.value} value={cat.value}>
-                          {cat.label}
-                        </option>
+                      {categories.map(cat => (
+                        <option key={cat.value} value={cat.value}>{cat.label}</option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      رابط الصورة (اختياري)
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      الوصف العام (المستوى 1 - للجميع)
                     </label>
-                    <input
-                      type="url"
-                      value={formData.image}
-                      onChange={(e) => handleInputChange('image', e.target.value)}
-                      placeholder="https://example.com/image.jpg"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors"
+                    <textarea
+                      value={formData.publicDescription}
+                      onChange={(e) => handleInputChange('publicDescription', e.target.value)}
+                      rows={4}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                      placeholder="وصف عام لفكرتك..."
                     />
                   </div>
-                </motion.div>
-              )}
 
-              {/* Step 2: Funding & Duration */}
-              {currentStep === 2 && (
-                <motion.div
-                  key="step2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-6"
-                >
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      هدف التمويل (ر.س) *
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      الوصف التفصيلي (المستوى 2 - للمسجلين + NDA)
                     </label>
-                    <div className="relative">
-                      <DollarSign className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <textarea
+                      value={formData.registeredDescription}
+                      onChange={(e) => handleInputChange('registeredDescription', e.target.value)}
+                      rows={4}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                      placeholder="تفاصيل أكثر عن المشروع..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      الوصف الكامل (المستوى 3 - للمفاوضين فقط)
+                    </label>
+                    <textarea
+                      value={formData.fullDescription}
+                      onChange={(e) => handleInputChange('fullDescription', e.target.value)}
+                      rows={6}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                      placeholder="المعلومات الكاملة والحساسة..."
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 2: Platform Package */}
+            {currentStep === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">اختر باقة المنصة</h2>
+                <p className="text-gray-600 mb-6">اختر الباقة المناسبة لمشروعك</p>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {platformPackages.map((pkg) => (
+                    <div
+                      key={pkg.id}
+                      onClick={() => handleInputChange('platformPackageId', pkg.id)}
+                      className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all ${
+                        formData.platformPackageId === pkg.id
+                          ? 'border-purple-500 bg-purple-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {formData.platformPackageId === pkg.id && (
+                        <div className="absolute top-4 right-4">
+                          <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
+                            <Check className="w-4 h-4 text-white" />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center`} style={{ backgroundColor: pkg.color }}>
+                          {pkg.icon === 'shield' ? <Shield className="w-6 h-6 text-white" /> : <Crown className="w-6 h-6 text-white" />}
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">{pkg.name}</h3>
+                          <span className="text-sm text-gray-600">{pkg.badge}</span>
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <div className="text-3xl font-bold" style={{ color: pkg.color }}>
+                          {pkg.commission_percentage}%
+                          {pkg.equity_percentage && ` + ${pkg.equity_percentage}%`}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {pkg.equity_percentage ? 'عمولة + شراكة' : 'عمولة فقط'}
+                        </div>
+                      </div>
+
+                      <ul className="space-y-2">
+                        {pkg.features.map((feature, index) => (
+                          <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
+                            <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+
+                {selectedPackage && (
+                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div className="text-sm text-blue-900">
+                        <p className="font-bold mb-1">ملاحظة مهمة:</p>
+                        <p>
+                          {selectedPackage.type === 'bithrah_plus'
+                            ? `باختيارك لباقة Bithrah Plus، ستحصل على عمولة منخفضة ${selectedPackage.commission_percentage}% مقابل شراكة ${selectedPackage.equity_percentage}% في المشروع. هذا يعني أن بذرة ستكون شريكاً استراتيجياً في نجاح مشروعك.`
+                            : `باختيارك لباقة Basic، ستدفع عمولة ${selectedPackage.commission_percentage}% فقط بدون أي شراكة أو حصص ملكية.`
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Step 3: Support Tiers */}
+            {currentStep === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">باقات الدعم</h2>
+                <p className="text-gray-600 mb-6">أنشئ باقات دعم مختلفة للداعمين (مثل Kickstarter)</p>
+
+                <div className="space-y-6">
+                  {formData.supportTiers.map((tier, tierIndex) => (
+                    <div key={tierIndex} className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-bold text-gray-900">باقة #{tierIndex + 1}</h3>
+                        <button
+                          onClick={() => removeSupportTier(tierIndex)}
+                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-2">اسم الباقة</label>
+                          <input
+                            type="text"
+                            value={tier.title}
+                            onChange={(e) => updateSupportTier(tierIndex, 'title', e.target.value)}
+                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                            placeholder="مثال: الداعم البرونزي"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-2">المبلغ (ريال)</label>
+                          <input
+                            type="number"
+                            value={tier.amount}
+                            onChange={(e) => updateSupportTier(tierIndex, 'amount', e.target.value)}
+                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                            placeholder="100"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="block text-sm font-bold text-gray-700 mb-2">وصف الباقة</label>
+                        <textarea
+                          value={tier.description}
+                          onChange={(e) => updateSupportTier(tierIndex, 'description', e.target.value)}
+                          rows={3}
+                          className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                          placeholder="ماذا سيحصل الداعم مقابل هذا المبلغ؟"
+                        />
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="block text-sm font-bold text-gray-700 mb-2">المكافآت</label>
+                        {tier.rewards.map((reward, rewardIndex) => (
+                          <div key={rewardIndex} className="flex gap-2 mb-2">
+                            <input
+                              type="text"
+                              value={reward}
+                              onChange={(e) => updateReward(tierIndex, rewardIndex, e.target.value)}
+                              className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                              placeholder="مثال: نسخة من المنتج + شكر خاص"
+                            />
+                            {tier.rewards.length > 1 && (
+                              <button
+                                onClick={() => removeReward(tierIndex, rewardIndex)}
+                                className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                              >
+                                <Minus className="w-5 h-5" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => addReward(tierIndex)}
+                          className="mt-2 flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>إضافة مكافأة</span>
+                        </button>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-2">عدد الداعمين المحدود (اختياري)</label>
+                          <input
+                            type="number"
+                            value={tier.maxBackers || ''}
+                            onChange={(e) => updateSupportTier(tierIndex, 'maxBackers', e.target.value)}
+                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                            placeholder="مثال: 50"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-2">تاريخ التسليم المتوقع</label>
+                          <input
+                            type="date"
+                            value={tier.deliveryDate || ''}
+                            onChange={(e) => updateSupportTier(tierIndex, 'deliveryDate', e.target.value)}
+                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={tier.shippingIncluded}
+                            onChange={(e) => updateSupportTier(tierIndex, 'shippingIncluded', e.target.checked)}
+                            className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                          />
+                          <span className="text-sm font-medium text-gray-700">يتضمن الشحن</span>
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    onClick={addSupportTier}
+                    className="w-full py-4 border-2 border-dashed border-purple-300 rounded-2xl text-purple-600 font-bold hover:bg-purple-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" />
+                    <span>إضافة باقة دعم جديدة</span>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Funding & Timeline */}
+            {currentStep === 4 && (
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">التمويل والمدة</h2>
+
+                <div className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">هدف التمويل (ريال)</label>
                       <input
                         type="number"
                         value={formData.fundingGoal}
                         onChange={(e) => handleInputChange('fundingGoal', e.target.value)}
-                        placeholder="100000"
-                        className="w-full pr-12 pl-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                        placeholder="500000"
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      تاريخ الانتهاء *
-                    </label>
-                    <div className="relative">
-                      <Calendar className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">تاريخ الانتهاء</label>
                       <input
                         type="date"
                         value={formData.endDate}
                         onChange={(e) => handleInputChange('endDate', e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
-                        className="w-full pr-12 pl-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      المخاطر والتحديات (اختياري)
-                    </label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">المخاطر والتحديات</label>
                     <textarea
                       value={formData.risks}
                       onChange={(e) => handleInputChange('risks', e.target.value)}
-                      placeholder="اذكر المخاطر والتحديات المحتملة..."
                       rows={4}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors resize-none"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 outline-none"
+                      placeholder="ما هي المخاطر المحتملة وكيف ستتعامل معها؟"
                     />
                   </div>
-                </motion.div>
-              )}
-
-              {/* Step 3: Packages */}
-              {currentStep === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-6"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">باقات الدعم</h3>
-                    <button
-                      onClick={addPackage}
-                      className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors"
-                    >
-                      <Plus className="w-5 h-5" />
-                      إضافة باقة
-                    </button>
-                  </div>
-
-                  {formData.packages.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-50 rounded-xl">
-                      <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">لم تقم بإضافة أي باقات بعد</p>
-                      <p className="text-sm text-gray-500 mt-2">الباقات اختيارية لكنها تساعد في جذب الداعمين</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {formData.packages.map((pkg, index) => (
-                        <div key={index} className="border-2 border-gray-200 rounded-xl p-6 relative">
-                          <button
-                            onClick={() => removePackage(index)}
-                            className="absolute top-4 left-4 p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-
-                          <div className="space-y-4">
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                اسم الباقة
-                              </label>
-                              <input
-                                type="text"
-                                value={pkg.name}
-                                onChange={(e) => updatePackage(index, 'name', e.target.value)}
-                                placeholder="مثال: الداعم البرونزي"
-                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                السعر (ر.س)
-                              </label>
-                              <input
-                                type="number"
-                                value={pkg.price}
-                                onChange={(e) => updatePackage(index, 'price', e.target.value)}
-                                placeholder="500"
-                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                الوصف
-                              </label>
-                              <textarea
-                                value={pkg.description}
-                                onChange={(e) => updatePackage(index, 'description', e.target.value)}
-                                placeholder="وصف الباقة..."
-                                rows={2}
-                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors resize-none"
-                              />
-                            </div>
-
-                            <div>
-                              <div className="flex items-center justify-between mb-2">
-                                <label className="block text-sm font-semibold text-gray-700">
-                                  المميزات
-                                </label>
-                                <button
-                                  onClick={() => addBenefit(index)}
-                                  className="text-sm text-teal-600 hover:text-teal-700 flex items-center gap-1"
-                                >
-                                  <Plus className="w-4 h-4" />
-                                  إضافة ميزة
-                                </button>
-                              </div>
-                              <div className="space-y-2">
-                                {pkg.benefits.map((benefit, benefitIndex) => (
-                                  <div key={benefitIndex} className="flex items-center gap-2">
-                                    <input
-                                      type="text"
-                                      value={benefit}
-                                      onChange={(e) => updateBenefit(index, benefitIndex, e.target.value)}
-                                      placeholder="ميزة..."
-                                      className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors"
-                                    />
-                                    <button
-                                      onClick={() => removeBenefit(index, benefitIndex)}
-                                      className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                                    >
-                                      <Minus className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
-              {/* Step 4: Review */}
-              {currentStep === 4 && (
-                <motion.div
-                  key="step4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-6"
-                >
-                  <div className="text-center mb-6">
-                    <Sparkles className="w-16 h-16 text-teal-600 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">مراجعة المشروع</h3>
-                    <p className="text-gray-600">تأكد من صحة جميع المعلومات قبل النشر</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="bg-gray-50 rounded-xl p-6">
-                      <h4 className="font-bold text-gray-900 mb-4">المعلومات الأساسية</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">العنوان:</span>
-                          <span className="font-semibold">{formData.title}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">التصنيف:</span>
-                          <span className="font-semibold">
-                            {categories.find(c => c.value === formData.category)?.label}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-xl p-6">
-                      <h4 className="font-bold text-gray-900 mb-4">التمويل</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">الهدف:</span>
-                          <span className="font-semibold">{parseFloat(formData.fundingGoal).toLocaleString()} ر.س</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">تاريخ الانتهاء:</span>
-                          <span className="font-semibold">{new Date(formData.endDate).toLocaleDateString('ar-SA')}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {formData.packages.length > 0 && (
-                      <div className="bg-gray-50 rounded-xl p-6">
-                        <h4 className="font-bold text-gray-900 mb-4">الباقات</h4>
-                        <div className="space-y-2 text-sm">
-                          {formData.packages.map((pkg, index) => (
-                            <div key={index} className="flex justify-between">
-                              <span className="text-gray-600">{pkg.name}:</span>
-                              <span className="font-semibold">{parseFloat(pkg.price).toLocaleString()} ر.س</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Error Message */}
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-center gap-3 text-red-700"
-              >
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                <span>{error}</span>
+                </div>
               </motion.div>
             )}
 
-            {/* Navigation Buttons */}
-            <div className="flex items-center justify-between mt-8 pt-6 border-t-2 border-gray-100">
-              <button
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
-                  currentStep === 1
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+            {/* Step 5: Review */}
+            {currentStep === 5 && (
+              <motion.div
+                key="step5"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
               >
-                <ArrowRight className="w-5 h-5" />
-                السابق
-              </button>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">مراجعة المشروع</h2>
 
-              {currentStep < 4 ? (
-                <button
-                  onClick={nextStep}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
-                >
-                  التالي
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-              ) : (
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-teal-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
-                      جاري النشر...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-5 h-5" />
-                      نشر المشروع
-                    </>
+                <div className="space-y-6">
+                  <div className="p-6 bg-gray-50 rounded-2xl">
+                    <h3 className="font-bold text-gray-900 mb-2">{formData.title}</h3>
+                    <p className="text-gray-600 mb-4">{formData.publicDescription}</p>
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <span>الهدف: {formData.fundingGoal} ريال</span>
+                      <span>•</span>
+                      <span>الباقة: {selectedPackage?.name}</span>
+                      <span>•</span>
+                      <span>باقات الدعم: {formData.supportTiers.length}</span>
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                      {error}
+                    </div>
                   )}
-                </button>
-              )}
-            </div>
-          </motion.div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Navigation Buttons */}
+          <div className="flex items-center justify-between mt-8 pt-6 border-t-2 border-gray-100">
+            <button
+              onClick={prevStep}
+              disabled={currentStep === 1}
+              className="flex items-center gap-2 px-6 py-3 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ArrowRight className="w-5 h-5" />
+              <span>السابق</span>
+            </button>
+
+            {currentStep < steps.length ? (
+              <button
+                onClick={nextStep}
+                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-teal-500 to-purple-600 text-white rounded-xl font-bold hover:shadow-lg transition-all"
+              >
+                <span>التالي</span>
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold hover:shadow-lg transition-all disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>جاري النشر...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-5 h-5" />
+                    <span>نشر المشروع</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
