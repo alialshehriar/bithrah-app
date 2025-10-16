@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { hash } from 'bcryptjs';
 import { eq } from 'drizzle-orm';
+import { createSession } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -50,14 +51,17 @@ export async function POST(request: NextRequest) {
       .values(insertData)
       .returning();
 
+    // Create session automatically (auto-login)
+    await createSession(newUser.id);
+
     // Remove password from response
     const { password: _, ...userWithoutPassword } = newUser;
 
     return NextResponse.json(
       {
+        success: true,
         message: 'تم إنشاء الحساب بنجاح',
         user: userWithoutPassword,
-        verificationToken: 'temp-token-' + newUser.id,
       },
       { status: 201 }
     );
