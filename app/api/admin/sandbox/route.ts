@@ -51,20 +51,13 @@ export async function GET(request: NextRequest) {
       WHERE is_sandbox = true
     `;
 
-    const eventsResult = await sql`
-      SELECT COUNT(*) as count
-      FROM events
-      WHERE is_sandbox = true
-    `;
-
     const stats = {
       users: parseInt(usersResult[0].count),
       projects: parseInt(projectsResult[0].count),
       communities: parseInt(communitiesResult[0].count),
-      events: parseInt(eventsResult[0].count),
     };
 
-    const isActive = stats.users > 0 || stats.projects > 0 || stats.communities > 0 || stats.events > 0;
+    const isActive = stats.users > 0 || stats.projects > 0 || stats.communities > 0;
 
     return NextResponse.json({
       success: true,
@@ -167,7 +160,7 @@ export async function POST(request: NextRequest) {
           await sql`
             INSERT INTO projects (
               title, description, category, funding_goal, 
-              current_funding, owner_id, status, is_sandbox
+              current_funding, creator_id, status, is_sandbox
             )
             VALUES (
               ${project.title}, ${project.description}, ${project.category},
@@ -189,29 +182,6 @@ export async function POST(request: NextRequest) {
             VALUES (${community.name}, ${community.description}, ${userId}, true)
           `;
         }
-
-        // Create sandbox events
-        const sandboxEvents = [
-          {
-            title: 'ملتقى رواد الأعمال 2025',
-            description: 'ملتقى سنوي لرواد الأعمال والمستثمرين',
-            date: new Date('2025-11-15'),
-            location: 'الرياض',
-          },
-          {
-            title: 'ورشة عمل: كيف تبدأ مشروعك',
-            description: 'ورشة عمل تدريبية للمبتدئين في ريادة الأعمال',
-            date: new Date('2025-10-25'),
-            location: 'جدة',
-          },
-        ];
-
-        for (const event of sandboxEvents) {
-          await sql`
-            INSERT INTO events (title, description, date, location, organizer_id, is_sandbox)
-            VALUES (${event.title}, ${event.description}, ${event.date}, ${event.location}, ${userId}, true)
-          `;
-        }
       }
 
       return NextResponse.json({
@@ -219,9 +189,7 @@ export async function POST(request: NextRequest) {
         message: 'تم توليد البيانات الوهمية بنجاح',
       });
     } else if (action === 'clear') {
-      // Delete all sandbox data
-      await sql`DELETE FROM investments WHERE is_sandbox = true`;
-      await sql`DELETE FROM events WHERE is_sandbox = true`;
+      // Delete all sandbox data (in reverse order of dependencies)
       await sql`DELETE FROM communities WHERE is_sandbox = true`;
       await sql`DELETE FROM projects WHERE is_sandbox = true`;
       await sql`DELETE FROM users WHERE is_sandbox = true`;
