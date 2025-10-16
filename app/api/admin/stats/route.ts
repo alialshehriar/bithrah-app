@@ -91,6 +91,37 @@ export async function GET(request: NextRequest) {
     `;
     const totalFunding = parseFloat(fundingResult[0].total);
 
+    // Get negotiation stats
+    const negotiationsResult = await sql`
+      SELECT 
+        COUNT(*) as total,
+        COUNT(CASE WHEN status = 'active' THEN 1 END) as active,
+        COUNT(CASE WHEN status = 'accepted' THEN 1 END) as accepted,
+        COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected
+      FROM negotiations
+    `;
+
+    // Get AI evaluation stats
+    const evaluationsResult = await sql`
+      SELECT 
+        COUNT(*) as total,
+        AVG(overall_score) as avg_score,
+        COUNT(CASE WHEN created_at > NOW() - INTERVAL '7 days' THEN 1 END) as this_week
+      FROM project_evaluations
+    `;
+
+    // Get user activity stats
+    const activitiesResult = await sql`
+      SELECT 
+        activity_type,
+        COUNT(*) as count
+      FROM user_activities
+      WHERE created_at > NOW() - INTERVAL '7 days'
+      GROUP BY activity_type
+      ORDER BY count DESC
+      LIMIT 10
+    `;
+
     // Get recent users
     const recentUsers = await sql`
       SELECT id, name, email, role, created_at
@@ -127,6 +158,18 @@ export async function GET(request: NextRequest) {
       funding: {
         total: totalFunding,
       },
+      negotiations: {
+        total: parseInt(negotiationsResult[0]?.total || 0),
+        active: parseInt(negotiationsResult[0]?.active || 0),
+        accepted: parseInt(negotiationsResult[0]?.accepted || 0),
+        rejected: parseInt(negotiationsResult[0]?.rejected || 0),
+      },
+      evaluations: {
+        total: parseInt(evaluationsResult[0]?.total || 0),
+        avgScore: parseFloat(evaluationsResult[0]?.avg_score || 0).toFixed(1),
+        thisWeek: parseInt(evaluationsResult[0]?.this_week || 0),
+      },
+      activities: activitiesResult || [],
       subscriptions,
       recentUsers,
     };
