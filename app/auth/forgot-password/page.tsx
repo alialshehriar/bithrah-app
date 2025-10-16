@@ -1,19 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
 
-export default function SignInPage() {
-  const router = useRouter();
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [resetToken, setResetToken] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,23 +18,70 @@ export default function SignInPage() {
     setIsLoading(true);
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       });
 
-      if (result?.error) {
-        setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess(true);
+        setResetToken(data.resetToken);
       } else {
-        router.push('/home');
+        setError(data.error || 'حدث خطأ أثناء معالجة الطلب');
       }
     } catch (err) {
-      setError('حدث خطأ أثناء تسجيل الدخول');
+      setError('حدث خطأ أثناء معالجة الطلب');
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-500 via-purple-600 to-purple-800 p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-10 max-w-md w-full text-center"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            className="inline-block mb-6"
+          >
+            <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-10 h-10 text-white" />
+            </div>
+          </motion.div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">تم إرسال الرابط!</h2>
+          <p className="text-gray-600 mb-6">
+            تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. يرجى التحقق من بريدك.
+          </p>
+          <Link
+            href={`/auth/reset-password?token=${resetToken}`}
+            className="inline-block bg-gradient-to-r from-teal-500 to-purple-600 text-white py-3 px-6 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 mb-4"
+          >
+            إعادة تعيين كلمة المرور
+          </Link>
+          <div className="mt-4">
+            <Link
+              href="/auth/signin"
+              className="text-sm text-gray-600 hover:text-gray-900 flex items-center justify-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              العودة لتسجيل الدخول
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-500 via-purple-600 to-purple-800 p-4">
@@ -57,6 +101,15 @@ export default function SignInPage() {
       >
         {/* Card */}
         <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-10">
+          {/* Back Button */}
+          <Link
+            href="/auth/signin"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm">العودة</span>
+          </Link>
+
           {/* Logo/Title */}
           <div className="text-center mb-8">
             <motion.div
@@ -66,11 +119,11 @@ export default function SignInPage() {
               className="inline-block mb-4"
             >
               <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto">
-                <span className="text-white text-2xl font-bold">ب</span>
+                <Mail className="w-8 h-8 text-white" />
               </div>
             </motion.div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">مرحباً بعودتك</h1>
-            <p className="text-gray-600">سجّل دخولك للوصول إلى حسابك</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">نسيت كلمة المرور؟</h1>
+            <p className="text-gray-600">لا تقلق، سنرسل لك رابط إعادة التعيين</p>
           </div>
 
           {/* Form */}
@@ -108,48 +161,6 @@ export default function SignInPage() {
               </div>
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                كلمة المرور
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pr-10 pl-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 left-0 pl-3 flex items-center"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Forgot Password Link */}
-            <div className="flex justify-end">
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm text-teal-600 hover:text-teal-700 font-medium"
-              >
-                نسيت كلمة المرور؟
-              </Link>
-            </div>
-
             {/* Submit Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -161,54 +172,27 @@ export default function SignInPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="animate-spin h-5 w-5 ml-2" />
-                  جاري تسجيل الدخول...
+                  جاري الإرسال...
                 </>
               ) : (
-                'تسجيل الدخول'
+                'إرسال رابط إعادة التعيين'
               )}
             </motion.button>
           </form>
 
-          {/* Divider */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">أو</span>
-            </div>
-          </div>
-
-          {/* Sign Up Link */}
-          <div className="text-center">
-            <p className="text-gray-600">
-              ليس لديك حساب؟{' '}
+          {/* Sign In Link */}
+          <div className="text-center mt-6">
+            <p className="text-gray-600 text-sm">
+              تذكرت كلمة المرور؟{' '}
               <Link
-                href="/auth/register"
+                href="/auth/signin"
                 className="text-teal-600 hover:text-teal-700 font-medium"
               >
-                إنشاء حساب جديد
+                تسجيل الدخول
               </Link>
             </p>
           </div>
         </div>
-
-        {/* Footer */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center mt-8 text-white/80 text-sm"
-        >
-          بالمتابعة، أنت توافق على{' '}
-          <Link href="/terms" className="underline hover:text-white">
-            الشروط والأحكام
-          </Link>
-          {' '}و{' '}
-          <Link href="/privacy" className="underline hover:text-white">
-            سياسة الخصوصية
-          </Link>
-        </motion.p>
       </motion.div>
     </div>
   );

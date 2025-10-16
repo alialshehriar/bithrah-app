@@ -8,47 +8,32 @@ import {
   Flame, Target, Gift, ChevronRight, ArrowUp, ArrowDown,
   Sparkles, BarChart3, Activity, TrendingDown
 } from 'lucide-react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
+
 
 export default function LeaderboardPage() {
-  const [period, setPeriod] = useState<'all-time' | 'monthly' | 'weekly'>('all-time');
-  const [activeTab, setActiveTab] = useState<'creators' | 'investors' | 'points' | 'communities'>('creators');
-  const [loading, setLoading] = useState(false);
+  const [period, setPeriod] = useState<'all' | 'year' | 'month' | 'week'>('all');
+  const [activeTab, setActiveTab] = useState<'points' | 'level' | 'projects' | 'investments'>('points');
+  const [loading, setLoading] = useState(true);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
-  // Mock data - في الإنتاج سيتم جلبها من API
-  const mockLeaderboard = {
-    creators: [
-      { id: 1, name: 'أحمد المحمد', avatar: null, projects: 12, funded: 850000, successRate: 92, trend: 'up', change: 15 },
-      { id: 2, name: 'فاطمة العلي', avatar: null, projects: 10, funded: 720000, successRate: 88, trend: 'up', change: 12 },
-      { id: 3, name: 'محمد السعيد', avatar: null, projects: 9, funded: 650000, successRate: 85, trend: 'up', change: 8 },
-      { id: 4, name: 'نورة الخالد', avatar: null, projects: 8, funded: 580000, successRate: 82, trend: 'down', change: -3 },
-      { id: 5, name: 'خالد الأحمد', avatar: null, projects: 7, funded: 520000, successRate: 80, trend: 'up', change: 5 },
-      { id: 6, name: 'سارة المطيري', avatar: null, projects: 6, funded: 480000, successRate: 78, trend: 'up', change: 7 },
-      { id: 7, name: 'عبدالله الشهري', avatar: null, projects: 6, funded: 450000, successRate: 75, trend: 'same', change: 0 },
-      { id: 8, name: 'ريم القحطاني', avatar: null, projects: 5, funded: 420000, successRate: 73, trend: 'up', change: 4 },
-    ],
-    investors: [
-      { id: 1, name: 'عبدالرحمن الدوسري', avatar: null, investments: 25, totalInvested: 2500000, returns: 35, trend: 'up', change: 20 },
-      { id: 2, name: 'لطيفة الغامدي', avatar: null, investments: 22, totalInvested: 2200000, returns: 32, trend: 'up', change: 18 },
-      { id: 3, name: 'فهد العتيبي', avatar: null, investments: 20, totalInvested: 1800000, returns: 28, trend: 'up', change: 15 },
-      { id: 4, name: 'منى الحربي', avatar: null, investments: 18, totalInvested: 1600000, returns: 25, trend: 'up', change: 10 },
-      { id: 5, name: 'سلطان القحطاني', avatar: null, investments: 16, totalInvested: 1400000, returns: 22, trend: 'down', change: -5 },
-      { id: 6, name: 'هند المالكي', avatar: null, investments: 15, totalInvested: 1300000, returns: 20, trend: 'up', change: 8 },
-      { id: 7, name: 'ماجد الزهراني', avatar: null, investments: 14, totalInvested: 1200000, returns: 18, trend: 'same', change: 0 },
-      { id: 8, name: 'أمل السبيعي', avatar: null, investments: 12, totalInvested: 1100000, returns: 16, trend: 'up', change: 6 },
-    ],
-    points: [
-      { id: 1, name: 'أحمد المحمد', avatar: null, points: 12500, level: 25, activities: 450, trend: 'up', change: 25 },
-      { id: 2, name: 'فاطمة العلي', avatar: null, points: 11200, level: 23, activities: 420, trend: 'up', change: 22 },
-      { id: 3, name: 'محمد السعيد', avatar: null, points: 10800, level: 22, activities: 390, trend: 'up', change: 18 },
-      { id: 4, name: 'نورة الخالد', avatar: null, points: 9500, level: 20, activities: 360, trend: 'up', change: 15 },
-      { id: 5, name: 'خالد الأحمد', avatar: null, points: 8900, level: 19, activities: 340, trend: 'down', change: -8 },
-      { id: 6, name: 'سارة المطيري', avatar: null, points: 8200, level: 18, activities: 320, trend: 'up', change: 12 },
-      { id: 7, name: 'عبدالله الشهري', avatar: null, points: 7800, level: 17, activities: 300, trend: 'same', change: 0 },
-      { id: 8, name: 'ريم القحطاني', avatar: null, points: 7200, level: 16, activities: 280, trend: 'up', change: 10 },
-    ],
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [period, activeTab]);
+
+  const fetchLeaderboard = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/leaderboard?period=${period}&type=${activeTab}`);
+      const data = await response.json();
+      setLeaderboard(data.leaderboard || []);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-8 h-8 text-yellow-500 drop-shadow-lg" />;
@@ -71,23 +56,23 @@ export default function LeaderboardPage() {
   };
 
   const tabs = [
-    { id: 'creators', label: 'المبدعون', icon: Sparkles, color: 'from-[#14B8A6] to-[#0D9488]' },
-    { id: 'investors', label: 'المستثمرون', icon: TrendingUp, color: 'from-[#8B5CF6] to-[#7C3AED]' },
     { id: 'points', label: 'النقاط', icon: Zap, color: 'from-[#F59E0B] to-[#D97706]' },
-    { id: 'communities', label: 'المجتمعات', icon: Users, color: 'from-[#EC4899] to-[#DB2777]' },
+    { id: 'level', label: 'المستوى', icon: TrendingUp, color: 'from-[#8B5CF6] to-[#7C3AED]' },
+    { id: 'projects', label: 'المشاريع', icon: Sparkles, color: 'from-[#14B8A6] to-[#0D9488]' },
+    { id: 'investments', label: 'الاستثمارات', icon: Users, color: 'from-[#EC4899] to-[#DB2777]' },
   ];
 
   const periods = [
-    { id: 'all-time', label: 'كل الأوقات' },
-    { id: 'monthly', label: 'هذا الشهر' },
-    { id: 'weekly', label: 'هذا الأسبوع' },
+    { id: 'all', label: 'كل الأوقات' },
+    { id: 'year', label: 'هذا العام' },
+    { id: 'month', label: 'هذا الشهر' },
+    { id: 'week', label: 'هذا الأسبوع' },
   ];
 
-  const currentData = mockLeaderboard[activeTab as keyof typeof mockLeaderboard] || mockLeaderboard.creators;
+  const currentData = leaderboard;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-teal-50">
-      <Navigation />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-teal-50 pb-24">
       
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -174,14 +159,24 @@ export default function LeaderboardPage() {
         </motion.div>
 
         {/* Leaderboard */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="space-y-4"
-        >
-          <AnimatePresence mode="wait">
-            {currentData.map((user: any, index: number) => (
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#14B8A6] border-t-transparent"></div>
+          </div>
+        ) : currentData.length === 0 ? (
+          <div className="text-center py-20">
+            <Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-600 text-lg">لا توجد بيانات متاحة</p>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-4"
+          >
+            <AnimatePresence mode="wait">
+              {currentData.map((user: any, index: number) => (
               <motion.div
                 key={`${activeTab}-${user.id}`}
                 initial={{ opacity: 0, x: -20 }}
@@ -215,70 +210,36 @@ export default function LeaderboardPage() {
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                      {activeTab === 'creators' && (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-[#14B8A6]" />
-                            <span>{user.projects} مشروع</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <BarChart3 className="w-4 h-4 text-[#8B5CF6]" />
-                            <span>{user.funded.toLocaleString()} ر.س</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Target className="w-4 h-4 text-green-500" />
-                            <span>{user.successRate}% نجاح</span>
-                          </div>
-                        </>
-                      )}
-                      
-                      {activeTab === 'investors' && (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <TrendingUp className="w-4 h-4 text-[#14B8A6]" />
-                            <span>{user.investments} استثمار</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <BarChart3 className="w-4 h-4 text-[#8B5CF6]" />
-                            <span>{user.totalInvested.toLocaleString()} ر.س</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Star className="w-4 h-4 text-yellow-500" />
-                            <span>{user.returns}% عائد</span>
-                          </div>
-                        </>
-                      )}
-                      
-                      {activeTab === 'points' && (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <Zap className="w-4 h-4 text-yellow-500" />
-                            <span>{user.points.toLocaleString()} نقطة</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Trophy className="w-4 h-4 text-[#14B8A6]" />
-                            <span>المستوى {user.level}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Activity className="w-4 h-4 text-[#8B5CF6]" />
-                            <span>{user.activities} نشاط</span>
-                          </div>
-                        </>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-yellow-500" />
+                        <span>{user.points?.toLocaleString() || 0} نقطة</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Trophy className="w-4 h-4 text-[#14B8A6]" />
+                        <span>المستوى {user.level || 1}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-[#8B5CF6]" />
+                        <span>{user.experience?.toLocaleString() || 0} خبرة</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Trend */}
-                  <div className="flex-shrink-0 flex items-center gap-2">
-                    {getTrendIcon(user.trend, user.change)}
-                    <span className={`text-sm font-bold ${
-                      user.trend === 'up' ? 'text-green-500' : 
-                      user.trend === 'down' ? 'text-red-500' : 
-                      'text-gray-400'
-                    }`}>
-                      {user.change > 0 ? '+' : ''}{user.change}%
-                    </span>
-                  </div>
+                  {/* Badge */}
+                  {user.subscriptionTier && user.subscriptionTier !== 'free' && (
+                    <div className="flex-shrink-0">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        user.subscriptionTier === 'platinum' ? 'bg-gradient-to-r from-purple-500 to-purple-700 text-white' :
+                        user.subscriptionTier === 'gold' ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white' :
+                        user.subscriptionTier === 'silver' ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-white' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {user.subscriptionTier === 'platinum' ? 'بلاتيني' :
+                         user.subscriptionTier === 'gold' ? 'ذهبي' :
+                         user.subscriptionTier === 'silver' ? 'فضي' : ''}
+                      </span>
+                    </div>
+                  )}
 
                   {/* View Profile */}
                   <Link
@@ -289,12 +250,12 @@ export default function LeaderboardPage() {
                   </Link>
                 </div>
               </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
       </main>
 
-      <Footer />
     </div>
   );
 }

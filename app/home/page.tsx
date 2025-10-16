@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import Onboarding from '@/components/Onboarding';
+import OnboardingPopup from '@/components/OnboardingPopup';
 import FloatingActionButton from '@/components/FloatingActionButton';
 import {
   TrendingUp, Wallet, Users, Sparkles, ArrowRight, 
@@ -46,7 +46,7 @@ export default function AppHomePage() {
     try {
       const response = await fetch('/api/user/onboarding');
       const data = await response.json();
-      if (data.success && !data.onboardingCompleted) {
+      if (!data.onboardingCompleted) {
         setShowOnboarding(true);
       }
     } catch (error) {
@@ -132,12 +132,25 @@ export default function AppHomePage() {
 
   return (
     <>
-      {showOnboarding && (
-        <Onboarding 
-          onComplete={handleOnboardingComplete}
-          userName={sessionData?.user?.name || ''}
-        />
-      )}
+      <OnboardingPopup
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onComplete={async (data) => {
+          try {
+            const response = await fetch('/api/user/onboarding', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            });
+            if (response.ok) {
+              setShowOnboarding(false);
+              fetchData();
+            }
+          } catch (error) {
+            console.error('Error completing onboarding:', error);
+          }
+        }}
+      />
       
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-24">
       {/* Header */}
