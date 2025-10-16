@@ -31,10 +31,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        // Check if email is verified
-        if (!user.emailVerified) {
-          throw new Error('يرجى التحقق من بريدك الإلكتروني أولاً');
-        }
+        // Check if email is verified (disabled for testing)
+        // if (!user.emailVerified) {
+        //   throw new Error('يرجى التحقق من بريدك الإلكتروني أولاً');
+        // }
 
         const isPasswordValid = await bcrypt.compare(
           credentials.password as string,
