@@ -1,6 +1,77 @@
 'use client';
+import { useEffect } from 'react';
 
 export default function QuickLoginPage() {
+  useEffect(() => {
+    console.log('Quick login page mounted');
+    
+    const button = document.getElementById('loginButton');
+    const nameInput = document.getElementById('userName') as HTMLInputElement;
+    const emailInput = document.getElementById('userEmail') as HTMLInputElement;
+    const errorDiv = document.getElementById('errorMessage');
+    
+    if (!button || !nameInput || !emailInput || !errorDiv) {
+      console.error('Elements not found');
+      return;
+    }
+    
+    console.log('Elements found, attaching event listener');
+    
+    const handleLogin = async () => {
+      console.log('Login button clicked!');
+      
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      
+      if (!name || !email) {
+        errorDiv.textContent = 'الرجاء إدخال الاسم والبريد الإلكتروني';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      console.log('Sending request to API...');
+      button.setAttribute('disabled', 'true');
+      button.textContent = 'جاري الدخول...';
+      errorDiv.classList.add('hidden');
+      
+      try {
+        const response = await fetch('/api/auth/quick-entry', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name, email }),
+        });
+        
+        const data = await response.json();
+        console.log('API Response:', data);
+        
+        if (!response.ok) {
+          errorDiv.textContent = data.error || 'حدث خطأ، الرجاء المحاولة مرة أخرى';
+          errorDiv.classList.remove('hidden');
+          button.removeAttribute('disabled');
+          button.textContent = 'دخول';
+          return;
+        }
+        
+        console.log('Success! Redirecting to /home');
+        window.location.href = '/home';
+      } catch (error) {
+        console.error('Error:', error);
+        errorDiv.textContent = 'حدث خطأ، الرجاء المحاولة مرة أخرى';
+        errorDiv.classList.remove('hidden');
+        button.removeAttribute('disabled');
+        button.textContent = 'دخول';
+      }
+    };
+    
+    button.addEventListener('click', handleLogin);
+    
+    return () => {
+      button.removeEventListener('click', handleLogin);
+    };
+  }, []);
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-8 shadow-2xl max-w-md w-full">
@@ -21,14 +92,13 @@ export default function QuickLoginPage() {
         <div className="space-y-6">
           {/* Name */}
           <div>
-            <label className="block text-right text-gray-700 font-semibold mb-2">
+            <label htmlFor="userName" className="block text-right text-gray-700 font-semibold mb-2">
               الاسم
             </label>
             <input
               type="text"
               id="userName"
               placeholder="أدخل اسمك"
-              required
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-right"
               dir="rtl"
             />
@@ -36,14 +106,13 @@ export default function QuickLoginPage() {
 
           {/* Email */}
           <div>
-            <label className="block text-right text-gray-700 font-semibold mb-2">
+            <label htmlFor="userEmail" className="block text-right text-gray-700 font-semibold mb-2">
               البريد الإلكتروني
             </label>
             <input
               type="email"
               id="userEmail"
               placeholder="example@email.com"
-              required
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-right"
               dir="rtl"
             />
@@ -68,90 +137,6 @@ export default function QuickLoginPage() {
           لا حاجة لإنشاء حساب - فقط أدخل معلوماتك وابدأ
         </p>
       </div>
-
-      {/* Inline Script */}
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          (function() {
-            console.log('Quick login script loaded');
-            
-            // Wait for DOM to be ready
-            if (document.readyState === 'loading') {
-              document.addEventListener('DOMContentLoaded', initQuickLogin);
-            } else {
-              initQuickLogin();
-            }
-            
-            function initQuickLogin() {
-              console.log('Initializing quick login');
-              const button = document.getElementById('loginButton');
-              const nameInput = document.getElementById('userName');
-              const emailInput = document.getElementById('userEmail');
-              const errorDiv = document.getElementById('errorMessage');
-              
-              if (!button || !nameInput || !emailInput) {
-                console.error('Elements not found');
-                return;
-              }
-              
-              console.log('Elements found, attaching event listener');
-              
-              button.addEventListener('click', async function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                console.log('Button clicked!');
-                
-                const name = nameInput.value.trim();
-                const email = emailInput.value.trim();
-                
-                if (!name || !email) {
-                  showError('الرجاء إدخال الاسم والبريد الإلكتروني');
-                  return;
-                }
-                
-                console.log('Sending request to API...');
-                button.disabled = true;
-                button.textContent = 'جاري الدخول...';
-                errorDiv.classList.add('hidden');
-                
-                try {
-                  const response = await fetch('/api/auth/quick-entry', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ name, email }),
-                  });
-                  
-                  const data = await response.json();
-                  console.log('API Response:', data);
-                  
-                  if (!response.ok) {
-                    showError(data.error || 'حدث خطأ، الرجاء المحاولة مرة أخرى');
-                    button.disabled = false;
-                    button.textContent = 'دخول';
-                    return;
-                  }
-                  
-                  console.log('Success! Redirecting to /home');
-                  window.location.href = '/home';
-                } catch (error) {
-                  console.error('Error:', error);
-                  showError('حدث خطأ، الرجاء المحاولة مرة أخرى');
-                  button.disabled = false;
-                  button.textContent = 'دخول';
-                }
-              });
-              
-              function showError(message) {
-                errorDiv.textContent = message;
-                errorDiv.classList.remove('hidden');
-              }
-            }
-          })();
-        `
-      }} />
     </div>
   );
 }
