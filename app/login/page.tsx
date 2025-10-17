@@ -167,7 +167,7 @@ export default function LoginPage() {
           
           <div id="error" className="error"></div>
           
-          <form id="loginForm">
+          <div id="loginForm">
             <div className="form-group">
               <label htmlFor="name">الاسم</label>
               <input type="text" id="name" name="name" placeholder="أدخل اسمك" required />
@@ -180,11 +180,11 @@ export default function LoginPage() {
             
             <p className="info-text">لا حاجة لإنشاء حساب - فقط أدخل معلوماتك وابدأ</p>
             
-            <button type="submit" id="submitBtn">
+            <button type="button" id="submitBtn">
               <span id="btnText">دخول</span>
               <span id="loading" className="loading"></span>
             </button>
-          </form>
+          </div>
         </div>
         
         <Script id="login-script" strategy="afterInteractive">
@@ -198,9 +198,10 @@ export default function LoginPage() {
               const loading = document.getElementById('loading');
               const errorDiv = document.getElementById('error');
               
-              form.addEventListener('submit', async function(e) {
+              submitBtn.addEventListener('click', async function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log('Button clicked!');
                 
                 const name = nameInput.value.trim();
                 const email = emailInput.value.trim();
