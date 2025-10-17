@@ -50,6 +50,7 @@ export default function SignInPage() {
 
   const handleQuickEntry = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Quick entry submitted:', { name, email });
     setLoading(true);
     setError('');
 
@@ -163,7 +164,10 @@ export default function SignInPage() {
                     <input
                       type="text"
                       value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      onChange={(e) => {
+                        console.log('Name changed:', e.target.value);
+                        setName(e.target.value);
+                      }}
                       className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
                       placeholder="أدخل اسمك"
                       required
@@ -182,7 +186,10 @@ export default function SignInPage() {
                     <input
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        console.log('Email changed:', e.target.value);
+                        setEmail(e.target.value);
+                      }}
                       className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
                       placeholder="example@email.com"
                       required
