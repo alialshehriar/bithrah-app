@@ -8,8 +8,7 @@ export default function QuickEntryPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleQuickEntry = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleQuickEntry = async () => {
     setError('');
     setLoading(true);
 
@@ -54,7 +53,7 @@ export default function QuickEntryPage() {
         </p>
 
         {/* Form */}
-        <form onSubmit={handleQuickEntry} className="space-y-6">
+        <div className="space-y-6">
           {/* Name */}
           <div>
             <label className="block text-right text-gray-700 font-semibold mb-2">
@@ -96,13 +95,14 @@ export default function QuickEntryPage() {
 
           {/* Submit Button */}
           <button
-            type="submit"
+            type="button"
+            onClick={handleQuickEntry}
             disabled={loading}
             className="w-full bg-gradient-to-r from-teal-500 to-blue-500 text-white font-bold py-3 px-6 rounded-lg hover:from-teal-600 hover:to-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'جاري الدخول...' : 'دخول'}
           </button>
-        </form>
+        </div>
 
         {/* Footer */}
         <p className="text-center text-gray-500 text-sm mt-6">
