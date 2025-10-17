@@ -1,10 +1,8 @@
 'use client';
-// Force rebuild v2
+// Force rebuild v3 - fix form submission
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function QuickEntryPage() {
-  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -67,6 +65,7 @@ export default function QuickEntryPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="أدخل اسمك"
+              required
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-right"
               dir="rtl"
             />
@@ -82,6 +81,7 @@ export default function QuickEntryPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="example@email.com"
+              required
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-right"
               dir="rtl"
             />
