@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, Loader2, User } from 'lucide-react';
+import QuickEntryForm from '@/components/QuickEntryForm';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -153,55 +154,7 @@ export default function SignInPage() {
 
             {/* Quick Entry Mode */}
             {mode === 'quick' && (
-              <>
-                {/* Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    الاسم
-                  </label>
-                  <div className="relative">
-                    <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => {
-                        console.log('Name changed:', e.target.value);
-                        setName(e.target.value);
-                      }}
-                      className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                      placeholder="أدخل اسمك"
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    البريد الإلكتروني
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => {
-                        console.log('Email changed:', e.target.value);
-                        setEmail(e.target.value);
-                      }}
-                      className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                      placeholder="example@email.com"
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                <p className="text-sm text-gray-500 text-center">
-                  لا حاجة لإنشاء حساب - فقط أدخل معلوماتك وابدأ
-                </p>
-              </>
+              <QuickEntryForm />
             )}
 
             {/* Normal Login Mode */}
