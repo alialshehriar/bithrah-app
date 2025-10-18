@@ -6,10 +6,11 @@ import { eq } from 'drizzle-orm';
 // PATCH - Update community
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const communityId = parseInt(params.id);
+    const { id } = await params;
+    const communityId = parseInt(id);
     const body = await request.json();
 
     const updateData: any = {};
@@ -49,10 +50,11 @@ export async function PATCH(
 // DELETE - Delete community
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const communityId = parseInt(params.id);
+    const { id } = await params;
+    const communityId = parseInt(id);
 
     const [deletedCommunity] = await db
       .delete(communities)
