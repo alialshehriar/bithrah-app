@@ -8,6 +8,7 @@ const JWT_SECRET = new TextEncoder().encode(
 
 // Routes that require authentication
 const protectedRoutes = [
+  '/home',
   '/dashboard',
   '/projects/create',
   '/communities/create',
@@ -63,9 +64,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect to dashboard if trying to access guest-only route while authenticated
+  // Redirect to home if trying to access guest-only route while authenticated
   if (isGuestOnlyRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/home', request.url));
   }
 
   return NextResponse.next();

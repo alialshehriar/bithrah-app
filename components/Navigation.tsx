@@ -48,7 +48,8 @@ export default function Navigation() {
   };
 
   const navLinks = isLoggedIn ? [
-    { href: '/dashboard', label: 'الرئيسية', icon: Home },
+    { href: '/home', label: 'الرئيسية', icon: Home },
+    { href: '/dashboard', label: 'لوحة التحكم', icon: TrendingUp },
     { href: '/projects', label: 'المشاريع', icon: Rocket },
     { href: '/communities', label: 'المجتمعات', icon: Users },
     { href: '/events', label: 'الفعاليات', icon: Calendar },
@@ -72,7 +73,7 @@ export default function Navigation() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link href={isLoggedIn ? '/dashboard' : '/'} className="flex items-center gap-3 group">
+            <Link href={isLoggedIn ? '/home' : '/'} className="flex items-center gap-3 group">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
                 <div className="relative bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] p-3 rounded-2xl">
