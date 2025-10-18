@@ -41,6 +41,10 @@ export default function HomePage() {
       .then(data => {
         if (data) {
           setUser(data);
+          // Show onboarding for new users who haven't completed it
+          if (data.onboardingCompleted === false) {
+            setShowOnboarding(true);
+          }
         }
         setLoading(false);
       })

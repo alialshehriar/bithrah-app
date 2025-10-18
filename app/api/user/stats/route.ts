@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     const sql = neon(process.env.DATABASE_URL!);
     
     const users = await sql`
-      SELECT id, name, email, role, created_at
+      SELECT id, name, email, role, created_at, onboarding_completed
       FROM users
       WHERE id = ${userId}
     `;
@@ -80,6 +80,7 @@ export async function GET(request: NextRequest) {
       email: user.email,
       role: user.role,
       createdAt: user.created_at,
+      onboardingCompleted: user.onboarding_completed || false,
       stats: {
         projects: parseInt(projectsCount[0].count),
         investments: parseInt(investmentsCount[0].count),

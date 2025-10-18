@@ -54,11 +54,10 @@ export async function createSession(userId: number) {
   const cookieStore = await cookies();
   cookieStore.set('bithrah-token', token, {
     httpOnly: true,
-    secure: true, // Always use secure in production
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: '/',
-    // Don't set domain - let browser handle it automatically
   });
 
   return sessionData;
