@@ -15,7 +15,7 @@ export default function MainLayout({
   showTopNav = true 
 }: MainLayoutProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-bg-primary to-bg-secondary">
+    <div className="min-h-screen bg-gray-50">
       {showTopNav && <TopNav />}
       
       <main className={`${showTopNav ? 'pt-16' : ''} ${showBottomNav ? 'pb-16' : ''}`}>
