@@ -3,17 +3,50 @@ import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { projects, users } from '@/lib/db/schema';
 import { eq, desc, like, or, and, sql } from 'drizzle-orm';
-// Sandbox mode removed
+import { sandboxProjects } from '@/lib/sandbox/comprehensive-data';
 
 // GET - Get all projects with filters
 export async function GET(request: NextRequest) {
   try {
+    // Check if sandbox mode is enabled
+    const sandboxMode = request.cookies.get('sandbox-mode')?.value === 'true';
+
+    // If sandbox mode is enabled, return fake data
+    if (sandboxMode) {
+      const { searchParams } = new URL(request.url);
+      const featured = searchParams.get('featured') === 'true';
+      const trending = searchParams.get('trending') === 'true';
+      const limit = parseInt(searchParams.get('limit') || '20');
+
+      let filteredProjects = [...sandboxProjects];
+
+      if (featured) {
+        filteredProjects = filteredProjects.filter(p => p.featured);
+      }
+
+      if (trending) {
+        filteredProjects = filteredProjects.filter(p => p.trending);
+      }
+
+      filteredProjects = filteredProjects.slice(0, limit);
+
+      return NextResponse.json({
+        success: true,
+        projects: filteredProjects,
+        total: filteredProjects.length,
+        sandbox: true
+      });
+    }
+
+    // Real data mode
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
     const category = searchParams.get('category');
     const status = searchParams.get('status');
     const sortBy = searchParams.get('sortBy') || 'recent';
     const limit = parseInt(searchParams.get('limit') || '20');
+    const featured = searchParams.get('featured') === 'true';
+    const trending = searchParams.get('trending') === 'true';
 
     let query = db.select({
       id: projects.id,
@@ -24,6 +57,8 @@ export async function GET(request: NextRequest) {
       currentFunding: projects.currentFunding,
       status: projects.status,
       image: projects.image,
+      featured: projects.featured,
+      trending: projects.trending,
       createdAt: projects.createdAt,
       creator: {
         id: users.id,
@@ -54,6 +89,14 @@ export async function GET(request: NextRequest) {
       conditions.push(eq(projects.status, status));
     }
 
+    if (featured) {
+      conditions.push(eq(projects.featured, true));
+    }
+
+    if (trending) {
+      conditions.push(eq(projects.trending, true));
+    }
+
     if (conditions.length > 0) {
       query = query.where(and(...conditions)) as any;
     }
@@ -82,6 +125,7 @@ export async function GET(request: NextRequest) {
       success: true,
       projects: allProjects,
       total: allProjects.length,
+      sandbox: false
     });
 
   } catch (error) {
@@ -92,6 +136,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-
 

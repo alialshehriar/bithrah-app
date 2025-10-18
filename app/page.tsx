@@ -16,9 +16,15 @@ export default function Home() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalProjects: 0,
+    totalFunding: 0,
+    activeUsers: 0,
+    successRate: 0
+  });
 
   useEffect(() => {
-    // Just check if user is logged in without redirecting
+    // Check if user is logged in and fetch real stats
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/auth/session');
@@ -26,6 +32,20 @@ export default function Home() {
           const data = await response.json();
           if (data.user) {
             setIsLoggedIn(true);
+          }
+        }
+
+        // Fetch real platform stats
+        const statsRes = await fetch('/api/stats/platform');
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          if (statsData.success) {
+            setStats({
+              totalProjects: statsData.stats.totalProjects || 0,
+              totalFunding: statsData.stats.totalFunding || 0,
+              activeUsers: statsData.stats.activeUsers || 0,
+              successRate: statsData.stats.successRate || 0
+            });
           }
         }
       } catch (error) {
@@ -92,11 +112,27 @@ export default function Home() {
     }
   ];
 
-  const stats = [
-    { value: '1000+', label: 'مشروع ممول', icon: Rocket },
-    { value: '50M+', label: 'ريال تمويل', icon: DollarSign },
-    { value: '10K+', label: 'مستخدم نشط', icon: Users },
-    { value: '95%', label: 'نسبة النجاح', icon: Target }
+  const displayStats = [
+    { 
+      value: stats.totalProjects > 0 ? `${stats.totalProjects}+` : '---', 
+      label: 'مشروع نشط', 
+      icon: Rocket 
+    },
+    { 
+      value: stats.totalFunding > 0 ? `${(stats.totalFunding / 1000000).toFixed(1)}M+` : '---', 
+      label: 'ريال تمويل', 
+      icon: DollarSign 
+    },
+    { 
+      value: stats.activeUsers > 0 ? `${stats.activeUsers}+` : '---', 
+      label: 'مستخدم نشط', 
+      icon: Users 
+    },
+    { 
+      value: stats.successRate > 0 ? `${stats.successRate}%` : '---', 
+      label: 'نسبة النجاح', 
+      icon: Target 
+    }
   ];
 
   const benefits = [
@@ -134,7 +170,7 @@ export default function Home() {
             </div>
 
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              منصة التمويل الجماعي الأولى
+              بيئة الوساطة الذكية الأولى
             </h2>
 
             <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
@@ -163,25 +199,27 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + index * 0.1 }}
-                  className="relative group"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#14B8A6]/10 to-[#8B5CF6]/10 rounded-2xl blur-xl" />
-                  <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/50 shadow-lg">
-                    <stat.icon className="w-8 h-8 text-[#14B8A6] mb-2 mx-auto" />
-                    <div className="text-3xl font-black text-gray-900 mb-1">{stat.value}</div>
-                    <div className="text-sm text-gray-600 font-bold">{stat.label}</div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            {/* Stats - Only show if we have real data */}
+            {stats.totalProjects > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                {displayStats.map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 + index * 0.1 }}
+                    className="relative group"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#14B8A6]/10 to-[#8B5CF6]/10 rounded-2xl blur-xl" />
+                    <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/50 shadow-lg">
+                      <stat.icon className="w-8 h-8 text-[#14B8A6] mb-2 mx-auto" />
+                      <div className="text-3xl font-black text-gray-900 mb-1">{stat.value}</div>
+                      <div className="text-sm text-gray-600 font-bold">{stat.label}</div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </motion.div>
         </div>
       </section>

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const sandboxMode = cookieStore.get('sandbox-mode')?.value === 'true';
 
     if (sandboxMode) {
-      // Return sandbox data
+      // Return comprehensive sandbox data
       return NextResponse.json({
         success: true,
         stats: {
@@ -18,7 +18,11 @@ export async function GET(request: NextRequest) {
           activeUsers: 12500,
           todayFunding: 850000,
           newAchievements: 45,
+          totalProjects: 1247,
+          totalFunding: 52750000,
+          successRate: 95,
         },
+        sandbox: true
       });
     }
 
@@ -63,6 +67,29 @@ export async function GET(request: NextRequest) {
     
     const newAchievements = Number(newAchievementsResult[0]?.count || 0);
 
+    // Count total projects
+    const totalProjectsResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(projects);
+    
+    const totalProjects = Number(totalProjectsResult[0]?.count || 0);
+
+    // Sum total funding
+    const totalFundingResult = await db
+      .select({ total: sql<number>`COALESCE(SUM(CAST(current_funding AS DECIMAL)), 0)` })
+      .from(projects);
+    
+    const totalFunding = Number(totalFundingResult[0]?.total || 0);
+
+    // Count completed projects for success rate
+    const completedProjectsResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(projects)
+      .where(eq(projects.status, 'completed'));
+    
+    const completedProjects = Number(completedProjectsResult[0]?.count || 0);
+    const successRate = totalProjects > 0 ? Math.round((completedProjects / totalProjects) * 100) : 0;
+
     return NextResponse.json({
       success: true,
       stats: {
@@ -70,7 +97,11 @@ export async function GET(request: NextRequest) {
         activeUsers,
         todayFunding,
         newAchievements,
+        totalProjects,
+        totalFunding,
+        successRate,
       },
+      sandbox: false
     });
   } catch (error) {
     console.error('Error fetching platform stats:', error);

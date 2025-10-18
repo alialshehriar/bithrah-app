@@ -120,6 +120,7 @@ export const projects = pgTable('projects', {
   status: varchar('status', { length: 50 }).default('draft').notNull(), // draft, pending, active, funded, completed, cancelled, failed
   visibility: varchar('visibility', { length: 50 }).default('public'), // public, private, unlisted
   featured: boolean('featured').default(false),
+  trending: boolean('trending').default(false),
   verified: boolean('verified').default(false),
   
   // Package & rewards
