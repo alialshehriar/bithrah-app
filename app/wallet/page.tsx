@@ -1,6 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { 
+  getSandboxWallet, 
+  isSandboxMode, 
+  toggleSandboxMode,
+  resetSandboxWallet,
+  type SandboxWallet 
+} from '@/lib/sandbox';
 import { motion } from 'framer-motion';
 import {
   Wallet, ArrowUpRight, ArrowDownLeft, Plus, Send, Download,
@@ -31,14 +38,39 @@ interface WalletData {
 
 export default function WalletPage() {
   const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [sandboxWallet, setSandboxWallet] = useState<SandboxWallet | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sandboxMode, setSandboxMode] = useState(false);
 
   useEffect(() => {
-    fetchWalletData();
+    const isSandbox = isSandboxMode();
+    setSandboxMode(isSandbox);
+    
+    if (isSandbox) {
+      // Load sandbox wallet
+      const userId = 1; // Get from session
+      const sw = getSandboxWallet(userId);
+      setSandboxWallet(sw);
+      setLoading(false);
+    } else {
+      fetchWalletData();
+    }
   }, []);
+
+  const handleToggleSandbox = () => {
+    toggleSandboxMode(!sandboxMode);
+  };
+
+  const handleResetWallet = () => {
+    if (confirm('هل أنت متأكد من إعادة تعيين المحفظة التجريبية؟')) {
+      resetSandboxWallet(1);
+      const newWallet = getSandboxWallet(1);
+      setSandboxWallet(newWallet);
+    }
+  };
 
   const fetchWalletData = async () => {
     try {
@@ -183,6 +215,69 @@ export default function WalletPage() {
       <Navigation />
 
       <div className="container mx-auto px-4 py-12">
+        {/* Sandbox Mode Banner */}
+        {sandboxMode && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-2xl p-6"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-2xl">
+                  🧪
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">الوضع التجريبي مفعّل</h3>
+                  <p className="text-gray-600">جميع المعاملات وهمية ولن يتم خصم أموال حقيقية</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleResetWallet}
+                  className="px-4 py-2 bg-white border-2 border-yellow-400 text-gray-700 rounded-xl hover:bg-yellow-50 transition-all font-semibold flex items-center gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  إعادة تعيين
+                </button>
+                <button
+                  onClick={handleToggleSandbox}
+                  className="px-4 py-2 bg-yellow-400 text-gray-900 rounded-xl hover:bg-yellow-500 transition-all font-semibold"
+                >
+                  تعطيل الوضع التجريبي
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Enable Sandbox Mode Button (if not enabled) */}
+        {!sandboxMode && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-400 rounded-2xl p-6"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center text-2xl">
+                  💡
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">جرّب المنصة بدون مخاطر</h3>
+                  <p className="text-gray-600">فعّل الوضع التجريبي للحصول على محفظة وهمية واختبر جميع الميزات</p>
+                </div>
+              </div>
+              <button
+                onClick={handleToggleSandbox}
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:shadow-lg transition-all font-semibold"
+              >
+                تفعيل الوضع التجريبي
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -210,7 +305,11 @@ export default function WalletPage() {
                 </div>
                 <div>
                   <p className="text-white/80 text-sm">الرصيد المتاح</p>
-                  <p className="text-3xl font-bold">{parseFloat(wallet?.balance || '0').toLocaleString()} ر.س</p>
+                  <p className="text-3xl font-bold">
+                    {sandboxMode && sandboxWallet 
+                      ? sandboxWallet.balance.toLocaleString() 
+                      : parseFloat(wallet?.balance || '0').toLocaleString()} ر.س
+                  </p>
                 </div>
               </div>
               <button
