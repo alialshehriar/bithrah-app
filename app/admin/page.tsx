@@ -289,8 +289,313 @@ export default function AdminDashboard() {
                 </div>
               )}
 
+              {/* Users Tab */}
+              {activeTab === 'users' && (
+                <div className="space-y-6">
+                  {/* Users Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <StatCard
+                      title="إجمالي المستخدمين"
+                      value={stats?.overview.totalUsers || 0}
+                      change={stats?.growth.usersGrowth}
+                      icon={Users}
+                      color="from-blue-500 to-blue-600"
+                    />
+                    <StatCard
+                      title="المستخدمون النشطون"
+                      value={stats?.overview.activeUsers || 0}
+                      icon={Activity}
+                      color="from-green-500 to-green-600"
+                    />
+                    <StatCard
+                      title="مستخدمون جدد (هذا الشهر)"
+                      value={sandboxMode ? 127 : 12}
+                      icon={Star}
+                      color="from-purple-500 to-purple-600"
+                    />
+                    <StatCard
+                      title="معدل التفاعل"
+                      value="87%"
+                      icon={Flame}
+                      color="from-orange-500 to-orange-600"
+                    />
+                  </div>
+
+                  {/* Search and Filters */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex flex-col md:flex-row gap-4">
+                      <div className="flex-1 relative">
+                        <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="ابحث عن مستخدم..."
+                          className="w-full pr-12 pl-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        />
+                      </div>
+                      <button className="px-6 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors flex items-center gap-2">
+                        <Filter className="w-5 h-5" />
+                        <span>فلترة</span>
+                      </button>
+                      <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white hover:shadow-lg transition-all flex items-center gap-2">
+                        <Download className="w-5 h-5" />
+                        <span>تصدير</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Users Table */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-100">
+                          <tr>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">المستخدم</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">البريد الإلكتروني</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">المشاريع</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">الدعم</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">النقاط</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">الحالة</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">تاريخ الانضمام</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">إجراءات</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {Array.from({ length: sandboxMode ? 10 : 5 }).map((_, i) => (
+                            <tr key={i} className="hover:bg-gray-50 transition-colors">
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                                    {String.fromCharCode(65 + i)}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-gray-900">مستخدم {i + 1}</p>
+                                    <p className="text-sm text-gray-600">@user{i + 1}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-gray-600">user{i + 1}@example.com</td>
+                              <td className="px-6 py-4">
+                                <span className="px-3 py-1 rounded-full bg-purple-50 text-purple-600 font-medium text-sm">
+                                  {Math.floor(Math.random() * 5)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="px-3 py-1 rounded-full bg-pink-50 text-pink-600 font-medium text-sm">
+                                  {Math.floor(Math.random() * 10)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="px-3 py-1 rounded-full bg-yellow-50 text-yellow-600 font-medium text-sm">
+                                  {Math.floor(Math.random() * 1000)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="px-3 py-1 rounded-full bg-green-50 text-green-600 font-medium text-sm flex items-center gap-1 w-fit">
+                                  <CheckCircle className="w-4 h-4" />
+                                  نشط
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-gray-600">
+                                {new Date(Date.now() - i * 86400000 * 7).toLocaleDateString('ar-SA')}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                  <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <Eye className="w-4 h-4 text-gray-600" />
+                                  </button>
+                                  <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <Settings className="w-4 h-4 text-gray-600" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    {/* Pagination */}
+                    <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+                      <p className="text-sm text-gray-600">عرض 1-{sandboxMode ? 10 : 5} من {stats?.overview.totalUsers || 0}</p>
+                      <div className="flex gap-2">
+                        <button className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium">السابق</button>
+                        <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-sm font-medium">1</button>
+                        <button className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium">2</button>
+                        <button className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium">3</button>
+                        <button className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium">التالي</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Projects Tab */}
+              {activeTab === 'projects' && (
+                <div className="space-y-6">
+                  {/* Projects Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <StatCard
+                      title="إجمالي المشاريع"
+                      value={stats?.overview.totalProjects || 0}
+                      icon={Rocket}
+                      color="from-purple-500 to-purple-600"
+                    />
+                    <StatCard
+                      title="المشاريع النشطة"
+                      value={stats?.overview.activeProjects || 0}
+                      change={stats?.growth.projectsGrowth}
+                      icon={Activity}
+                      color="from-green-500 to-green-600"
+                    />
+                    <StatCard
+                      title="مشاريع مكتملة"
+                      value={sandboxMode ? 67 : 4}
+                      icon={CheckCircle}
+                      color="from-teal-500 to-teal-600"
+                    />
+                    <StatCard
+                      title="معدل النجاح"
+                      value="76%"
+                      icon={Trophy}
+                      color="from-yellow-500 to-yellow-600"
+                    />
+                  </div>
+
+                  {/* Search and Filters */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex flex-col md:flex-row gap-4">
+                      <div className="flex-1 relative">
+                        <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="ابحث عن مشروع..."
+                          className="w-full pr-12 pl-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        />
+                      </div>
+                      <select className="px-6 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <option>كل الحالات</option>
+                        <option>نشط</option>
+                        <option>مكتمل</option>
+                        <option>ملغي</option>
+                      </select>
+                      <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white hover:shadow-lg transition-all flex items-center gap-2">
+                        <Download className="w-5 h-5" />
+                        <span>تصدير</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Projects Table */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-100">
+                          <tr>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">المشروع</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">المنشئ</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">الفئة</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">الهدف</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">المجموع</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">التقدم</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">الداعمون</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">الحالة</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">إجراءات</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {Array.from({ length: sandboxMode ? 10 : 5 }).map((_, i) => {
+                            const goal = (i + 1) * 100000;
+                            const raised = goal * (0.3 + Math.random() * 0.6);
+                            const progress = Math.round((raised / goal) * 100);
+                            return (
+                              <tr key={i} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                      <Rocket className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-900">مشروع {i + 1}</p>
+                                      <p className="text-sm text-gray-600">مشروع مبتكر في مجال التقنية</p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center text-white text-sm font-bold">
+                                      {String.fromCharCode(65 + i)}
+                                    </div>
+                                    <span className="text-gray-900">مستخدم {i + 1}</span>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 font-medium text-sm">
+                                    التقنية
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-gray-900 font-medium">
+                                  {goal.toLocaleString()} ر.س
+                                </td>
+                                <td className="px-6 py-4 text-green-600 font-medium">
+                                  {Math.round(raised).toLocaleString()} ر.س
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                      <div 
+                                        className="h-full bg-gradient-to-r from-teal-500 to-purple-500 transition-all"
+                                        style={{ width: `${progress}%` }}
+                                      ></div>
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-900 min-w-[3rem] text-left">{progress}%</span>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="px-3 py-1 rounded-full bg-pink-50 text-pink-600 font-medium text-sm">
+                                    {Math.floor(Math.random() * 50) + 10}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className={`px-3 py-1 rounded-full font-medium text-sm flex items-center gap-1 w-fit ${
+                                    progress >= 100 ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
+                                  }`}>
+                                    {progress >= 100 ? <CheckCircle className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
+                                    {progress >= 100 ? 'مكتمل' : 'نشط'}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-2">
+                                    <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                      <Eye className="w-4 h-4 text-gray-600" />
+                                    </button>
+                                    <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                      <Settings className="w-4 h-4 text-gray-600" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    {/* Pagination */}
+                    <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+                      <p className="text-sm text-gray-600">عرض 1-{sandboxMode ? 10 : 5} من {stats?.overview.totalProjects || 0}</p>
+                      <div className="flex gap-2">
+                        <button className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium">السابق</button>
+                        <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-sm font-medium">1</button>
+                        <button className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium">2</button>
+                        <button className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium">التالي</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Other Tabs - Placeholder */}
-              {activeTab !== 'overview' && (
+              {!['overview', 'users', 'projects'].includes(activeTab) && (
                 <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
                   <Sparkles className="w-16 h-16 text-teal-500 mx-auto mb-4" />
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">قريباً</h3>
