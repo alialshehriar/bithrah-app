@@ -15,13 +15,13 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-4">
             <Link
-              href="/fast-entry"
+              href="/auth/signin"
               className="text-white/80 hover:text-white transition-colors px-4 py-2"
             >
               تسجيل الدخول
             </Link>
             <Link
-              href="/fast-entry"
+              href="/auth/signin"
               className="bg-gradient-to-r from-teal-500 to-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all"
             >
               ابدأ الآن
