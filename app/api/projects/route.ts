@@ -1,94 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { projects, users } from '@/lib/db/schema';
-import { eq, desc, like, or, and, sql } from 'drizzle-orm';
+import { eq, like, desc, asc, sql } from 'drizzle-orm';
 
-// GET - Get all projects with filters
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get('search');
-    const category = searchParams.get('category');
-    const status = searchParams.get('status');
-    const sortBy = searchParams.get('sortBy') || 'recent';
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const searchParams = request.nextUrl.searchParams;
+    const search = searchParams.get('search') || '';
+    const category = searchParams.get('category') || '';
+    const sort = searchParams.get('sort') || 'trending';
 
-    let query = db.select({
-      id: projects.id,
-      title: projects.title,
-      description: projects.description,
-      category: projects.category,
-      fundingGoal: projects.fundingGoal,
-      currentFunding: projects.currentFunding,
-      status: projects.status,
-      image: projects.image,
-      createdAt: projects.createdAt,
-      creator: {
-        id: users.id,
-        name: users.name,
-        email: users.email,
-      },
-    })
-    .from(projects)
-    .leftJoin(users, eq(projects.creatorId, users.id));
+    let query = db
+      .select({
+        id: projects.id,
+        title: projects.title,
+        description: projects.description,
+        category: projects.category,
+        goalAmount: projects.goal_amount,
+        raisedAmount: projects.raised_amount,
+        backersCount: projects.backers_count,
+        daysLeft: sql<number>`GREATEST(0, DATEDIFF(${projects.end_date}, NOW()))`,
+        image: projects.cover_image,
+        status: projects.status,
+        creator: {
+          id: users.id,
+          name: users.name,
+          username: users.username,
+          avatar: users.avatar,
+        },
+      })
+      .from(projects)
+      .leftJoin(users, eq(projects.creator_id, users.id));
 
     // Apply filters
-    const conditions = [];
-    
     if (search) {
-      conditions.push(
-        or(
-          like(projects.title, `%${search}%`),
-          like(projects.description, `%${search}%`)
-        )
-      );
+      query = query.where(like(projects.title, `%${search}%`));
     }
 
-    if (category && category !== 'all') {
-      conditions.push(eq(projects.category, category));
-    }
-
-    if (status && status !== 'all') {
-      conditions.push(eq(projects.status, status));
-    }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
+    if (category) {
+      query = query.where(eq(projects.category, category));
     }
 
     // Apply sorting
-    switch (sortBy) {
-      case 'popular':
-        query = query.orderBy(desc(projects.currentFunding)) as any;
+    switch (sort) {
+      case 'newest':
+        query = query.orderBy(desc(projects.created_at));
         break;
-      case 'funded':
-        query = query.orderBy(desc(projects.currentFunding)) as any;
+      case 'goal':
+        query = query.orderBy(desc(sql`${projects.raised_amount} / ${projects.goal_amount}`));
         break;
-      case 'ending':
-        query = query.orderBy(desc(projects.createdAt)) as any;
+      case 'trending':
+      default:
+        query = query.orderBy(desc(projects.backers_count));
         break;
-      default: // recent
-        query = query.orderBy(desc(projects.createdAt)) as any;
     }
 
-    query = query.limit(limit) as any;
-
-    const allProjects = await query;
+    const projectsList = await query;
 
     return NextResponse.json({
       success: true,
-      projects: allProjects,
-      total: allProjects.length,
+      projects: projectsList,
     });
   } catch (error) {
-    console.error('Projects fetch error:', error);
+    console.error('Error fetching projects:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ أثناء جلب المشاريع' },
+      { success: false, message: 'حدث خطأ في الخادم' },
       { status: 500 }
     );
   }
 }
-
-
-
