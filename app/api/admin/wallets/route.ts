@@ -2,9 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { wallets, users } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
+import { sandboxWallets, sandboxStats } from '@/lib/sandbox/data';
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if sandbox mode is enabled
+    const sandboxMode = request.cookies.get('sandbox-mode')?.value === 'true';
+    
+    if (sandboxMode) {
+      return NextResponse.json({
+        success: true,
+        wallets: sandboxWallets,
+        stats: sandboxStats.wallets,
+      });
+    }
     // Fetch all wallets with user info
     const allWallets = await db
       .select({

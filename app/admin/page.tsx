@@ -26,7 +26,7 @@ export default function AdminDashboard() {
       const res = await fetch('/api/admin/sandbox');
       const data = await res.json();
       if (data.success) {
-        setSandboxMode(data.sandboxMode);
+        setSandboxMode(data.isActive);
       }
     } catch (error) {
       console.error('Error fetching sandbox mode:', error);
@@ -52,12 +52,12 @@ export default function AdminDashboard() {
       const res = await fetch('/api/admin/sandbox', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: !sandboxMode }),
+        body: JSON.stringify({ action: sandboxMode ? 'disable' : 'enable' }),
       });
       const data = await res.json();
       if (data.success) {
-        setSandboxMode(data.sandboxMode);
-        fetchAdminStats();
+        setSandboxMode(data.isActive);
+        window.location.reload(); // Reload to apply sandbox mode
       }
     } catch (error) {
       console.error('Error toggling sandbox mode:', error);
