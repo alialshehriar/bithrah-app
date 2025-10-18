@@ -51,7 +51,7 @@ export default function BottomNav() {
       name: 'إنشاء',
       href: '#',
       isCreate: true,
-      icon: () => (
+      icon: (active: boolean) => (
         <div className="w-14 h-14 -mt-8 rounded-2xl gradient-bg flex items-center justify-center shadow-glow hover:shadow-glow-purple transition-all duration-300 hover:scale-110 active:scale-95">
           <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -170,7 +170,7 @@ export default function BottomNav() {
                     onClick={handleCreateClick}
                     className="flex flex-col items-center justify-center flex-1 relative"
                   >
-                    {item.icon()}
+                    {item.icon(false)}
                   </button>
                 );
               }
