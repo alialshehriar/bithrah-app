@@ -11,8 +11,11 @@ const protectedRoutes = [
   '/home',
   '/dashboard',
   '/projects/create',
+  '/projects',
   '/communities/create',
+  '/communities',
   '/events/create',
+  '/events',
   '/wallet',
   '/profile',
   '/settings',
@@ -21,6 +24,9 @@ const protectedRoutes = [
   '/investments',
   '/negotiations',
   '/admin',
+  '/leaderboard',
+  '/marketing',
+  '/community',
 ];
 
 // Routes that are only for guests (not logged in)

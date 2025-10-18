@@ -10,6 +10,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -54,6 +55,7 @@ export default function RegisterPage() {
         },
         body: JSON.stringify({
           name: formData.name,
+          username: formData.username,
           email: formData.email,
           password: formData.password,
         }),
@@ -65,11 +67,10 @@ export default function RegisterPage() {
         setError(data.error || 'حدث خطأ أثناء إنشاء الحساب');
       } else {
         setSuccess(true);
-        setVerificationToken(data.verificationToken);
-        // Auto redirect to verification page after 3 seconds
+        // Auto redirect to home page after 2 seconds
         setTimeout(() => {
-          router.push(`/auth/verify-email?token=${data.verificationToken}`);
-        }, 3000);
+          router.push('/home');
+        }, 2000);
       }
     } catch (err) {
       setError('حدث خطأ أثناء إنشاء الحساب');
@@ -176,6 +177,30 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   className="block w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-right"
                   placeholder="أدخل اسمك الكامل"
+                />
+              </div>
+            </div>
+
+            {/* Username Field */}
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                اسم المستخدم
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  value={formData.username}
+                  onChange={handleChange}
+                  className="block w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-right"
+                  placeholder="اختر اسم مستخدم فريد"
+                  pattern="[a-zA-Z0-9_]{3,20}"
+                  title="يجب أن يكون اسم المستخدم من 3-20 حرف (حروف إنجليزية وأرقام و _ فقط)"
                 />
               </div>
             </div>

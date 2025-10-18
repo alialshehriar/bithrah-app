@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'bithrah-secret-key-2024'
+  process.env.NEXTAUTH_SECRET || 'bithrah-super-secret-key-2025-production-v1'
 );
 
 export async function POST(request: NextRequest) {
