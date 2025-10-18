@@ -50,8 +50,14 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <Logo variant="white" size="lg" />
             <p className="mt-4 text-sm text-gray-400 leading-relaxed">
-              منصة التمويل الجماعي الرائدة في السعودية. نربط بين أصحاب الأفكار والمستثمرين لتحويل الأحلام إلى واقع.
+              بيئة وساطة ذكية مدعومة بالذكاء الاصطناعي. نربط بين أصحاب الأفكار والمستثمرين لتحويل الأحلام إلى واقع.
             </p>
+            
+            {/* النسخة التجريبية */}
+            <div className="mt-4 flex items-center gap-2 text-sm">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+              <span className="text-yellow-400 font-medium">النسخة التجريبية - تحت التطوير</span>
+            </div>
             
             {/* Contact Info */}
             <div className="mt-6 space-y-3">
@@ -170,9 +176,21 @@ const Footer = () => {
             <p className="text-sm text-gray-400">
               © {currentYear} بذرة. جميع الحقوق محفوظة.
             </p>
-            <p className="text-sm text-gray-400">
-              مرخصة من هيئة السوق المالية السعودية
-            </p>
+            
+            {/* توقيع المطور */}
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <span>تم التطوير بواسطة</span>
+              <a 
+                href="https://candlestech.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="font-semibold text-teal-400 hover:text-teal-300 transition-colors"
+              >
+                CandlesTech
+              </a>
+              <span className="mx-2 text-gray-600">|</span>
+              <span className="font-mono text-teal-400">A.S</span>
+            </div>
           </div>
         </div>
       </div>

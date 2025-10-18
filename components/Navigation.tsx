@@ -88,7 +88,7 @@ export default function Navigation() {
                 <h1 className="text-3xl font-black bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] bg-clip-text text-transparent">
                   بذرة
                 </h1>
-                <p className="text-xs text-gray-500 font-medium">منصة التمويل الجماعي</p>
+                <p className="text-xs text-gray-500 font-medium">بيئة وساطة ذكية</p>
               </div>
             </Link>
 

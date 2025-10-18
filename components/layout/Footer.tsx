@@ -50,7 +50,7 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <Logo variant="white" size="lg" />
             <p className="mt-4 text-sm text-gray-400 leading-relaxed">
-              منصة التمويل الجماعي الرائدة في السعودية. نربط بين أصحاب الأفكار والمستثمرين لتحويل الأحلام إلى واقع.
+              بيئة وساطة ذكية. نربط بين أصحاب الأفكار والمستثمرين لتحويل الأحلام إلى واقع.
             </p>
             
             {/* Contact Info */}

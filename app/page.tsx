@@ -205,7 +205,7 @@ export default function LandingPage() {
             </div>
             <span className="text-gray-900 text-2xl font-bold">بذرة</span>
           </div>
-          <p className="text-gray-600 mb-6 font-medium">منصة التمويل الجماعي الرائدة في السعودية</p>
+          <p className="text-gray-600 mb-6 font-medium">بيئة وساطة ذكية</p>
           <div className="flex justify-center gap-8 text-gray-600 text-sm font-medium">
             <Link href="/terms" className="hover:text-gray-900 transition-colors">الشروط والأحكام</Link>
             <Link href="/privacy" className="hover:text-gray-900 transition-colors">سياسة الخصوصية</Link>
