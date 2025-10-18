@@ -1030,14 +1030,8 @@ export const negotiations = pgTable('negotiations', {
   status: varchar('status', { length: 50 }).default('active').notNull(), // active, accepted, rejected, cancelled, expired
   startDate: timestamp('start_date').notNull(),
   endDate: timestamp('end_date').notNull(), // 3 days from start
-  
-  // Deposit (refundable)
-  depositAmount: numeric('deposit_amount', { precision: 12, scale: 2 }).notNull(), // Refundable deposit
-  depositStatus: varchar('deposit_status', { length: 50 }).default('held'), // held, refunded, forfeited
-  depositRefundedAt: timestamp('deposit_refunded_at'),
-  
-  // Access level
-  hasFullAccess: boolean('has_full_access').default(false), // Access to confidential details
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull(), // Negotiation amount
+  paymentStatus: varchar('payment_status', { length: 50 }), // pending, paid, refunded
   
   // Agreement
   agreedAmount: numeric('agreed_amount', { precision: 12, scale: 2 }),
@@ -1049,6 +1043,12 @@ export const negotiations = pgTable('negotiations', {
   metadata: jsonb('metadata'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  
+  // Deposit (refundable) - added later
+  depositAmount: numeric('deposit_amount', { precision: 12, scale: 2 }),
+  depositStatus: varchar('deposit_status', { length: 50 }),
+  depositRefundedAt: timestamp('deposit_refunded_at'),
+  hasFullAccess: boolean('has_full_access').default(false),
 }, (table) => ({
   projectIdx: index('negotiations_project_idx').on(table.projectId),
   investorIdx: index('negotiations_investor_idx').on(table.investorId),

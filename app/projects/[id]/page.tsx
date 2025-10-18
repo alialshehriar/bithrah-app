@@ -112,7 +112,8 @@ export default function ProjectDetailsPage() {
   };
 
   const handleNegotiate = () => {
-    router.push(`/projects/${projectId}/negotiate`);
+    // Pass project data via URL params
+    router.push(`/negotiations/start?projectId=${projectId}`);
   };
 
   if (loading) {

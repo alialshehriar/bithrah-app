@@ -50,22 +50,33 @@ function NegotiationStartContent() {
       return;
     }
     
+    if (!project) {
+      alert('لم يتم العثور على المشروع');
+      return;
+    }
+    
     setIsStarting(true);
     try {
-      const response = await fetch('/api/negotiations/start', {
+      const response = await fetch('/api/negotiations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId }),
+        body: JSON.stringify({ 
+          projectId: parseInt(projectId!),
+          receiverId: project.creator.id,
+          initialOffer: 0, // Will be set during negotiation
+          message: 'أرغب في بدء مفاوضات بشأن هذا المشروع'
+        }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        router.push(`/negotiations/${data.negotiationId}`);
+        router.push(`/negotiations/${data.negotiation.id}`);
       } else {
-        alert(data.message || 'حدث خطأ');
+        alert(data.error || 'حدث خطأ');
       }
     } catch (error) {
+      console.error('Error starting negotiation:', error);
       alert('حدث خطأ أثناء بدء التفاوض');
     } finally {
       setIsStarting(false);

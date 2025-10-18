@@ -150,7 +150,7 @@ export async function POST(
       investorId: userId,
       startDate: new Date(),
       endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-      depositAmount: (gate.depositAmount || depositAmount).toString(),
+      amount: (gate.depositAmount || depositAmount).toString(),
     }).returning();
 
     return NextResponse.json({

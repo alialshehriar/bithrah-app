@@ -1,31 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
-import { verifySession } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { negotiations, negotiationMessages, projects, users } from '@/lib/db/schema';
+import { eq, or, desc } from 'drizzle-orm';
+import { getSession } from '@/lib/auth';
 
 // GET /api/negotiations - Get user's negotiations
 export async function GET(request: NextRequest) {
   try {
-    const session = await verifySession(request);
+    const session = await getSession();
     if (!session) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const negotiations = await query(
-      `SELECT n.*, 
-        p.title as project_title,
-        p.image_url as project_image,
-        u1.name as initiator_name,
-        u2.name as receiver_name
-      FROM negotiations n
-      JOIN projects p ON n.project_id = p.id
-      JOIN users u1 ON n.initiator_id = u1.id
-      JOIN users u2 ON n.receiver_id = u2.id
-      WHERE n.initiator_id = $1 OR n.receiver_id = $1
-      ORDER BY n.updated_at DESC`,
-      [session.id]
-    );
+    const userId = session.id;
 
-    return NextResponse.json({ success: true, negotiations });
+    // Get negotiations where user is the investor
+    const userNegotiations = await db
+      .select({
+        id: negotiations.id,
+        projectId: negotiations.projectId,
+        investorId: negotiations.investorId,
+        status: negotiations.status,
+        amount: negotiations.amount,
+        agreedAmount: negotiations.agreedAmount,
+        agreementReached: negotiations.agreementReached,
+        createdAt: negotiations.createdAt,
+        updatedAt: negotiations.updatedAt,
+        projectTitle: projects.title,
+        projectImage: projects.image,
+        projectCreatorId: projects.creatorId,
+      })
+      .from(negotiations)
+      .leftJoin(projects, eq(negotiations.projectId, projects.id))
+      .where(eq(negotiations.investorId, userId))
+      .orderBy(desc(negotiations.updatedAt));
+
+    return NextResponse.json({ success: true, negotiations: userNegotiations });
   } catch (error) {
     console.error('Error fetching negotiations:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch negotiations' }, { status: 500 });
@@ -35,47 +45,61 @@ export async function GET(request: NextRequest) {
 // POST /api/negotiations - Create new negotiation
 export async function POST(request: NextRequest) {
   try {
-    const session = await verifySession(request);
+    const session = await getSession();
     if (!session) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
+    const userId = session.id;
     const { projectId, receiverId, initialOffer, message } = await request.json();
 
-    if (!projectId || !receiverId || !initialOffer) {
-      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
+    if (!projectId) {
+      return NextResponse.json({ success: false, error: 'Missing project ID' }, { status: 400 });
     }
 
-    // Create negotiation
-    const result = await query(
-      `INSERT INTO negotiations (project_id, initiator_id, receiver_id, current_offer, status, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      RETURNING *`,
-      [projectId, session.id, receiverId, initialOffer]
-    );
+    // Calculate negotiation period (3 days)
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 3);
 
-    const negotiation = result[0];
+    // Default amount (can be updated during negotiation)
+    const amount = initialOffer || 1000;
 
-    // Create initial message
-    if (message) {
-      await query(
-        `INSERT INTO negotiation_messages (negotiation_id, sender_id, message, offer_amount, created_at)
-        VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
-        [negotiation.id, session.id, message, initialOffer]
-      );
+    // Insert only required fields
+    const [negotiation] = await db
+      .insert(negotiations)
+      .values({
+        projectId: parseInt(projectId),
+        investorId: userId,
+        startDate: startDate,
+        endDate: endDate,
+        amount: amount.toString(),
+      })
+      .returning();
+
+    // Create initial message if provided
+    if (message && negotiation) {
+      try {
+        await db.insert(negotiationMessages).values({
+          negotiationId: negotiation.id,
+          senderId: userId,
+          content: message,
+        });
+      } catch (msgError) {
+        console.error('Error creating message:', msgError);
+      }
     }
 
-    // Track activity
-    await query(
-      `INSERT INTO user_activities (user_id, activity_type, activity_data, created_at)
-      VALUES ($1, 'negotiation_created', $2, CURRENT_TIMESTAMP)`,
-      [session.id, JSON.stringify({ negotiationId: negotiation.id, projectId })]
-    );
+    // Analytics tracking can be added later
 
     return NextResponse.json({ success: true, negotiation });
   } catch (error) {
     console.error('Error creating negotiation:', error);
-    return NextResponse.json({ success: false, error: 'Failed to create negotiation' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Failed to create negotiation',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 

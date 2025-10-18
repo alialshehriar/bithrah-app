@@ -15,6 +15,13 @@
       "when": 1760788128272,
       "tag": "0001_crazy_harry_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760792326097,
+      "tag": "0002_panoramic_longshot",
+      "breakpoints": true
     }
   ]
 }
