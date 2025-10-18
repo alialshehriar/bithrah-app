@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Sparkles, Zap, Briefcase, Heart, BookOpen, Target, Users, Plus, TrendingUp, Clock, UserPlus } from 'lucide-react';
+import { Sparkles, Zap, Briefcase, Heart, BookOpen, Target, Users, Plus, TrendingUp, Clock } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 
 interface Community {
@@ -167,7 +167,7 @@ export default function CommunitiesPage() {
                     : 'bg-bg-card text-text-secondary hover:bg-bg-hover'
                 }`}
               >
-                <UserPlus className="w-4 h-4" />
+                <Users className="w-4 h-4" />
                 <span>الأكثر أعضاء</span>
               </button>
             </div>
