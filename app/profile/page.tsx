@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { BarChart3, Rocket, Zap, Trophy, Target, Settings, Share2 } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 
 interface ProfileData {
@@ -85,10 +86,10 @@ export default function ProfilePage() {
   const levelProgress = (level.totalPoints / level.nextLevelPoints) * 100;
 
   const tabs = [
-    { id: 'overview', label: 'نظرة عامة', icon: '📊' },
-    { id: 'projects', label: 'المشاريع', icon: '🚀' },
-    { id: 'activity', label: 'النشاط', icon: '⚡' },
-    { id: 'achievements', label: 'الإنجازات', icon: '🏆' },
+    { id: 'overview', label: 'نظرة عامة', iconName: 'BarChart3' },
+    { id: 'projects', label: 'المشاريع', iconName: 'Rocket' },
+    { id: 'activity', label: 'النشاط', iconName: 'Zap' },
+    { id: 'achievements', label: 'الإنجازات', iconName: 'Trophy' },
   ];
 
   return (
@@ -241,7 +242,7 @@ export default function ProfilePage() {
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="flex items-start gap-3 p-3 rounded-xl hover:bg-bg-hover transition-colors">
                       <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center text-white">
-                        🎯
+                        <Target className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
                         <p className="text-text-primary font-medium">قام بدعم مشروع "تطبيق مبتكر"</p>
@@ -259,7 +260,7 @@ export default function ProfilePage() {
               {[1, 2, 3].map((i) => (
                 <div key={i} className="card-luxury">
                   <div className="w-full h-40 rounded-xl bg-gradient-to-br from-teal-500/20 to-purple-500/20 mb-4 flex items-center justify-center">
-                    <span className="text-5xl">🚀</span>
+                    <Rocket className="w-16 h-16 text-teal" />
                   </div>
                   <h3 className="font-bold text-text-primary mb-2">مشروعي {i}</h3>
                   <p className="text-sm text-text-muted mb-3">وصف المشروع</p>

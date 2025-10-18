@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Sparkles, Zap, Briefcase, Heart, BookOpen, Target, Users, Plus, TrendingUp, Clock, UserPlus } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 
 interface Community {
@@ -23,12 +24,12 @@ interface Community {
 }
 
 const categories = [
-  { value: '', label: 'الكل', icon: '✨' },
-  { value: 'technology', label: 'التقنية', icon: '⚡' },
-  { value: 'business', label: 'الأعمال', icon: '💼' },
-  { value: 'health', label: 'الصحة', icon: '❤️' },
-  { value: 'education', label: 'التعليم', icon: '📚' },
-  { value: 'other', label: 'أخرى', icon: '🎯' },
+  { value: '', label: 'الكل', iconName: 'Sparkles' },
+  { value: 'technology', label: 'التقنية', iconName: 'Zap' },
+  { value: 'business', label: 'الأعمال', iconName: 'Briefcase' },
+  { value: 'health', label: 'الصحة', iconName: 'Heart' },
+  { value: 'education', label: 'التعليم', iconName: 'BookOpen' },
+  { value: 'other', label: 'أخرى', iconName: 'Target' },
 ];
 
 export default function CommunitiesPage() {
@@ -167,7 +168,7 @@ export default function CommunitiesPage() {
                     : 'bg-bg-card text-text-secondary hover:bg-bg-hover'
                 }`}
               >
-                <span>👥</span>
+                <UserPlus className="w-4 h-4" />
                 <span>الأكثر أعضاء</span>
               </button>
             </div>
@@ -181,7 +182,7 @@ export default function CommunitiesPage() {
           </div>
         ) : communities.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">👥</div>
+            <Users className="w-20 h-20 text-text-muted mx-auto mb-4" />
             <p className="text-text-muted text-lg">لا توجد مجتمعات متاحة</p>
           </div>
         ) : (
@@ -201,8 +202,13 @@ export default function CommunitiesPage() {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-6xl">
-                      {categories.find(c => c.value === community.category)?.icon || '🎯'}
+                    <div className="w-full h-full flex items-center justify-center">
+                      {community.category === 'technology' && <Zap className="w-12 h-12 text-teal" />}
+                      {community.category === 'business' && <Briefcase className="w-12 h-12 text-purple" />}
+                      {community.category === 'health' && <Heart className="w-12 h-12 text-pink-500" />}
+                      {community.category === 'education' && <BookOpen className="w-12 h-12 text-blue-500" />}
+                      {community.category === 'other' && <Target className="w-12 h-12 text-teal" />}
+                      {!community.category && <Sparkles className="w-12 h-12 text-teal" />}
                     </div>
                   )}
                   
@@ -250,7 +256,7 @@ export default function CommunitiesPage() {
                 {/* Stats */}
                 <div className="flex items-center gap-4 text-sm text-text-muted">
                   <div className="flex items-center gap-1">
-                    <span>👥</span>
+                    <Users className="w-4 h-4" />
                     <span>{community.memberCount.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center gap-1">

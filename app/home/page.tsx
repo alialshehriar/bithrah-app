@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Brain, Search, Rocket, Trophy, Calendar, Users, BarChart3 } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import OnboardingPopup from '@/components/OnboardingPopup';
 
@@ -82,7 +83,7 @@ export default function HomePage() {
     {
       title: 'تقييم الأفكار بالذكاء الاصطناعي',
       description: 'احصل على تقييم شامل وتحليل متقدم لفكرتك',
-      icon: '🧠',
+      iconName: 'Brain',
       href: '/ai-evaluation',
       gradient: 'from-purple-500 to-pink-500',
       badge: 'الأكثر تطوراً',
@@ -90,14 +91,14 @@ export default function HomePage() {
     {
       title: 'استكشف المشاريع',
       description: 'اكتشف مشاريع مبتكرة تبحث عن دعمك',
-      icon: '🔍',
+      iconName: 'Search',
       href: '/projects',
       gradient: 'from-teal-500 to-cyan-500',
     },
     {
       title: 'أنشئ مشروعك',
       description: 'شارك فكرتك واحصل على التمويل',
-      icon: '🚀',
+      iconName: 'Rocket',
       href: '/projects/create',
       gradient: 'from-orange-500 to-red-500',
     },
@@ -107,28 +108,28 @@ export default function HomePage() {
     {
       title: 'لوحة الصدارة',
       description: 'تنافس واربح الجوائز',
-      icon: '🏆',
+      iconName: 'Trophy',
       href: '/leaderboard',
       color: 'teal',
     },
     {
       title: 'الفعاليات',
       description: 'شارك في الفعاليات',
-      icon: '📅',
+      iconName: 'Calendar',
       href: '/events',
       color: 'purple',
     },
     {
       title: 'المجتمعات',
       description: 'انضم وتواصل مع الآخرين',
-      icon: '👥',
+      iconName: 'Users',
       href: '/communities',
       color: 'teal',
     },
     {
       title: 'لوحة التحكم',
       description: 'إدارة حسابك ومشاريعك',
-      icon: '📊',
+      iconName: 'BarChart3',
       href: '/dashboard',
       color: 'purple',
     },
@@ -203,8 +204,10 @@ export default function HomePage() {
                   </span>
                 )}
                 
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${action.gradient} flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-glow`}>
-                  {action.icon}
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-glow`}>
+                  {action.iconName === 'Brain' && <Brain className="w-7 h-7 text-white" />}
+                  {action.iconName === 'Search' && <Search className="w-7 h-7 text-white" />}
+                  {action.iconName === 'Rocket' && <Rocket className="w-7 h-7 text-white" />}
                 </div>
                 
                 <h3 className="text-lg font-bold text-text-primary mb-2 group-hover:gradient-text transition-all duration-300">
@@ -233,8 +236,11 @@ export default function HomePage() {
                 href={section.href}
                 className="card-luxury text-center group"
               >
-                <div className={`w-16 h-16 mx-auto rounded-2xl bg-${section.color}/10 flex items-center justify-center text-4xl mb-3 group-hover:scale-110 transition-transform duration-300`}>
-                  {section.icon}
+                <div className={`w-16 h-16 mx-auto rounded-2xl bg-${section.color}/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300`}>
+                  {section.iconName === 'Trophy' && <Trophy className="w-8 h-8 text-teal" />}
+                  {section.iconName === 'Calendar' && <Calendar className="w-8 h-8 text-purple" />}
+                  {section.iconName === 'Users' && <Users className="w-8 h-8 text-teal" />}
+                  {section.iconName === 'BarChart3' && <BarChart3 className="w-8 h-8 text-purple" />}
                 </div>
                 <h3 className="font-bold text-text-primary mb-1">{section.title}</h3>
                 <p className="text-sm text-text-muted">{section.description}</p>
@@ -259,7 +265,7 @@ export default function HomePage() {
             {[1, 2, 3].map((i) => (
               <div key={i} className="card-luxury">
                 <div className="w-full h-48 rounded-xl bg-gradient-to-br from-teal-500/20 to-purple-500/20 mb-4 flex items-center justify-center">
-                  <span className="text-6xl">🚀</span>
+                  <Rocket className="w-20 h-20 text-teal" />
                 </div>
                 <h3 className="font-bold text-text-primary mb-2">مشروع مبتكر {i}</h3>
                 <p className="text-sm text-text-muted mb-4">وصف قصير للمشروع وأهدافه الرئيسية</p>
