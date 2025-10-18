@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { projects, users } from '@/lib/db/schema';
 import { eq, desc, like, or, and, sql } from 'drizzle-orm';
-import { isSandboxMode, generateDummyProjects } from '@/lib/sandbox';
+// Sandbox mode removed
 
 // GET - Get all projects with filters
 export async function GET(request: NextRequest) {
@@ -77,26 +77,13 @@ export async function GET(request: NextRequest) {
 
     const allProjects = await query;
 
-    // Check sandbox mode
-    const sandboxEnabled = await isSandboxMode();
-    
-    if (sandboxEnabled && allProjects.length === 0) {
-      // Return dummy data in sandbox mode if no real data
-      const dummyProjects = generateDummyProjects(limit);
-      return NextResponse.json({
-        success: true,
-        projects: dummyProjects,
-        total: dummyProjects.length,
-        sandbox: true,
-      });
-    }
-
+    // Return real data
     return NextResponse.json({
       success: true,
       projects: allProjects,
       total: allProjects.length,
-      sandbox: false,
     });
+
   } catch (error) {
     console.error('Projects fetch error:', error);
     return NextResponse.json(
