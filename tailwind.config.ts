@@ -36,15 +36,15 @@ export default {
           800: '#5B21B6',
           900: '#4C1D95',
         },
-        // Background colors
-        'bg-primary': '#0A0E27',
-        'bg-secondary': '#1A1F3A',
-        'bg-card': '#252B4A',
-        'bg-hover': '#2F3554',
-        // Text colors
-        'text-primary': '#FFFFFF',
-        'text-secondary': '#A0AEC0',
-        'text-muted': '#718096',
+        // Background colors (Light Theme)
+        'bg-primary': '#F9FAFB',
+        'bg-secondary': '#F3F4F6',
+        'bg-card': '#FFFFFF',
+        'bg-hover': '#F3F4F6',
+        // Text colors (Light Theme)
+        'text-primary': '#111827',
+        'text-secondary': '#4B5563',
+        'text-muted': '#6B7280',
         // Accent colors
         success: {
           DEFAULT: '#10B981',
