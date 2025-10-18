@@ -180,7 +180,7 @@ export default function LoginPage() {
             
             <p className="info-text">لا حاجة لإنشاء حساب - فقط أدخل معلوماتك وابدأ</p>
             
-            <button type="button" id="submitBtn">
+            <button type="button" id="submitBtn" onclick="return handleQuickLogin();">
               <span id="btnText">دخول</span>
               <span id="loading" className="loading"></span>
             </button>
