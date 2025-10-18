@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { projects, users } from '@/lib/db/schema';
-import { eq, like, desc, asc, sql } from 'drizzle-orm';
+import { eq, like, desc, sql, and } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,62 +10,87 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category') || '';
     const sort = searchParams.get('sort') || 'trending';
 
-    let query = db
-      .select({
-        id: projects.id,
-        title: projects.title,
-        description: projects.description,
-        category: projects.category,
-        goalAmount: projects.goal_amount,
-        raisedAmount: projects.raised_amount,
-        backersCount: projects.backers_count,
-        daysLeft: sql<number>`GREATEST(0, DATEDIFF(${projects.end_date}, NOW()))`,
-        image: projects.cover_image,
-        status: projects.status,
-        creator: {
-          id: users.id,
-          name: users.name,
-          username: users.username,
-          avatar: users.avatar,
-        },
-      })
-      .from(projects)
-      .leftJoin(users, eq(projects.creator_id, users.id));
-
-    // Apply filters
+    // Build conditions array
+    const conditions = [];
+    
     if (search) {
-      query = query.where(like(projects.title, `%${search}%`));
+      conditions.push(like(projects.title, `%${search}%`));
     }
 
     if (category) {
-      query = query.where(eq(projects.category, category));
+      conditions.push(eq(projects.category, category));
     }
 
-    // Apply sorting
+    // Determine sort order
+    let orderByClause;
     switch (sort) {
       case 'newest':
-        query = query.orderBy(desc(projects.created_at));
+        orderByClause = desc(projects.createdAt);
         break;
       case 'goal':
-        query = query.orderBy(desc(sql`${projects.raised_amount} / ${projects.goal_amount}`));
+        orderByClause = desc(sql`${projects.currentFunding} / ${projects.fundingGoal}`);
         break;
-      case 'trending':
-      default:
-        query = query.orderBy(desc(projects.backers_count));
+      case 'backers':
+        orderByClause = desc(projects.backersCount);
         break;
+      default: // trending
+        orderByClause = desc(projects.viewsCount);
     }
 
-    const projectsList = await query;
+    // Build and execute query
+    const result = conditions.length > 0
+      ? await db
+          .select({
+            id: projects.id,
+            title: projects.title,
+            description: projects.description,
+            category: projects.category,
+            fundingGoal: projects.fundingGoal,
+            currentFunding: projects.currentFunding,
+            backersCount: projects.backersCount,
+            daysLeft: sql<number>`GREATEST(0, EXTRACT(DAY FROM (${projects.deadline} - NOW())))`,
+            image: projects.coverImage,
+            status: projects.status,
+            creator: {
+              id: users.id,
+              name: users.name,
+              username: users.username,
+              avatar: users.avatar,
+            },
+          })
+          .from(projects)
+          .leftJoin(users, eq(projects.creatorId, users.id))
+          .where(and(...conditions))
+          .orderBy(orderByClause)
+          .limit(50)
+      : await db
+          .select({
+            id: projects.id,
+            title: projects.title,
+            description: projects.description,
+            category: projects.category,
+            fundingGoal: projects.fundingGoal,
+            currentFunding: projects.currentFunding,
+            backersCount: projects.backersCount,
+            daysLeft: sql<number>`GREATEST(0, EXTRACT(DAY FROM (${projects.deadline} - NOW())))`,
+            image: projects.coverImage,
+            status: projects.status,
+            creator: {
+              id: users.id,
+              name: users.name,
+              username: users.username,
+              avatar: users.avatar,
+            },
+          })
+          .from(projects)
+          .leftJoin(users, eq(projects.creatorId, users.id))
+          .orderBy(orderByClause)
+          .limit(50);
 
-    return NextResponse.json({
-      success: true,
-      projects: projectsList,
-    });
+    return NextResponse.json({ projects: result });
   } catch (error) {
     console.error('Error fetching projects:', error);
-    return NextResponse.json(
-      { success: false, message: 'حدث خطأ في الخادم' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'خطأ في جلب المشاريع' }, { status: 500 });
   }
 }
+

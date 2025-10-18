@@ -205,7 +205,6 @@ export default function ProfilePage() {
                   : 'text-text-secondary hover:bg-bg-hover'
               }`}
             >
-              <span>{tab.icon}</span>
               <span>{tab.label}</span>
             </button>
           ))}

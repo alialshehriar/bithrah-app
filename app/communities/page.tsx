@@ -127,7 +127,6 @@ export default function CommunitiesPage() {
                       : 'bg-bg-card text-text-secondary hover:bg-bg-hover'
                   }`}
                 >
-                  <span>{cat.icon}</span>
                   <span className="text-sm">{cat.label}</span>
                 </button>
               ))}

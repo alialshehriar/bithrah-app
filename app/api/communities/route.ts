@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { communities } from '@/lib/db/schema';
-import { eq, like, desc } from 'drizzle-orm';
+import { eq, like, desc, and } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,17 +9,19 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const search = searchParams.get('search');
     
-    let query = db.select().from(communities);
+    const conditions = [];
     
     if (category && category !== 'all') {
-      query = query.where(eq(communities.category, category));
+      conditions.push(eq(communities.category, category));
     }
     
     if (search) {
-      query = query.where(like(communities.name, `%${search}%`));
+      conditions.push(like(communities.name, `%${search}%`));
     }
     
-    const result = await query.orderBy(desc(communities.memberCount));
+    const result = conditions.length > 0
+      ? await db.select().from(communities).where(and(...conditions)).orderBy(desc(communities.memberCount))
+      : await db.select().from(communities).orderBy(desc(communities.memberCount));
     
     return NextResponse.json({ communities: result });
   } catch (error) {
@@ -27,3 +29,4 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'خطأ في جلب المجتمعات' }, { status: 500 });
   }
 }
+

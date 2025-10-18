@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { backings, projects, transactions, wallets } from '@/lib/db/schema';
+import { backings, projects, transactions } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { verifySession } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify authentication
@@ -18,8 +18,9 @@ export async function POST(
       );
     }
 
+    const params = await context.params;
     const projectId = parseInt(params.id);
-    const { packageId, amount, message } = await request.json();
+    const { packageId, message } = await request.json();
 
     // Get project details
     const [project] = await db
@@ -46,36 +47,40 @@ export async function POST(
       );
     }
 
-    // Create transaction
+    // Create transaction with proper typing
+    const transactionData = {
+      userId: user.id,
+      type: 'payment' as const,
+      category: 'backing',
+      amount: selectedPackage.price.toString(),
+      currency: 'SAR',
+      status: 'pending' as const,
+      relatedId: projectId,
+      relatedType: 'project',
+      description: `دعم مشروع: ${project.title}`,
+    };
+
     const [transaction] = await db
       .insert(transactions)
-      .values({
-        userId: user.id,
-        type: 'payment',
-        category: 'backing',
-        amount: selectedPackage.price.toString(),
-        currency: 'SAR',
-        status: 'pending',
-        relatedId: projectId,
-        relatedType: 'project',
-        description: `دعم مشروع: ${project.title}`,
-      })
+      .values(transactionData as any)
       .returning();
 
     // Create backing
+    const backingData = {
+      projectId,
+      userId: user.id,
+      transactionId: transaction.id,
+      amount: selectedPackage.price.toString(),
+      currency: 'SAR',
+      packageId,
+      packageDetails: selectedPackage,
+      message,
+      status: 'pending' as const,
+    };
+
     const [backing] = await db
       .insert(backings)
-      .values({
-        projectId,
-        userId: user.id,
-        transactionId: transaction.id,
-        amount: selectedPackage.price.toString(),
-        currency: 'SAR',
-        packageId,
-        packageDetails: selectedPackage,
-        message,
-        status: 'pending',
-      })
+      .values(backingData as any)
       .returning();
 
     return NextResponse.json({
