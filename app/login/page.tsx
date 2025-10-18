@@ -187,7 +187,7 @@ export default function LoginPage() {
           </div>
         </div>
         
-        <script src="/login.js"></script>
+        <script src="/login-v2.js"></script>
         
       </body>
     </html>
