@@ -131,7 +131,7 @@ export default function OnboardingPopup({ isOpen, onClose, onComplete }: Onboard
           />
 
           {/* Popup */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-24 pointer-events-none">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -311,7 +311,7 @@ export default function OnboardingPopup({ isOpen, onClose, onComplete }: Onboard
               </div>
 
               {/* Footer */}
-              <div className="p-6 border-t border-gray-100 flex items-center justify-between">
+              <div className="p-6 pb-8 border-t border-gray-100 flex items-center justify-between">
                 <div>
                   {currentStep > 0 && (
                     <button
