@@ -26,6 +26,12 @@ export default function HomePage() {
     walletBalance: '0',
     achievements: 0
   });
+  const [platformStats, setPlatformStats] = useState({
+    activeProjects: 0,
+    activeUsers: 0,
+    todayFunding: 0,
+    newAchievements: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'featured' | 'trending' | 'new'>('featured');
 
@@ -35,6 +41,15 @@ export default function HomePage() {
 
   const fetchHomeData = async () => {
     try {
+      // Fetch platform stats
+      const platformStatsRes = await fetch('/api/stats/platform');
+      if (platformStatsRes.ok) {
+        const data = await platformStatsRes.json();
+        if (data.success) {
+          setPlatformStats(data.stats);
+        }
+      }
+
       // Fetch user stats
       const statsRes = await fetch('/api/user/stats');
       if (statsRes.ok) {
@@ -96,32 +111,38 @@ export default function HomePage() {
     );
   }
 
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
+  };
+
   const quickStats = [
     {
       icon: Rocket,
       label: 'مشاريع نشطة',
-      value: '248',
+      value: formatNumber(platformStats.activeProjects),
       trend: '+12%',
       color: 'from-blue-500 to-blue-600'
     },
     {
       icon: Users,
       label: 'مستخدمين نشطين',
-      value: '12.5K',
+      value: formatNumber(platformStats.activeUsers),
       trend: '+23%',
       color: 'from-green-500 to-green-600'
     },
     {
       icon: DollarSign,
       label: 'تمويل اليوم',
-      value: '850K',
+      value: formatNumber(platformStats.todayFunding),
       trend: '+18%',
       color: 'from-[#14B8A6] to-[#0F9D8F]'
     },
     {
       icon: Trophy,
       label: 'إنجازات جديدة',
-      value: '45',
+      value: formatNumber(platformStats.newAchievements),
       trend: '+8%',
       color: 'from-[#8B5CF6] to-[#7C3AED]'
     }
