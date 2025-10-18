@@ -1306,3 +1306,58 @@ export const negotiationGatesRelations = relations(negotiationGates, ({ one }) =
   }),
 }));
 
+
+
+
+// ============================================
+// SUPPORT TIERS & BACKINGS
+// ============================================
+
+export const supportTiers = pgTable('support_tiers', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  projectId: integer('project_id').references(() => projects.id).notNull(),
+  
+  // Tier details
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description').notNull(),
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+  
+  // Rewards
+  rewards: jsonb('rewards'), // Array of reward items
+  deliveryDate: timestamp('delivery_date'),
+  estimatedDelivery: varchar('estimated_delivery', { length: 100 }),
+  
+  // Limits
+  maxBackers: integer('max_backers'),
+  currentBackers: integer('current_backers').default(0),
+  
+  // Shipping
+  shippingIncluded: boolean('shipping_included').default(false),
+  shippingCost: numeric('shipping_cost', { precision: 12, scale: 2 }),
+  shippingRegions: jsonb('shipping_regions'),
+  
+  // Status
+  isActive: boolean('is_active').default(true),
+  isVisible: boolean('is_visible').default(true),
+  
+  // Display order
+  displayOrder: integer('display_order').default(0),
+  
+  // Metadata
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  projectIdx: index('support_tiers_project_idx').on(table.projectId),
+  amountIdx: index('support_tiers_amount_idx').on(table.amount),
+}));
+
+// Relations
+export const supportTiersRelations = relations(supportTiers, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [supportTiers.projectId],
+    references: [projects.id],
+  }),
+}));
+
