@@ -106,7 +106,9 @@ export default function OnboardingPopup({ isOpen, onClose, onComplete }: Onboard
   };
 
   const handleSkip = () => {
-    onComplete({ username: '', interests: [] });
+    // حفظ في localStorage لمنع الظهور مرة أخرى
+    localStorage.setItem('onboarding_completed', 'true');
+    onClose();
   };
 
   const toggleInterest = (interest: string) => {

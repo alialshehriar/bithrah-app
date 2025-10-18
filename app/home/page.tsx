@@ -24,6 +24,8 @@ export default function HomePage() {
   const [user, setUser] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [featuredProjects, setFeaturedProjects] = useState<any[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
 
   const handleOnboardingComplete = async (data: { username: string; interests: string[] }) => {
     try {
@@ -32,7 +34,13 @@ export default function HomePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      // حفظ في localStorage لمنع الظهور مرة أخرى
+      localStorage.setItem('onboarding_completed', 'true');
       setShowOnboarding(false);
+      // تحديث حالة المستخدم
+      if (user) {
+        setUser({ ...user, onboardingCompleted: true });
+      }
     } catch (error) {
       console.error('Failed to save onboarding data:', error);
     }
@@ -45,7 +53,9 @@ export default function HomePage() {
         if (response.ok) {
           const data = await response.json();
           setUser(data);
-          if (!data.onboardingCompleted) {
+          // التحقق من localStorage أولاً
+          const onboardingCompleted = localStorage.getItem('onboarding_completed') === 'true';
+          if (!data.onboardingCompleted && !onboardingCompleted) {
             setShowOnboarding(true);
           }
         } else {
@@ -61,6 +71,25 @@ export default function HomePage() {
 
     fetchUserData();
   }, [router]);
+
+  // Fetch featured projects
+  useEffect(() => {
+    async function fetchFeaturedProjects() {
+      try {
+        const response = await fetch('/api/projects?limit=3&status=active');
+        if (response.ok) {
+          const data = await response.json();
+          setFeaturedProjects(data.projects || []);
+        }
+      } catch (error) {
+        console.error('Error fetching featured projects:', error);
+      } finally {
+        setProjectsLoading(false);
+      }
+    }
+
+    fetchFeaturedProjects();
+  }, []);
 
   if (loading) {
     return (
@@ -262,35 +291,78 @@ export default function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="card-luxury">
-                <div className="w-full h-48 rounded-xl bg-gradient-to-br from-teal-500/20 to-purple-500/20 mb-4 flex items-center justify-center">
-                  <Rocket className="w-20 h-20 text-teal" />
+            {projectsLoading ? (
+              // Loading skeleton
+              [1, 2, 3].map((i) => (
+                <div key={i} className="card-luxury animate-pulse">
+                  <div className="w-full h-48 rounded-xl bg-gray-200 mb-4"></div>
+                  <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-2 bg-gray-200 rounded mb-4"></div>
+                  <div className="flex justify-between">
+                    <div className="h-8 bg-gray-200 rounded w-24"></div>
+                    <div className="h-8 bg-gray-200 rounded w-24"></div>
+                  </div>
                 </div>
-                <h3 className="font-bold text-text-primary mb-2">مشروع مبتكر {i}</h3>
-                <p className="text-sm text-text-muted mb-4">وصف قصير للمشروع وأهدافه الرئيسية</p>
+              ))
+            ) : featuredProjects.length > 0 ? (
+              featuredProjects.map((project) => {
+                const progress = project.goal_amount > 0 
+                  ? Math.round((project.current_amount / project.goal_amount) * 100)
+                  : 0;
                 
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-text-muted">التقدم</span>
-                    <span className="text-teal font-medium">75%</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-bg-secondary overflow-hidden">
-                    <div className="h-full w-3/4 gradient-bg"></div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-text-muted">تم جمع</p>
-                    <p className="font-bold text-text-primary">75,000 ريال</p>
-                  </div>
-                  <button className="btn-primary text-sm py-2 px-4">
-                    دعم المشروع
-                  </button>
-                </div>
+                return (
+                  <Link
+                    key={project.id}
+                    href={`/projects/${project.id}`}
+                    className="card-luxury hover:shadow-xl transition-all duration-300"
+                  >
+                    <div className="w-full h-48 rounded-xl bg-gradient-to-br from-teal-500/20 to-purple-500/20 mb-4 flex items-center justify-center overflow-hidden">
+                      {project.image_url ? (
+                        <img 
+                          src={project.image_url} 
+                          alt={project.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Rocket className="w-20 h-20 text-teal" />
+                      )}
+                    </div>
+                    <h3 className="font-bold text-text-primary mb-2 line-clamp-1">{project.title}</h3>
+                    <p className="text-sm text-text-muted mb-4 line-clamp-2">{project.description}</p>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-text-muted">التقدم</span>
+                        <span className="text-teal font-medium">{progress}%</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-bg-secondary overflow-hidden">
+                        <div 
+                          className="h-full gradient-bg transition-all duration-500"
+                          style={{ width: `${Math.min(progress, 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-text-muted">تم جمع</p>
+                        <p className="font-bold text-text-primary">{project.current_amount?.toLocaleString('ar-SA')} ريال</p>
+                      </div>
+                      <button className="btn-primary text-sm py-2 px-4">
+                        دعم المشروع
+                      </button>
+                    </div>
+                  </Link>
+                );
+              })
+            ) : (
+              // No projects
+              <div className="col-span-3 text-center py-12">
+                <Rocket className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">لا توجد مشاريع مميزة حالياً</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
