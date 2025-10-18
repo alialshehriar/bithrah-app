@@ -4,6 +4,7 @@ import { users } from '@/lib/db/schema';
 import { hash } from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { createSession } from '@/lib/auth';
+import { neon } from '@neondatabase/serverless';
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,21 +36,36 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hash(password, 10);
 
-    // Create user with only required fields
+    // Create user with default sandbox data
     const insertData: any = {
       email,
       password: hashedPassword,
+      name: name,
+      points: 100, // نقاط ترحيبية
+      level: 1,
+      wallet_balance: 1000, // رصيد ترحيبي 1000 ريال
+      onboarding_completed: false,
     };
-    
-    // Add optional fields if provided
-    if (name) {
-      insertData.name = name;
-    }
     
     const [newUser] = await db
       .insert(users)
       .values(insertData)
       .returning();
+
+    // Add welcome notifications using Neon
+    const sql = neon(process.env.DATABASE_URL!);
+    
+    try {
+      await sql`
+        INSERT INTO notifications (user_id, type, title, content, action_url, is_read)
+        VALUES 
+          (${newUser.id}, 'achievement', 'مرحباً بك في بذرة! 🎉', 'تم إنشاء حسابك بنجاح. ابدأ رحلتك الآن!', '/home', false),
+          (${newUser.id}, 'reward', 'مكافأة ترحيبية 🎁', 'حصلت على 100 نقطة و 1000 ريال كمكافأة ترحيبية!', '/wallet', false),
+          (${newUser.id}, 'project_approved', 'استكشف المشاريع', 'اكتشف مشاريع مبتكرة وادعم الأفكار الإبداعية', '/projects', false)
+      `;
+    } catch (notifError) {
+      console.error('Failed to create welcome notifications:', notifError);
+    }
 
     // Create session automatically (auto-login)
     await createSession(newUser.id);

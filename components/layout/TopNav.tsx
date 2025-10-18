@@ -4,9 +4,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+interface User {
+  name: string;
+}
+
 export default function TopNav() {
   const [scrolled, setScrolled] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -16,6 +21,29 @@ export default function TopNav() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    // Fetch user data
+    async function fetchUser() {
+      try {
+        const response = await fetch('/api/user/stats');
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      }
+    }
+    fetchUser();
+  }, []);
+
+  const getInitial = (name: string) => {
+    if (!name) return 'م';
+    return name.charAt(0);
+  };
+
+  const displayName = user?.name || 'مستخدم';
 
   return (
     <nav
@@ -74,7 +102,10 @@ export default function TopNav() {
           {/* Right Section */}
           <div className="flex items-center gap-4">
             {/* Notifications */}
-            <button className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 group">
+            <Link
+              href="/notifications"
+              className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 group"
+            >
               <svg
                 className="w-6 h-6 text-gray-600 group-hover:text-gray-900 transition-colors"
                 fill="none"
@@ -89,7 +120,7 @@ export default function TopNav() {
                 />
               </svg>
               <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full animate-pulse"></span>
-            </button>
+            </Link>
 
             {/* Messages */}
             <Link
@@ -118,10 +149,10 @@ export default function TopNav() {
               className="flex items-center gap-2 p-1 pr-3 rounded-xl hover:bg-gray-100 transition-colors duration-200 group"
             >
               <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center text-white font-bold text-sm shadow-glow">
-                ف
+                {getInitial(displayName)}
               </div>
               <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors hidden lg:block">
-                فاطمة الأحمد
+                {displayName}
               </span>
             </Link>
           </div>
