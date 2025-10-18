@@ -1196,3 +1196,70 @@ export const projectAccessLogsRelations = relations(projectAccessLogs, ({ one })
   }),
 }));
 
+
+
+// ============================================
+// COMMUNITY ENGAGEMENT
+// ============================================
+
+export const postComments = pgTable('post_comments', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  postId: integer('post_id').references(() => communityPosts.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  parentId: integer('parent_id'), // Self-reference for nested comments
+  
+  // Content
+  content: text('content').notNull(),
+  
+  // Engagement
+  likesCount: integer('likes_count').default(0),
+  repliesCount: integer('replies_count').default(0),
+  
+  // Status
+  status: varchar('status', { length: 50 }).default('published'),
+  
+  // Metadata
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at'),
+}, (table) => ({
+  postIdx: index('post_comments_post_idx').on(table.postId),
+  userIdx: index('post_comments_user_idx').on(table.userId),
+  parentIdx: index('post_comments_parent_idx').on(table.parentId),
+}));
+
+export const postLikes = pgTable('post_likes', {
+  id: serial('id').primaryKey(),
+  postId: integer('post_id').references(() => communityPosts.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  postUserIdx: uniqueIndex('post_likes_post_user_idx').on(table.postId, table.userId),
+  postIdx: index('post_likes_post_idx').on(table.postId),
+  userIdx: index('post_likes_user_idx').on(table.userId),
+}));
+
+export const commentLikes = pgTable('comment_likes', {
+  id: serial('id').primaryKey(),
+  commentId: integer('comment_id').references(() => postComments.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  commentUserIdx: uniqueIndex('comment_likes_comment_user_idx').on(table.commentId, table.userId),
+  commentIdx: index('comment_likes_comment_idx').on(table.commentId),
+  userIdx: index('comment_likes_user_idx').on(table.userId),
+}));
+
+export const postSaves = pgTable('post_saves', {
+  id: serial('id').primaryKey(),
+  postId: integer('post_id').references(() => communityPosts.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  postUserIdx: uniqueIndex('post_saves_post_user_idx').on(table.postId, table.userId),
+  postIdx: index('post_saves_post_idx').on(table.postId),
+  userIdx: index('post_saves_user_idx').on(table.userId),
+}));
+
