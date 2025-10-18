@@ -1,68 +1,106 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
-import { verifySession } from '@/lib/auth';
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { negotiationMessages, negotiations, users } from '@/lib/db/schema';
+import { eq, and } from 'drizzle-orm';
+import { getSession } from '@/lib/auth';
 
-// POST /api/negotiations/[id]/messages - Send message in negotiation
+// Simple content monitoring patterns
+const FORBIDDEN_PATTERNS = [
+  /\b\d{10}\b/, // Phone numbers (10 digits)
+  /\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/, // Phone numbers with separators
+  /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/, // Email addresses
+  /\b(whatsapp|واتساب|واتس|telegram|تلغرام|تليجرام)\b/i, // Messaging apps
+  /\b(twitter|تويتر|instagram|انستقرام|انستا|snapchat|سناب)\b/i, // Social media
+  /\b(call me|اتصل|تواصل معي|راسلني)\b/i, // Contact requests
+];
+
+function checkForbiddenContent(content: string): boolean {
+  return FORBIDDEN_PATTERNS.some((pattern) => pattern.test(content));
+}
+
 export async function POST(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await verifySession(request);
+    const session = await getSession();
     if (!session) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { id } = await params;
-    const { message, offerAmount, messageType } = await request.json();
+    const negotiationId = parseInt(id);
+    const { content } = await request.json();
 
-    if (!message) {
-      return NextResponse.json({ success: false, error: 'Message is required' }, { status: 400 });
+    if (!content || content.trim().length === 0) {
+      return NextResponse.json({ error: 'Message content is required' }, { status: 400 });
     }
 
-    // Verify user is part of negotiation
-    const negotiations = await query(
-      `SELECT * FROM negotiations WHERE id = $1 AND (initiator_id = $2 OR receiver_id = $2)`,
-      [id, session.id]
-    );
+    // Check if negotiation exists and is active
+    const negotiationData = await db
+      .select()
+      .from(negotiations)
+      .where(
+        and(
+          eq(negotiations.id, negotiationId),
+          eq(negotiations.status, 'active')
+        )
+      )
+      .limit(1);
 
-    if (negotiations.length === 0) {
-      return NextResponse.json({ success: false, error: 'Negotiation not found' }, { status: 404 });
+    if (negotiationData.length === 0) {
+      return NextResponse.json({ error: 'Negotiation not found or expired' }, { status: 404 });
     }
 
-    // Create message
-    const result = await query(
-      `INSERT INTO negotiation_messages (negotiation_id, sender_id, message, offer_amount, message_type, created_at)
-      VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
-      RETURNING *`,
-      [id, session.id, message, offerAmount || null, messageType || 'message']
-    );
+    // Check if user is part of this negotiation
+    const negotiation = negotiationData[0];
+    const isParticipant =
+      negotiation.investorId === session.id;
 
-    // Update negotiation updated_at
-    await query(
-      `UPDATE negotiations SET updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
-      [id]
-    );
-
-    // If this is a counter-offer, update current_offer
-    if (offerAmount && messageType === 'counter_offer') {
-      await query(
-        `UPDATE negotiations SET current_offer = $1 WHERE id = $2`,
-        [offerAmount, id]
-      );
+    if (!isParticipant) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Track activity
-    await query(
-      `INSERT INTO user_activities (user_id, activity_type, activity_data, created_at)
-      VALUES ($1, 'negotiation_message_sent', $2, CURRENT_TIMESTAMP)`,
-      [session.id, JSON.stringify({ negotiationId: id, messageType })]
-    );
+    // Check for forbidden content
+    const isFlagged = checkForbiddenContent(content);
 
-    return NextResponse.json({ success: true, message: result[0] });
+    // Insert message
+    const [newMessage] = await db
+      .insert(negotiationMessages)
+      .values({
+        negotiationId,
+        senderId: session.id,
+        content,
+      })
+      .returning();
+
+    // Get sender name
+    const sender = await db
+      .select({ name: users.name })
+      .from(users)
+      .where(eq(users.id, session.id))
+      .limit(1);
+
+    // If flagged, could trigger additional actions (email admin, etc.)
+    if (isFlagged) {
+      console.warn(`Flagged message in negotiation ${negotiationId} by user ${session.id}`);
+      // TODO: Implement admin notification
+    }
+
+    return NextResponse.json({
+      id: newMessage.id,
+      senderId: newMessage.senderId,
+      senderName: sender[0]?.name || 'Unknown',
+      content: newMessage.content,
+      timestamp: newMessage.createdAt,
+      flagged: newMessage.flagged,
+    });
   } catch (error) {
     console.error('Error sending message:', error);
-    return NextResponse.json({ success: false, error: 'Failed to send message' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to send message' },
+      { status: 500 }
+    );
   }
 }
 
