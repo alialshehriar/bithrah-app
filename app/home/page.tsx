@@ -3,17 +3,25 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import MainLayout from '@/components/layout/MainLayout';
 import OnboardingPopup from '@/components/OnboardingPopup';
-import { 
-  Loader2, Sparkles, Search, Plus, TrendingUp, Users, 
-  MessageSquare, Award, Wallet, BarChart3, Zap, Target,
-  Brain, Rocket, Shield, Star
-} from 'lucide-react';
+
+interface UserStats {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  onboardingCompleted: boolean;
+  stats: {
+    projects: number;
+    backings: number;
+  };
+}
 
 export default function HomePage() {
   const router = useRouter();
+  const [user, setUser] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const handleOnboardingComplete = async (data: { username: string; interests: string[] }) => {
@@ -30,181 +38,257 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    fetch('/api/user/stats')
-      .then(res => {
-        if (!res.ok) {
-          router.push('/auth/signin');
-          return null;
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data) {
+    async function fetchUserData() {
+      try {
+        const response = await fetch('/api/user/stats');
+        if (response.ok) {
+          const data = await response.json();
           setUser(data);
-          // Show onboarding for new users who haven't completed it
-          if (data.onboardingCompleted === false) {
+          if (!data.onboardingCompleted) {
             setShowOnboarding(true);
           }
+        } else {
+          router.push('/auth/signin');
         }
-        setLoading(false);
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error('Error fetching user data:', error);
         router.push('/auth/signin');
-      });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUserData();
   }, [router]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
-          <p className="text-white text-lg">جاري التحميل...</p>
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl gradient-bg animate-pulse"></div>
+            <p className="text-text-muted">جاري التحميل...</p>
+          </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
+  if (!user) {
+    return null;
+  }
+
+  const quickActions = [
+    {
+      title: 'تقييم الأفكار بالذكاء الاصطناعي',
+      description: 'احصل على تقييم شامل وتحليل متقدم لفكرتك',
+      icon: '🧠',
+      href: '/ai-evaluation',
+      gradient: 'from-purple-500 to-pink-500',
+      badge: 'الأكثر تطوراً',
+    },
+    {
+      title: 'استكشف المشاريع',
+      description: 'اكتشف مشاريع مبتكرة تبحث عن دعمك',
+      icon: '🔍',
+      href: '/projects',
+      gradient: 'from-teal-500 to-cyan-500',
+    },
+    {
+      title: 'أنشئ مشروعك',
+      description: 'شارك فكرتك واحصل على التمويل',
+      icon: '🚀',
+      href: '/projects/create',
+      gradient: 'from-orange-500 to-red-500',
+    },
+  ];
+
+  const mainSections = [
+    {
+      title: 'لوحة الصدارة',
+      description: 'تنافس واربح الجوائز',
+      icon: '🏆',
+      href: '/leaderboard',
+      color: 'teal',
+    },
+    {
+      title: 'الفعاليات',
+      description: 'شارك في الفعاليات',
+      icon: '📅',
+      href: '/events',
+      color: 'purple',
+    },
+    {
+      title: 'المجتمعات',
+      description: 'انضم وتواصل مع الآخرين',
+      icon: '👥',
+      href: '/communities',
+      color: 'teal',
+    },
+    {
+      title: 'لوحة التحكم',
+      description: 'إدارة حسابك ومشاريعك',
+      icon: '📊',
+      href: '/dashboard',
+      color: 'purple',
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <MainLayout>
       <OnboardingPopup 
         isOpen={showOnboarding}
         onClose={() => setShowOnboarding(false)}
         onComplete={handleOnboardingComplete}
       />
       
-      {/* Navigation */}
-      <nav className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-purple-600 rounded-xl flex items-center justify-center">
-              <span className="text-white text-xl font-bold">ب</span>
-            </div>
-            <span className="text-slate-900 text-2xl font-bold">بذرة</span>
+      <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden rounded-3xl p-8 md:p-12 glass-strong">
+          <div className="absolute top-0 left-0 w-full h-full opacity-10">
+            <div className="absolute top-10 right-10 w-32 h-32 rounded-full bg-teal blur-3xl"></div>
+            <div className="absolute bottom-10 left-10 w-40 h-40 rounded-full bg-purple blur-3xl"></div>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/profile" className="text-slate-600 hover:text-slate-900 transition-colors">
-              الملف الشخصي
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-6">
-          <h1 className="text-4xl font-bold mb-3">مرحباً بعودتك، {user?.name || 'مستخدم'}</h1>
-          <p className="text-xl text-white/80">استكشف الفرص الجديدة وابدأ رحلتك نحو النجاح</p>
-        </div>
-      </div>
-
-      {/* AI Evaluation - Featured Section */}
-      <div className="max-w-7xl mx-auto px-6 -mt-8 mb-12">
-        <Link
-          href="/ai-evaluation"
-          className="group block bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all transform hover:scale-[1.02]"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                  <Brain className="w-8 h-8 text-white" />
+          
+          <div className="relative z-10">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">
+              مرحباً بعودتك، <span className="gradient-text">{user.name}</span>
+            </h1>
+            <p className="text-text-secondary text-lg mb-6">
+              استكشف الفرص الجديدة وابدأ رحلتك نحو النجاح
+            </p>
+            
+            {/* Stats */}
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-bg-card/50">
+                <div className="w-8 h-8 rounded-lg bg-teal/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold text-white">تقييم الأفكار بالذكاء الاصطناعي</h2>
-                  <p className="text-white/90 text-sm">الميزة الأكثر تطوراً في المنصة</p>
+                  <p className="text-sm text-text-muted">مشاريعك</p>
+                  <p className="text-lg font-bold text-text-primary">{user.stats.projects}</p>
                 </div>
               </div>
-              <p className="text-white/90 text-lg mb-6">
-                احصل على تقييم شامل ودقيق لفكرة مشروعك باستخدام الذكاء الاصطناعي المتقدم. تحليل متعمق، توصيات احترافية، ونقاط قوة وضعف مفصلة.
-              </p>
-              <div className="flex items-center gap-6 text-white/90">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5" />
-                  <span>تقييم فوري</span>
+              
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-bg-card/50">
+                <div className="w-8 h-8 rounded-lg bg-purple/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5" />
-                  <span>دقة عالية</span>
+                <div>
+                  <p className="text-sm text-text-muted">دعمك</p>
+                  <p className="text-lg font-bold text-text-primary">{user.stats.backings}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  <span>سري وآمن</span>
-                </div>
-              </div>
-            </div>
-            <div className="hidden md:block">
-              <div className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:rotate-12 transition-transform">
-                <Zap className="w-16 h-16 text-white" />
               </div>
             </div>
           </div>
-        </Link>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="max-w-7xl mx-auto px-6 mb-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Link
-            href="/projects"
-            className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border border-slate-200 hover:border-purple-200"
-          >
-            <div className="flex items-start gap-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Search className="w-8 h-8 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">استكشف المشاريع</h3>
-                <p className="text-slate-600">اكتشف مشاريع مبتكرة تبحث عن دعمك</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link
-            href="/projects/create"
-            className="group bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all"
-          >
-            <div className="flex items-start gap-6">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Plus className="w-8 h-8 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-2xl font-bold text-white mb-2">أنشئ مشروعك</h3>
-                <p className="text-white/90">شارك فكرتك واحصل على التمويل</p>
-              </div>
-            </div>
-          </Link>
         </div>
-      </div>
 
-      {/* الأقسام الرئيسية */}
-      <div className="max-w-7xl mx-auto px-6 pb-12">
-        <h2 className="text-3xl font-bold text-slate-900 mb-8">الأقسام الرئيسية</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { href: '/dashboard', icon: BarChart3, title: 'لوحة التحكم', desc: 'إدارة حسابك ومشاريعك', color: 'from-yellow-500 to-orange-500' },
-            { href: '/communities', icon: Users, title: 'المجتمعات', desc: 'انضم وتواصل مع الآخرين', color: 'from-green-500 to-teal-500' },
-            { href: '/events', icon: Star, title: 'الفعاليات', desc: 'شارك في الفعاليات', color: 'from-red-500 to-pink-500' },
-            { href: '/leaderboard', icon: TrendingUp, title: 'لوحة الصدارة', desc: 'تنافس واربح الجوائز', color: 'from-blue-500 to-indigo-500' },
-            { href: '/messages', icon: MessageSquare, title: 'المحادثات', desc: 'تواصل مع الآخرين', color: 'from-pink-500 to-rose-500' },
-            { href: '/achievements', icon: Award, title: 'الإنجازات', desc: 'اكسب الشارات والنقاط', color: 'from-purple-500 to-violet-500' },
-            { href: '/wallet', icon: Wallet, title: 'المحفظة', desc: 'إدارة أموالك', color: 'from-emerald-500 to-green-500' },
-            { href: '/admin', icon: Shield, title: 'لوحة الإدارة', desc: 'إدارة المنصة', color: 'from-slate-700 to-slate-900' },
-          ].map((section, index) => (
-            <Link
-              key={index}
-              href={section.href}
-              className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all border border-slate-200 hover:border-purple-200"
-            >
-              <div className={`w-14 h-14 bg-gradient-to-br ${section.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                <section.icon className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">{section.title}</h3>
-              <p className="text-sm text-slate-600">{section.desc}</p>
+        {/* Quick Actions */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-text-primary">إجراءات سريعة</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {quickActions.map((action, index) => (
+              <Link
+                key={index}
+                href={action.href}
+                className="group relative overflow-hidden rounded-2xl p-6 glass hover:glass-strong transition-all duration-300 hover:scale-105 hover:shadow-luxury"
+              >
+                {action.badge && (
+                  <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium bg-purple/20 text-purple border border-purple/30">
+                    {action.badge}
+                  </span>
+                )}
+                
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${action.gradient} flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-glow`}>
+                  {action.icon}
+                </div>
+                
+                <h3 className="text-lg font-bold text-text-primary mb-2 group-hover:gradient-text transition-all duration-300">
+                  {action.title}
+                </h3>
+                <p className="text-text-muted text-sm">{action.description}</p>
+                
+                <div className="mt-4 flex items-center gap-2 text-teal text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span>ابدأ الآن</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Sections */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-text-primary">الأقسام الرئيسية</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {mainSections.map((section, index) => (
+              <Link
+                key={index}
+                href={section.href}
+                className="card-luxury text-center group"
+              >
+                <div className={`w-16 h-16 mx-auto rounded-2xl bg-${section.color}/10 flex items-center justify-center text-4xl mb-3 group-hover:scale-110 transition-transform duration-300`}>
+                  {section.icon}
+                </div>
+                <h3 className="font-bold text-text-primary mb-1">{section.title}</h3>
+                <p className="text-sm text-text-muted">{section.description}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Featured Projects */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-text-primary">مشاريع مميزة</h2>
+            <Link href="/projects" className="text-teal hover:text-teal-400 text-sm font-medium flex items-center gap-1">
+              <span>عرض الكل</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
             </Link>
-          ))}
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="card-luxury">
+                <div className="w-full h-48 rounded-xl bg-gradient-to-br from-teal-500/20 to-purple-500/20 mb-4 flex items-center justify-center">
+                  <span className="text-6xl">🚀</span>
+                </div>
+                <h3 className="font-bold text-text-primary mb-2">مشروع مبتكر {i}</h3>
+                <p className="text-sm text-text-muted mb-4">وصف قصير للمشروع وأهدافه الرئيسية</p>
+                
+                <div className="space-y-2 mb-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-text-muted">التقدم</span>
+                    <span className="text-teal font-medium">75%</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-bg-secondary overflow-hidden">
+                    <div className="h-full w-3/4 gradient-bg"></div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-text-muted">تم جمع</p>
+                    <p className="font-bold text-text-primary">75,000 ريال</p>
+                  </div>
+                  <button className="btn-primary text-sm py-2 px-4">
+                    دعم المشروع
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }
 
