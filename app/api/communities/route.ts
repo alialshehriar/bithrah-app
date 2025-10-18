@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { communities, users } from '@/lib/db/schema';
-import { eq, like, desc, and, sql } from 'drizzle-orm';
+import { neon } from '@neondatabase/serverless';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,52 +8,52 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const sort = searchParams.get('sort') || 'popular';
     
-    let query = db
-      .select({
-        id: communities.id,
-        name: communities.name,
-        description: communities.description,
-        category: communities.category,
-        privacy: sql<string>`CASE WHEN ${communities.isPrivate} THEN 'private' ELSE 'public' END`,
-        coverImage: communities.coverImage,
-        memberCount: communities.memberCount,
-        postCount: communities.postsCount,
-        createdAt: communities.createdAt,
-        creator: {
-          id: users.id,
-          name: users.name,
-          username: users.username,
-          avatar: users.avatar,
-        },
-      })
-      .from(communities)
-      .leftJoin(users, eq(communities.creatorId, users.id));
+    const sql = neon(process.env.DATABASE_URL!);
     
-    // Apply filters
-    const conditions = [];
+    // Build WHERE clause
+    let whereClause = '1=1';
     
     if (category && category !== '' && category !== 'all') {
-      conditions.push(eq(communities.category, category));
+      whereClause += ` AND c.category = '${category}'`;
     }
     
     if (search) {
-      conditions.push(like(communities.name, `%${search}%`));
+      whereClause += ` AND c.name ILIKE '%${search}%'`;
     }
     
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
-    }
-    
-    // Apply sorting
-    if (sort === 'popular') {
-      query = query.orderBy(desc(communities.memberCount)) as any;
-    } else if (sort === 'recent') {
-      query = query.orderBy(desc(communities.createdAt)) as any;
+    // Build ORDER BY clause
+    let orderByClause = 'c.member_count DESC';
+    if (sort === 'recent') {
+      orderByClause = 'c.created_at DESC';
     } else if (sort === 'members') {
-      query = query.orderBy(desc(communities.memberCount)) as any;
+      orderByClause = 'c.member_count DESC';
     }
     
-    const result = await query;
+    const query = `
+      SELECT 
+        c.id,
+        c.name,
+        c.description,
+        c.category,
+        CASE WHEN c.is_private THEN 'private' ELSE 'public' END as privacy,
+        c.cover_image as "coverImage",
+        c.member_count as "memberCount",
+        c.posts_count as "postCount",
+        c.created_at as "createdAt",
+        json_build_object(
+          'id', u.id,
+          'name', u.name,
+          'username', COALESCE(u.username, 'user' || u.id),
+          'avatar', u.avatar
+        ) as creator
+      FROM communities c
+      LEFT JOIN users u ON c.creator_id = u.id
+      WHERE ${whereClause}
+      ORDER BY ${orderByClause}
+      LIMIT 50
+    `;
+    
+    const result = await sql(query);
     
     return NextResponse.json({ communities: result });
   } catch (error) {

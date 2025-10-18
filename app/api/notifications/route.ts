@@ -56,7 +56,9 @@ export async function GET(request: NextRequest) {
     // Get notifications
     const notificationsQuery = `
       SELECT 
-        id, user_id, type, title, message, link,
+        id, user_id, type, title, 
+        COALESCE(content, message) as message,
+        COALESCE(action_url, link) as link,
         read, created_at, read_at
       FROM notifications
       WHERE ${whereClause}
