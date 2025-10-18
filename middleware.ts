@@ -11,9 +11,9 @@ const protectedRoutes = [
   '/home',
   '/dashboard',
   '/projects/create',
-  '/projects',
   '/communities/create',
   '/communities',
+  '/community',
   '/events/create',
   '/events',
   '/wallet',
@@ -26,7 +26,11 @@ const protectedRoutes = [
   '/admin',
   '/leaderboard',
   '/marketing',
-  '/community',
+];
+
+// Routes that allow viewing but require login for actions
+const publicViewRoutes = [
+  '/projects',
 ];
 
 // Routes that are only for guests (not logged in)
@@ -40,6 +44,12 @@ export async function middleware(request: NextRequest) {
 
   // Allow access to homepage without authentication
   if (pathname === '/') {
+    return NextResponse.next();
+  }
+
+  // Allow viewing projects list without authentication
+  // But project details will require login (handled in the page itself)
+  if (pathname === '/projects' && !pathname.includes('/projects/')) {
     return NextResponse.next();
   }
 

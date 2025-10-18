@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, integer, numeric, timestamp, boolean, jsonb, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, text, integer, numeric, decimal, timestamp, boolean, jsonb, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // ============================================
@@ -1261,5 +1261,33 @@ export const postSaves = pgTable('post_saves', {
   postUserIdx: uniqueIndex('post_saves_post_user_idx').on(table.postId, table.userId),
   postIdx: index('post_saves_post_idx').on(table.postId),
   userIdx: index('post_saves_user_idx').on(table.userId),
+}));
+
+
+// Idea Evaluations Table
+export const ideaEvaluations = pgTable('idea_evaluations', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  userId: integer('user_id').references(() => users.id),
+  ideaTitle: varchar('idea_title', { length: 500 }).notNull(),
+  ideaDescription: text('idea_description').notNull(),
+  category: varchar('category', { length: 100 }),
+  targetMarket: varchar('target_market', { length: 200 }),
+  aiScore: decimal('ai_score', { precision: 3, scale: 1 }),
+  aiAnalysis: jsonb('ai_analysis'),
+  strengths: text('strengths').array(),
+  weaknesses: text('weaknesses').array(),
+  opportunities: text('opportunities').array(),
+  risks: text('risks').array(),
+  recommendations: text('recommendations').array(),
+  marketAnalysis: text('market_analysis'),
+  financialProjection: text('financial_projection'),
+  status: varchar('status', { length: 50 }).default('pending'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index('idea_evaluations_user_idx').on(table.userId),
+  statusIdx: index('idea_evaluations_status_idx').on(table.status),
+  createdAtIdx: index('idea_evaluations_created_at_idx').on(table.createdAt),
 }));
 

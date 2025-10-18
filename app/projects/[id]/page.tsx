@@ -56,6 +56,16 @@ export default function ProjectDetails({ params }: { params: Promise<{ id: strin
 
   const fetchProjectDetails = async () => {
     try {
+      // Check if user is logged in
+      const tokenResponse = await fetch('/api/user/profile');
+      const tokenData = await tokenResponse.json();
+      
+      if (!tokenData.success) {
+        // User not logged in, redirect to signin
+        window.location.href = `/auth/signin?redirect=/projects/${id}`;
+        return;
+      }
+
       const response = await fetch(`/api/projects/${id}/view`);
       const data = await response.json();
       
