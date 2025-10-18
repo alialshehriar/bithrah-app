@@ -1,55 +1,84 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { db } from '@/lib/db';
+import { projects, users } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
-  
   try {
-    const projectId = parseInt(id);
+    const projectId = parseInt(params.id);
 
-    const result = await query(
-      `SELECT 
-        p.*,
-        u.id as creator_id,
-        u.name as creator_name,
-        u.email as creator_email,
-        u.avatar as creator_avatar
-       FROM projects p
-       LEFT JOIN users u ON p.creator_id = u.id
-       WHERE p.id = $1`,
-      [projectId]
-    );
+    const [project] = await db
+      .select({
+        id: projects.id,
+        title: projects.title,
+        shortDescription: projects.shortDescription,
+        description: projects.description,
+        category: projects.category,
+        image: projects.image,
+        coverImage: projects.coverImage,
+        gallery: projects.gallery,
+        video: projects.video,
+        fundingGoal: projects.fundingGoal,
+        currentFunding: projects.currentFunding,
+        backersCount: projects.backersCount,
+        deadline: projects.deadline,
+        packages: projects.packages,
+        updates: projects.updates,
+        faq: projects.faq,
+        teamMembers: projects.teamMembers,
+        status: projects.status,
+        city: projects.city,
+        country: projects.country,
+        creatorId: projects.creatorId,
+        creatorName: users.name,
+        creatorAvatar: users.avatar,
+        creatorLevel: users.level,
+      })
+      .from(projects)
+      .leftJoin(users, eq(projects.creatorId, users.id))
+      .where(eq(projects.id, projectId))
+      .limit(1);
 
-    if (result.length === 0) {
+    if (!project) {
       return NextResponse.json(
         { success: false, error: 'المشروع غير موجود' },
         { status: 404 }
       );
     }
 
-    const project = {
-      ...result[0],
+    // Get creator's projects count
+    const creatorProjects = await db
+      .select({ count: projects.id })
+      .from(projects)
+      .where(eq(projects.creatorId, project.creatorId));
+
+    const formattedProject = {
+      ...project,
       creator: {
-        id: result[0].creator_id,
-        name: result[0].creator_name,
-        email: result[0].creator_email,
-        avatar: result[0].creator_avatar,
+        id: project.creatorId,
+        name: project.creatorName,
+        avatar: project.creatorAvatar,
+        level: project.creatorLevel,
+        projectsCount: creatorProjects.length,
+      },
+      location: {
+        city: project.city,
+        country: project.country,
       },
     };
 
     return NextResponse.json({
       success: true,
-      project,
+      project: formattedProject,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching project:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: 'حدث خطأ في الخادم' },
       { status: 500 }
     );
   }
 }
-
