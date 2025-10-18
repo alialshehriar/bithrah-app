@@ -180,74 +180,14 @@ export default function LoginPage() {
             
             <p className="info-text">لا حاجة لإنشاء حساب - فقط أدخل معلوماتك وابدأ</p>
             
-            <button type="button" id="submitBtn" onclick="return handleQuickLogin();">
+            <button type="button" id="submitBtn" onclick="(async function() { const name = document.getElementById('name').value.trim(); const email = document.getElementById('email').value.trim(); const submitBtn = document.getElementById('submitBtn'); const btnText = document.getElementById('btnText'); const loading = document.getElementById('loading'); const errorDiv = document.getElementById('error'); console.log('Button clicked!', {name, email}); if (!name || !email) { errorDiv.textContent = 'الرجاء إدخال الاسم والبريد الإلكتروني'; errorDiv.classList.add('show'); return false; } submitBtn.disabled = true; btnText.textContent = 'جاري الدخول...'; loading.classList.add('show'); errorDiv.classList.remove('show'); try { console.log('Sending request...'); const response = await fetch('/api/auth/quick-entry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email }) }); const data = await response.json(); console.log('Response:', data); if (response.ok && data.success) { console.log('Success! Redirecting...'); window.location.href = '/home'; } else { errorDiv.textContent = data.error || 'حدث خطأ'; errorDiv.classList.add('show'); submitBtn.disabled = false; btnText.textContent = 'دخول'; loading.classList.remove('show'); } } catch (error) { console.error('Error:', error); errorDiv.textContent = 'حدث خطأ أثناء الاتصال'; errorDiv.classList.add('show'); submitBtn.disabled = false; btnText.textContent = 'دخول'; loading.classList.remove('show'); } return false; })(); return false;">
               <span id="btnText">دخول</span>
               <span id="loading" className="loading"></span>
             </button>
           </div>
         </div>
         
-        <script dangerouslySetInnerHTML={{__html: `
-          window.handleQuickLogin = async function() {
-            console.log('handleQuickLogin called!');
-            
-            const nameInput = document.getElementById('name');
-            const emailInput = document.getElementById('email');
-            const submitBtn = document.getElementById('submitBtn');
-            const btnText = document.getElementById('btnText');
-            const loading = document.getElementById('loading');
-            const errorDiv = document.getElementById('error');
-            
-            const name = nameInput.value.trim();
-            const email = emailInput.value.trim();
-            
-            console.log('Form data:', { name, email });
-            
-            if (!name || !email) {
-              errorDiv.textContent = 'الرجاء إدخال الاسم والبريد الإلكتروني';
-              errorDiv.classList.add('show');
-              return false;
-            }
-            
-            submitBtn.disabled = true;
-            btnText.textContent = 'جاري الدخول...';
-            loading.classList.add('show');
-            errorDiv.classList.remove('show');
-            
-            try {
-              console.log('Sending request to API...');
-              const response = await fetch('/api/auth/quick-entry', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email })
-              });
-              
-              const data = await response.json();
-              console.log('API response:', data);
-              
-              if (response.ok && data.success) {
-                console.log('Success! Redirecting to /home');
-                window.location.href = '/home';
-              } else {
-                errorDiv.textContent = data.error || 'حدث خطأ أثناء تسجيل الدخول';
-                errorDiv.classList.add('show');
-                submitBtn.disabled = false;
-                btnText.textContent = 'دخول';
-                loading.classList.remove('show');
-              }
-            } catch (error) {
-              console.error('Login error:', error);
-              errorDiv.textContent = 'حدث خطأ أثناء الاتصال بالخادم';
-              errorDiv.classList.add('show');
-              submitBtn.disabled = false;
-              btnText.textContent = 'دخول';
-              loading.classList.remove('show');
-            }
-            
-            return false;
-          };
-          console.log('handleQuickLogin function defined!');
-        `}} />
+
         
       </body>
     </html>
