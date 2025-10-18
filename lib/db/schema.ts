@@ -124,6 +124,9 @@ export const projects = pgTable('projects', {
   
   // Package & rewards
   platformPackage: varchar('platform_package', { length: 50 }).default('basic'), // basic, bithrah_plus
+  platformCommission: numeric('platform_commission', { precision: 5, scale: 2 }).default('6.50'), // 6.5% for basic, 3% for plus
+  platformPartnership: numeric('platform_partnership', { precision: 5, scale: 2 }).default('0.00'), // 0% for basic, 2% for plus
+  referralEnabled: boolean('referral_enabled').default(false), // Only for bithrah_plus
   packages: jsonb('packages'), // Array of reward packages
   
   // Privacy & IP Protection (3 levels)

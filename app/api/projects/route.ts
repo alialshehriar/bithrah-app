@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { projects, users } from '@/lib/db/schema';
 import { eq, like, desc, sql, and } from 'drizzle-orm';
+import { getSession } from '@/lib/auth';
+import { neon } from '@neondatabase/serverless';
 
 export async function GET(request: NextRequest) {
   try {
@@ -91,6 +93,82 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching projects:', error);
     return NextResponse.json({ error: 'خطأ في جلب المشاريع' }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session?.id) {
+      return NextResponse.json(
+        { error: 'يجب تسجيل الدخول أولاً' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const {
+      title,
+      description,
+      category,
+      goalAmount,
+      endDate,
+      image,
+      packages: rewardPackages,
+      platformPackage = 'basic',
+    } = body;
+
+    // Validate required fields
+    if (!title || !description || !goalAmount) {
+      return NextResponse.json(
+        { error: 'الرجاء ملء جميع الحقول المطلوبة' },
+        { status: 400 }
+      );
+    }
+
+    // Calculate deadline (60 days from now if not provided)
+    const deadline = endDate ? new Date(endDate) : new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+
+    // Calculate commission and partnership based on package
+    const commission = platformPackage === 'bithrah_plus' ? 3.00 : 6.50;
+    const partnership = platformPackage === 'bithrah_plus' ? 2.00 : 0.00;
+    const referralEnabled = platformPackage === 'bithrah_plus';
+    const featured = platformPackage === 'bithrah_plus';
+
+    // Use raw SQL to insert (to avoid Drizzle TypeScript issues)
+    const sqlClient = neon(process.env.DATABASE_URL!);
+    
+    const result = await sqlClient`
+      INSERT INTO projects (
+        creator_id, title, description, category, funding_goal, deadline,
+        cover_image, platform_package, platform_commission, platform_partnership,
+        referral_enabled, packages, status, visibility, featured,
+        created_at, updated_at
+      ) VALUES (
+        ${session.id}, ${title}, ${description}, ${category || 'technology'},
+        ${goalAmount.toString()}, ${deadline.toISOString()},
+        ${image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800'},
+        ${platformPackage}, ${commission}, ${partnership},
+        ${referralEnabled}, ${JSON.stringify(rewardPackages || [])},
+        'active', 'public', ${featured},
+        NOW(), NOW()
+      )
+      RETURNING *
+    `;
+
+    const newProject = result[0];
+
+    return NextResponse.json({
+      success: true,
+      project: newProject,
+      message: 'تم إنشاء المشروع بنجاح',
+    });
+  } catch (error) {
+    console.error('Error creating project:', error);
+    return NextResponse.json(
+      { error: 'حدث خطأ في إنشاء المشروع' },
+      { status: 500 }
+    );
   }
 }
 

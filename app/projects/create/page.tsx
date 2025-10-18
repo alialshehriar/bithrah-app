@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+export const dynamic = 'force-dynamic';
+
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { Rocket, DollarSign, Target, Calendar, Package, Plus, X } from 'lucide-react';
 
@@ -12,9 +14,22 @@ interface PackageData {
   benefits: string[];
 }
 
-export default function CreateProjectPage() {
+function CreateProjectPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<'basic' | 'bithrah_plus'>('basic');
+  
+  useEffect(() => {
+    const packageParam = searchParams.get('package') as 'basic' | 'bithrah_plus' | null;
+    if (packageParam) {
+      setSelectedPackage(packageParam);
+    } else {
+      // Redirect to package selection if no package selected
+      router.push('/projects/create/select-package');
+    }
+  }, [searchParams, router]);
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -52,6 +67,10 @@ export default function CreateProjectPage() {
           ...formData,
           goalAmount: parseFloat(formData.goalAmount),
           packages,
+          platformPackage: selectedPackage,
+          platformCommission: selectedPackage === 'basic' ? 6.5 : 3.0,
+          platformPartnership: selectedPackage === 'basic' ? 0 : 2.0,
+          referralEnabled: selectedPackage === 'bithrah_plus',
         }),
       });
 
@@ -106,7 +125,6 @@ export default function CreateProjectPage() {
   };
 
   return (
-    <MainLayout>
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -319,6 +337,15 @@ export default function CreateProjectPage() {
           </div>
         </form>
       </div>
+  );
+}
+
+export default function CreateProjectPage() {
+  return (
+    <MainLayout>
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="text-xl">جاري التحميل...</div></div>}>
+        <CreateProjectPageContent />
+      </Suspense>
     </MainLayout>
   );
 }

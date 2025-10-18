@@ -22,6 +22,13 @@
       "when": 1760792326097,
       "tag": "0002_panoramic_longshot",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1760793469172,
+      "tag": "0003_sudden_micromax",
+      "breakpoints": true
     }
   ]
 }
