@@ -68,7 +68,7 @@ export async function GET(
       id: tier.id.toString(),
       title: tier.title,
       description: tier.description || '',
-      price: tier.amount,
+      price: parseFloat(tier.amount),
       deliveryDays: 30, // Default value
       features: tier.rewards ? (typeof tier.rewards === 'string' ? JSON.parse(tier.rewards) : tier.rewards) : [],
       maxBackers: tier.maxBackers || 999,
