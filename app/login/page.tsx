@@ -1,4 +1,4 @@
-import Script from 'next/script';
+
 
 export default function LoginPage() {
   return (
@@ -187,9 +187,9 @@ export default function LoginPage() {
           </div>
         </div>
         
-        <Script id="login-script" strategy="afterInteractive">
-          {`
-            document.addEventListener('DOMContentLoaded', function() {
+        <script src="/login.js"></script>
+        <script dangerouslySetInnerHTML={{__html: `
+            /*document.addEventListener('DOMContentLoaded', function() {
               const form = document.getElementById('loginForm');
               const nameInput = document.getElementById('name');
               const emailInput = document.getElementById('email');
@@ -206,7 +206,7 @@ export default function LoginPage() {
                 const name = nameInput.value.trim();
                 const email = emailInput.value.trim();
                 
-                console.log('Form submitted:', { name, email });
+                console.log('Form submitted (old code):', { name, email });
                 
                 if (!name || !email) {
                   showError('الرجاء إدخال الاسم والبريد الإلكتروني');
@@ -256,9 +256,9 @@ export default function LoginPage() {
                 btnText.textContent = 'دخول';
                 loading.classList.remove('show');
               }
-            });
-          `}
-        </Script>
+            });*/
+          `}} />
+        
       </body>
     </html>
   );
