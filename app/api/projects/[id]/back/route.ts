@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { backings, projects, transactions, wallets } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { verifyAuth } from '@/lib/auth';
+import { verifySession } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
@@ -10,7 +10,7 @@ export async function POST(
 ) {
   try {
     // Verify authentication
-    const user = await verifyAuth(request);
+    const user = await verifySession(request);
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'يجب تسجيل الدخول أولاً' },
@@ -92,3 +92,4 @@ export async function POST(
     );
   }
 }
+

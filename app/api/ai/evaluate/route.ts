@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/auth';
+import { verifySession } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await verifyAuth(request);
+    const user = await verifySession(request);
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'يجب تسجيل الدخول أولاً' },
@@ -128,3 +128,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
