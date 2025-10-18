@@ -27,6 +27,7 @@ export default function SignInPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ 
           name: name.trim(), 
           email: email.trim() 
@@ -36,8 +37,8 @@ export default function SignInPage() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Success! Redirect to home
-        router.push('/home');
+        // Success! Use window.location for full page reload to pick up cookie
+        window.location.href = '/home';
       } else {
         setError(data.error || 'حدث خطأ أثناء تسجيل الدخول');
         setLoading(false);
