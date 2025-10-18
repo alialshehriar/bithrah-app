@@ -25,7 +25,7 @@ export default function WelcomePage() {
         </div>
         
         <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          مرحباً بك في بذرة! 🎉
+          مرحباً بك في بذرة! 
         </h1>
         
         <p className="text-gray-600 mb-6">

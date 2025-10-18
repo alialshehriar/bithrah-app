@@ -146,7 +146,7 @@ export default function CommunitiesPage() {
                     : 'bg-bg-card text-text-secondary hover:bg-bg-hover'
                 }`}
               >
-                <span>📈</span>
+                <span></span>
                 <span>الأكثر شعبية</span>
               </button>
               <button
@@ -260,7 +260,7 @@ export default function CommunitiesPage() {
                     <span>{community.memberCount.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span>💬</span>
+                    <span></span>
                     <span>{community.postCount || 0}</span>
                   </div>
                 </div>
