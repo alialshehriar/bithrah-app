@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const params = await props.params;
-    const projectId = parseInt(params.id);
+    const projectId = parseInt((await params).id);
     
     if (isNaN(projectId)) {
       return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 });

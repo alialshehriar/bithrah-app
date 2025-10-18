@@ -19,7 +19,7 @@ export async function POST(
     }
 
     const params = await context.params;
-    const projectId = parseInt(params.id);
+    const projectId = parseInt((await params).id);
     const { packageId, message } = await request.json();
 
     // Get project details

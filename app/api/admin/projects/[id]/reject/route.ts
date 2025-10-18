@@ -8,7 +8,7 @@ const JWT_SECRET = new TextEncoder().encode(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get token from cookie
@@ -34,7 +34,7 @@ export async function POST(
     }
 
     const sql = neon(process.env.DATABASE_URL!);
-    const projectId = params.id;
+    const { id: projectId } = await params;
     const body = await request.json();
     const { reason } = body;
 

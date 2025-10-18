@@ -32,37 +32,39 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Build WHERE clause
-    let whereConditions = [sql`user_id = ${userId}`];
+    let whereClause = `user_id = ${userId}`;
     
     if (type) {
-      whereConditions.push(sql`type = ${type}`);
+      whereClause += ` AND type = '${type}'`;
     }
 
     if (read === 'true') {
-      whereConditions.push(sql`read = true`);
+      whereClause += ` AND read = true`;
     } else if (read === 'false') {
-      whereConditions.push(sql`read = false`);
+      whereClause += ` AND read = false`;
     }
 
     // Get total count
-    const countResult = await sql`
+    const countQuery = `
       SELECT COUNT(*) as total
       FROM notifications
-      WHERE ${sql.join(whereConditions, sql` AND `)}
+      WHERE ${whereClause}
     `;
+    const countResult = await sql(countQuery);
     const totalNotifications = parseInt(countResult[0].total);
 
     // Get notifications
-    const notifications = await sql`
+    const notificationsQuery = `
       SELECT 
         id, user_id, type, title, message, link,
         read, created_at, read_at
       FROM notifications
-      WHERE ${sql.join(whereConditions, sql` AND `)}
+      WHERE ${whereClause}
       ORDER BY created_at DESC
       LIMIT ${limit}
       OFFSET ${offset}
     `;
+    const notifications = await sql(notificationsQuery);
 
     // Get unread count
     const unreadResult = await sql`

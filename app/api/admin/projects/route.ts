@@ -41,36 +41,38 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Build WHERE clause
-    let whereConditions = [];
+    let whereClause = '';
+    let params: any[] = [];
     
     if (sandboxMode) {
-      whereConditions.push(sql`p.is_sandbox = true`);
+      whereClause = 'p.is_sandbox = true';
     } else {
-      whereConditions.push(sql`(p.is_sandbox = false OR p.is_sandbox IS NULL)`);
+      whereClause = '(p.is_sandbox = false OR p.is_sandbox IS NULL)';
     }
 
     if (search) {
-      whereConditions.push(sql`(p.title ILIKE ${`%${search}%`} OR p.description ILIKE ${`%${search}%`})`);
+      whereClause += ` AND (p.title ILIKE '%${search}%' OR p.description ILIKE '%${search}%')`;
     }
 
     if (status) {
-      whereConditions.push(sql`p.status = ${status}`);
+      whereClause += ` AND p.status = '${status}'`;
     }
 
     if (category) {
-      whereConditions.push(sql`p.category = ${category}`);
+      whereClause += ` AND p.category = '${category}'`;
     }
 
     // Get total count
-    const countResult = await sql`
+    const countQuery = `
       SELECT COUNT(*) as total
       FROM projects p
-      WHERE ${sql.join(whereConditions, sql` AND `)}
+      WHERE ${whereClause}
     `;
+    const countResult = await sql(countQuery);
     const totalProjects = parseInt(countResult[0].total);
 
     // Get projects with pagination
-    const projects = await sql`
+    const projectsQuery = `
       SELECT 
         p.id,
         p.title,
@@ -91,11 +93,12 @@ export async function GET(request: NextRequest) {
         (SELECT COUNT(*) FROM negotiations WHERE project_id = p.id) as negotiations_count
       FROM projects p
       LEFT JOIN users u ON p.owner_id = u.id
-      WHERE ${sql.join(whereConditions, sql` AND `)}
+      WHERE ${whereClause}
       ORDER BY p.created_at DESC
       LIMIT ${limit}
       OFFSET ${offset}
     `;
+    const projects = await sql(projectsQuery);
 
     return NextResponse.json({
       success: true,

@@ -41,38 +41,39 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Build WHERE clause
-    let whereConditions = [];
+    let whereClause = '';
     
     if (sandboxMode) {
-      whereConditions.push(sql`is_sandbox = true`);
+      whereClause = 'is_sandbox = true';
     } else {
-      whereConditions.push(sql`(is_sandbox = false OR is_sandbox IS NULL)`);
+      whereClause = '(is_sandbox = false OR is_sandbox IS NULL)';
     }
 
     if (search) {
-      whereConditions.push(sql`(name ILIKE ${`%${search}%`} OR email ILIKE ${`%${search}%`} OR username ILIKE ${`%${search}%`})`);
+      whereClause += ` AND (name ILIKE '%${search}%' OR email ILIKE '%${search}%' OR username ILIKE '%${search}%')`;
     }
 
     if (role) {
-      whereConditions.push(sql`role = ${role}`);
+      whereClause += ` AND role = '${role}'`;
     }
 
     if (status === 'active') {
-      whereConditions.push(sql`email_verified = true`);
+      whereClause += ` AND email_verified = true`;
     } else if (status === 'inactive') {
-      whereConditions.push(sql`email_verified = false`);
+      whereClause += ` AND email_verified = false`;
     }
 
     // Get total count
-    const countResult = await sql`
+    const countQuery = `
       SELECT COUNT(*) as total
       FROM users
-      WHERE ${sql.join(whereConditions, sql` AND `)}
+      WHERE ${whereClause}
     `;
+    const countResult = await sql(countQuery);
     const totalUsers = parseInt(countResult[0].total);
 
     // Get users with pagination
-    const users = await sql`
+    const usersQuery = `
       SELECT 
         id,
         name,
@@ -89,11 +90,12 @@ export async function GET(request: NextRequest) {
         (SELECT COUNT(*) FROM investments WHERE user_id = users.id) as investments_count,
         (SELECT COALESCE(SUM(amount), 0) FROM investments WHERE user_id = users.id) as total_invested
       FROM users
-      WHERE ${sql.join(whereConditions, sql` AND `)}
+      WHERE ${whereClause}
       ORDER BY created_at DESC
       LIMIT ${limit}
       OFFSET ${offset}
     `;
+    const users = await sql(usersQuery);
 
     return NextResponse.json({
       success: true,
@@ -183,15 +185,22 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update user
-    const updateParts = Object.entries(updateFields).map(([key, value]) => 
-      sql`${sql(key)} = ${value}`
-    );
+    const updateParts = Object.entries(updateFields).map(([key, value]) => {
+      if (typeof value === 'string') {
+        return `${key} = '${value}'`;
+      } else if (typeof value === 'boolean') {
+        return `${key} = ${value}`;
+      } else {
+        return `${key} = ${value}`;
+      }
+    });
 
-    await sql`
+    const updateQuery = `
       UPDATE users
-      SET ${sql.join(updateParts, sql`, `)}, updated_at = NOW()
+      SET ${updateParts.join(', ')}, updated_at = NOW()
       WHERE id = ${userId}
     `;
+    await sql(updateQuery);
 
     // Get updated user
     const updatedUser = await sql`

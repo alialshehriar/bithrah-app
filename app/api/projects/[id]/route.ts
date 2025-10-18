@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const params = await context.params;
-    const projectId = parseInt(params.id);
+    const projectId = parseInt((await params).id);
 
     const [project] = await db
       .select({
