@@ -17,6 +17,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  username?: string;
   phone?: string;
   role: string;
   status: 'active' | 'inactive' | 'suspended';
@@ -43,6 +44,19 @@ export default function AdminUsersPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    username: '',
+    phone: '',
+    role: '',
+    status: '',
+    level: 0,
+    points: 0,
+    password: ''
+  });
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -146,6 +160,63 @@ export default function AdminUsersPage() {
       }
     } catch (error) {
       console.error('Error deleting user:', error);
+    }
+  };
+
+  const openEditModal = (user: User) => {
+    setEditingUser(user);
+    setEditForm({
+      name: user.name || '',
+      email: user.email || '',
+      username: user.username || '',
+      phone: user.phone || '',
+      role: user.role || '',
+      status: user.status || '',
+      level: user.level || 0,
+      points: user.points || 0,
+      password: ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser) return;
+    
+    try {
+      const updateData: any = {
+        name: editForm.name,
+        email: editForm.email,
+        username: editForm.username,
+        phone: editForm.phone,
+        role: editForm.role,
+        status: editForm.status,
+        level: Number(editForm.level),
+        points: Number(editForm.points)
+      };
+
+      // إضافة كلمة المرور فقط إذا تم إدخالها
+      if (editForm.password) {
+        updateData.password = editForm.password;
+      }
+
+      const res = await fetch(`/api/admin/users/${editingUser.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData),
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        setShowEditModal(false);
+        setEditingUser(null);
+        fetchUsers();
+        alert('تم تحديث بيانات المستخدم بنجاح!');
+      } else {
+        alert(data.error || 'حدث خطأ أثناء التحديث');
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert('حدث خطأ أثناء التحديث');
     }
   };
 
@@ -447,6 +518,13 @@ export default function AdminUsersPage() {
                             <Eye className="text-blue-400" size={18} />
                           </button>
                           <button
+                            onClick={() => openEditModal(user)}
+                            className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                            title="تعديل"
+                          >
+                            <Edit className="text-green-400" size={18} />
+                          </button>
+                          <button
                             onClick={() => handleStatusChange(
                               user.id,
                               user.status === 'active' ? 'suspended' : 'active'
@@ -642,6 +720,195 @@ export default function AdminUsersPage() {
                     حذف المستخدم
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit User Modal */}
+      <AnimatePresence>
+        {showEditModal && editingUser && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowEditModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl border border-gray-700 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            >
+              <div className="p-6 border-b border-gray-700 flex items-center justify-between sticky top-0 bg-gray-800/95 backdrop-blur-sm z-10">
+                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                  <Edit className="text-green-400" />
+                  تعديل بيانات المستخدم
+                </h2>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <XCircle className="text-gray-400" size={24} />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* الاسم الكامل */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    الاسم الكامل
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-green-500 transition-colors"
+                    placeholder="أدخل الاسم الكامل"
+                  />
+                </div>
+
+                {/* البريد الإلكتروني */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    البريد الإلكتروني
+                  </label>
+                  <input
+                    type="email"
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-green-500 transition-colors"
+                    placeholder="أدخل البريد الإلكتروني"
+                  />
+                </div>
+
+                {/* اسم المستخدم */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    اسم المستخدم (Username)
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.username}
+                    onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-green-500 transition-colors"
+                    placeholder="أدخل اسم المستخدم"
+                  />
+                </div>
+
+                {/* رقم الهاتف */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    رقم الهاتف
+                  </label>
+                  <input
+                    type="tel"
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-green-500 transition-colors"
+                    placeholder="أدخل رقم الهاتف"
+                  />
+                </div>
+
+                {/* الدور */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    الدور
+                  </label>
+                  <select
+                    value={editForm.role}
+                    onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-green-500 transition-colors"
+                  >
+                    <option value="user">مستخدم</option>
+                    <option value="investor">مستثمر</option>
+                    <option value="marketer">مسوق</option>
+                    <option value="admin">مدير</option>
+                  </select>
+                </div>
+
+                {/* الحالة */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    الحالة
+                  </label>
+                  <select
+                    value={editForm.status}
+                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-green-500 transition-colors"
+                  >
+                    <option value="active">نشط</option>
+                    <option value="inactive">غير نشط</option>
+                    <option value="suspended">موقوف</option>
+                  </select>
+                </div>
+
+                {/* المستوى */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    المستوى
+                  </label>
+                  <input
+                    type="number"
+                    value={editForm.level}
+                    onChange={(e) => setEditForm({ ...editForm, level: parseInt(e.target.value) || 0 })}
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-green-500 transition-colors"
+                    placeholder="أدخل المستوى"
+                    min="0"
+                  />
+                </div>
+
+                {/* النقاط */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    النقاط
+                  </label>
+                  <input
+                    type="number"
+                    value={editForm.points}
+                    onChange={(e) => setEditForm({ ...editForm, points: parseInt(e.target.value) || 0 })}
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-green-500 transition-colors"
+                    placeholder="أدخل عدد النقاط"
+                    min="0"
+                  />
+                </div>
+
+                {/* كلمة المرور */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    كلمة المرور الجديدة (اختياري)
+                  </label>
+                  <input
+                    type="password"
+                    value={editForm.password}
+                    onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-green-500 transition-colors"
+                    placeholder="اتركها فارغة لعدم التغيير"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    اترك هذا الحقل فارغًا إذا لم ترد تغيير كلمة المرور
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-gray-700 flex gap-4">
+                <button
+                  onClick={handleUpdateUser}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl font-bold hover:from-green-600 hover:to-teal-600 transition-all"
+                >
+                  <CheckCircle size={20} />
+                  حفظ التغييرات
+                </button>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 text-gray-300 rounded-xl font-bold hover:bg-gray-600 transition-all"
+                >
+                  <XCircle size={20} />
+                  إلغاء
+                </button>
               </div>
             </motion.div>
           </motion.div>

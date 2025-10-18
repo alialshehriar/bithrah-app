@@ -99,13 +99,30 @@ export async function PATCH(
       );
     }
 
+    // Prepare update data
+    const updateData: any = {};
+    
+    if (body.name) updateData.name = body.name;
+    if (body.email) updateData.email = body.email;
+    if (body.username) updateData.username = body.username;
+    if (body.phone !== undefined) updateData.phone = body.phone;
+    if (body.role) updateData.role = body.role;
+    if (body.status) updateData.status = body.status;
+    if (body.level !== undefined) updateData.level = body.level;
+    if (body.points !== undefined) updateData.points = body.points;
+    
+    // Hash password if provided
+    if (body.password) {
+      const bcrypt = require('bcryptjs');
+      updateData.password = await bcrypt.hash(body.password, 10);
+    }
+    
+    updateData.updatedAt = new Date();
+
     // Update user
     const [updatedUser] = await db
       .update(users)
-      .set({
-        ...body,
-        updatedAt: new Date(),
-      })
+      .set(updateData as any)
       .where(eq(users.id, userId))
       .returning();
 
