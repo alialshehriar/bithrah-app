@@ -170,9 +170,15 @@ const Footer = () => {
             <p className="text-sm text-gray-400">
               © {currentYear} بذرة. جميع الحقوق محفوظة.
             </p>
-            <p className="text-sm text-gray-400">
-              مرخصة من هيئة السوق المالية السعودية
-            </p>
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <p className="text-sm text-gray-400">
+                مرخصة من هيئة السوق المالية السعودية
+              </p>
+              <div className="h-4 w-px bg-gray-700 hidden md:block"></div>
+              <p className="text-sm text-gray-500">
+                Developed by <span className="font-bold text-teal-400">CandlesTech</span> - <span className="font-semibold">A.S</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
