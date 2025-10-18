@@ -594,12 +594,488 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* Other Tabs - Placeholder */}
-              {!['overview', 'users', 'projects'].includes(activeTab) && (
-                <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
-                  <Sparkles className="w-16 h-16 text-teal-500 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">قريباً</h3>
-                  <p className="text-gray-600">هذا القسم قيد التطوير</p>
+              {/* Funding Tab */}
+              {activeTab === 'funding' && (
+                <div className="space-y-6">
+                  {/* Funding Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <StatCard
+                      title="إجمالي التمويل"
+                      value={`${(stats?.overview.totalFunding || 0) / 1000000}M`}
+                      change={stats?.growth.fundingGrowth}
+                      icon={DollarSign}
+                      color="from-green-500 to-green-600"
+                    />
+                    <StatCard
+                      title="عمليات الدعم"
+                      value={stats?.overview.totalBackings || 0}
+                      icon={Heart}
+                      color="from-pink-500 to-pink-600"
+                    />
+                    <StatCard
+                      title="متوسط الدعم"
+                      value={sandboxMode ? '5,340 ر.س' : '2,885 ر.س'}
+                      icon={TrendingUp}
+                      color="from-teal-500 to-teal-600"
+                    />
+                    <StatCard
+                      title="العمولات"
+                      value={stats?.revenue.commissions.toLocaleString() + ' ر.س'}
+                      icon={Award}
+                      color="from-purple-500 to-purple-600"
+                    />
+                  </div>
+
+                  {/* Funding Table */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-6 border-b border-gray-100">
+                      <h3 className="text-xl font-bold text-gray-900">عمليات التمويل الأخيرة</h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-100">
+                          <tr>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">الداعم</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">المشروع</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">المبلغ</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">العمولة</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">الحالة</th>
+                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">التاريخ</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {Array.from({ length: sandboxMode ? 10 : 5 }).map((_, i) => {
+                            const amount = (i + 1) * 1000 + Math.floor(Math.random() * 5000);
+                            const commission = Math.round(amount * 0.05);
+                            return (
+                              <tr key={i} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center text-white text-sm font-bold">
+                                      {String.fromCharCode(65 + i)}
+                                    </div>
+                                    <span className="text-gray-900">مستخدم {i + 1}</span>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 text-gray-900">مشروع {Math.floor(Math.random() * 10) + 1}</td>
+                                <td className="px-6 py-4">
+                                  <span className="text-green-600 font-bold">{amount.toLocaleString()} ر.س</span>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="text-purple-600 font-medium">{commission.toLocaleString()} ر.س</span>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="px-3 py-1 rounded-full bg-green-50 text-green-600 font-medium text-sm flex items-center gap-1 w-fit">
+                                    <CheckCircle className="w-4 h-4" />
+                                    مكتمل
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-gray-600">
+                                  {new Date(Date.now() - i * 86400000).toLocaleDateString('ar-SA')}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Communities Tab */}
+              {activeTab === 'communities' && (
+                <div className="space-y-6">
+                  {/* Communities Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <StatCard
+                      title="إجمالي المجتمعات"
+                      value={stats?.overview.totalCommunities || 0}
+                      icon={Globe}
+                      color="from-indigo-500 to-indigo-600"
+                    />
+                    <StatCard
+                      title="الأعضاء"
+                      value={sandboxMode ? 3247 : 289}
+                      icon={Users}
+                      color="from-blue-500 to-blue-600"
+                    />
+                    <StatCard
+                      title="المنشورات"
+                      value={sandboxMode ? 1834 : 167}
+                      icon={MessageSquare}
+                      color="from-purple-500 to-purple-600"
+                    />
+                    <StatCard
+                      title="معدل النشاط"
+                      value="92%"
+                      icon={Activity}
+                      color="from-green-500 to-green-600"
+                    />
+                  </div>
+
+                  {/* Communities Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array.from({ length: sandboxMode ? 6 : 3 }).map((_, i) => (
+                      <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-purple-500 flex items-center justify-center">
+                            <Globe className="w-8 h-8 text-white" />
+                          </div>
+                          <span className="px-3 py-1 rounded-full bg-green-50 text-green-600 font-medium text-sm">
+                            نشط
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">مجتمع {i + 1}</h3>
+                        <p className="text-sm text-gray-600 mb-4">مجتمع لرواد الأعمال والمبتكرين</p>
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-1 text-gray-600">
+                            <Users className="w-4 h-4" />
+                            <span>{Math.floor(Math.random() * 500) + 100} عضو</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-gray-600">
+                            <MessageSquare className="w-4 h-4" />
+                            <span>{Math.floor(Math.random() * 200) + 50} منشور</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Messages/Conversations Tab */}
+              {activeTab === 'messages' && (
+                <div className="space-y-6">
+                  {/* Messages Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <StatCard
+                      title="إجمالي المحادثات"
+                      value={stats?.overview.totalMessages || 0}
+                      icon={MessageSquare}
+                      color="from-cyan-500 to-cyan-600"
+                    />
+                    <StatCard
+                      title="محادثات نشطة"
+                      value={sandboxMode ? 892 : 89}
+                      icon={Activity}
+                      color="from-green-500 to-green-600"
+                    />
+                    <StatCard
+                      title="متوسط وقت الرد"
+                      value="2.5 د"
+                      icon={Clock}
+                      color="from-blue-500 to-blue-600"
+                    />
+                    <StatCard
+                      title="معدل الرضا"
+                      value="94%"
+                      icon={Star}
+                      color="from-yellow-500 to-yellow-600"
+                    />
+                  </div>
+
+                  {/* Messages List */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+                    <div className="p-6 border-b border-gray-100">
+                      <h3 className="text-xl font-bold text-gray-900">المحادثات الأخيرة</h3>
+                    </div>
+                    <div className="divide-y divide-gray-100">
+                      {Array.from({ length: sandboxMode ? 10 : 5 }).map((_, i) => (
+                        <div key={i} className="p-6 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start gap-4">
+                            <div className="flex gap-2">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center text-white font-bold">
+                                {String.fromCharCode(65 + i)}
+                              </div>
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold -ml-3">
+                                {String.fromCharCode(66 + i)}
+                              </div>
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-bold text-gray-900">مستخدم {i + 1} ↔ مستخدم {i + 2}</h4>
+                                <span className="text-sm text-gray-600">منذ {i + 1} ساعة</span>
+                              </div>
+                              <p className="text-sm text-gray-600 mb-2">مرحبا، أريد الاستفسار عن مشروعك...</p>
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-1 rounded-lg bg-blue-50 text-blue-600 text-xs font-medium">
+                                  {Math.floor(Math.random() * 20) + 5} رسالة
+                                </span>
+                                {i % 3 === 0 && (
+                                  <span className="px-2 py-1 rounded-lg bg-green-50 text-green-600 text-xs font-medium">
+                                    جديد
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Analytics Tab */}
+              {activeTab === 'analytics' && (
+                <div className="space-y-6">
+                  {/* Analytics Header */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">تحليلات متقدمة</h2>
+                    <p className="text-gray-600">تحليلات شاملة لأداء المنصة وسلوك المستخدمين</p>
+                  </div>
+
+                  {/* Key Metrics */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                          <Activity className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">معدل النشاط</p>
+                          <p className="text-2xl font-bold text-gray-900">87%</p>
+                        </div>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600" style={{width: '87%'}}></div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                          <TrendingUp className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">معدل النمو</p>
+                          <p className="text-2xl font-bold text-gray-900">+{stats?.growth.usersGrowth}%</p>
+                        </div>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-green-500 to-green-600" style={{width: `${stats?.growth.usersGrowth}%`}}></div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                          <Target className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">معدل التحويل</p>
+                          <p className="text-2xl font-bold text-gray-900">76%</p>
+                        </div>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-purple-500 to-purple-600" style={{width: '76%'}}></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* User Behavior Analytics */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6">تحليل سلوك المستخدمين</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700">الصفحة الرئيسية</span>
+                          <span className="text-sm font-bold text-gray-900">45%</span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-teal-500 to-cyan-500" style={{width: '45%'}}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700">المشاريع</span>
+                          <span className="text-sm font-bold text-gray-900">32%</span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500" style={{width: '32%'}}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700">المجتمعات</span>
+                          <span className="text-sm font-bold text-gray-900">15%</span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600" style={{width: '15%'}}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700">المحفظة</span>
+                          <span className="text-sm font-bold text-gray-900">8%</span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-green-500 to-green-600" style={{width: '8%'}}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Time Analytics */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6">تحليل الوقت</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 rounded-xl bg-gray-50">
+                        <Clock className="w-8 h-8 text-teal-500 mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-gray-900 mb-1">12.5 د</p>
+                        <p className="text-sm text-gray-600">متوسط وقت الجلسة</p>
+                      </div>
+                      <div className="text-center p-4 rounded-xl bg-gray-50">
+                        <Activity className="w-8 h-8 text-purple-500 mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-gray-900 mb-1">8.2</p>
+                        <p className="text-sm text-gray-600">متوسط الصفحات/جلسة</p>
+                      </div>
+                      <div className="text-center p-4 rounded-xl bg-gray-50">
+                        <Target className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-gray-900 mb-1">3.4</p>
+                        <p className="text-sm text-gray-600">متوسط النقرات/صفحة</p>
+                      </div>
+                      <div className="text-center p-4 rounded-xl bg-gray-50">
+                        <Zap className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-gray-900 mb-1">2.1 ث</p>
+                        <p className="text-sm text-gray-600">متوسط وقت التحميل</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Settings Tab */}
+              {activeTab === 'settings' && (
+                <div className="space-y-6">
+                  {/* Settings Header */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">إعدادات النظام</h2>
+                    <p className="text-gray-600">إدارة إعدادات المنصة والتحكم في الميزات</p>
+                  </div>
+
+                  {/* General Settings */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                      <Settings className="w-6 h-6 text-teal-500" />
+                      إعدادات عامة
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+                        <div>
+                          <p className="font-medium text-gray-900">وضع الصيانة</p>
+                          <p className="text-sm text-gray-600">تفعيل وضع الصيانة للمنصة</p>
+                        </div>
+                        <button className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition-colors">
+                          معطل
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+                        <div>
+                          <p className="font-medium text-gray-900">تسجيل مستخدمين جدد</p>
+                          <p className="text-sm text-gray-600">السماح بتسجيل مستخدمين جدد</p>
+                        </div>
+                        <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-medium">
+                          مفعل
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+                        <div>
+                          <p className="font-medium text-gray-900">مراجعة المشاريع</p>
+                          <p className="text-sm text-gray-600">مراجعة المشاريع قبل النشر</p>
+                        </div>
+                        <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-medium">
+                          مفعل
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment Settings */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                      <DollarSign className="w-6 h-6 text-green-500" />
+                      إعدادات الدفع
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-xl bg-gray-50">
+                        <p className="text-sm text-gray-600 mb-2">نسبة العمولة</p>
+                        <p className="text-2xl font-bold text-gray-900">5%</p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-gray-50">
+                        <p className="text-sm text-gray-600 mb-2">الحد الأدنى للدعم</p>
+                        <p className="text-2xl font-bold text-gray-900">100 ر.س</p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-gray-50">
+                        <p className="text-sm text-gray-600 mb-2">الحد الأقصى للدعم</p>
+                        <p className="text-2xl font-bold text-gray-900">100,000 ر.س</p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-gray-50">
+                        <p className="text-sm text-gray-600 mb-2">فترة السحب</p>
+                        <p className="text-2xl font-bold text-gray-900">7 أيام</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Notification Settings */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                      <Bell className="w-6 h-6 text-purple-500" />
+                      إعدادات الإشعارات
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+                        <div>
+                          <p className="font-medium text-gray-900">إشعارات البريد</p>
+                          <p className="text-sm text-gray-600">إرسال إشعارات عبر البريد</p>
+                        </div>
+                        <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-medium">
+                          مفعل
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+                        <div>
+                          <p className="font-medium text-gray-900">إشعارات SMS</p>
+                          <p className="text-sm text-gray-600">إرسال إشعارات عبر الرسائل</p>
+                        </div>
+                        <button className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition-colors">
+                          معطل
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+                        <div>
+                          <p className="font-medium text-gray-900">إشعارات Push</p>
+                          <p className="text-sm text-gray-600">إشعارات فورية على التطبيق</p>
+                        </div>
+                        <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-medium">
+                          مفعل
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Database Management */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                      <Database className="w-6 h-6 text-blue-500" />
+                      إدارة قاعدة البيانات
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <button className="p-4 rounded-xl border-2 border-gray-200 hover:border-teal-500 transition-all flex flex-col items-center gap-2">
+                        <Download className="w-8 h-8 text-teal-500" />
+                        <span className="font-medium text-gray-900">نسخ احتياطي</span>
+                      </button>
+                      <button className="p-4 rounded-xl border-2 border-gray-200 hover:border-purple-500 transition-all flex flex-col items-center gap-2">
+                        <RefreshCw className="w-8 h-8 text-purple-500" />
+                        <span className="font-medium text-gray-900">استعادة</span>
+                      </button>
+                      <button className="p-4 rounded-xl border-2 border-gray-200 hover:border-red-500 transition-all flex flex-col items-center gap-2">
+                        <AlertCircle className="w-8 h-8 text-red-500" />
+                        <span className="font-medium text-gray-900">تنظيف</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </>
