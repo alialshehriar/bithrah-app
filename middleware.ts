@@ -32,6 +32,11 @@ const guestOnlyRoutes = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Allow access to homepage without authentication
+  if (pathname === '/') {
+    return NextResponse.next();
+  }
+
   // Get token from cookie
   const token = request.cookies.get('bithrah-token')?.value;
 
