@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import DemoBanner from "@/components/DemoBanner";
 import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
@@ -16,7 +15,6 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <body className="antialiased">
-        <DemoBanner />
         {children}
         <Footer />
       </body>
