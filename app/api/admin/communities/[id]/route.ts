@@ -18,7 +18,7 @@ export async function PATCH(
     if (body.name !== undefined) updateData.name = body.name;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.status !== undefined) updateData.status = body.status;
-    if (body.privacy !== undefined) updateData.privacy = body.privacy;
+    if (body.isPrivate !== undefined) updateData.isPrivate = body.isPrivate;
 
     const [updatedCommunity] = await db
       .update(communities)

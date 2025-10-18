@@ -17,11 +17,11 @@ export async function GET(request: NextRequest) {
         name: communities.name,
         description: communities.description,
         category: communities.category,
-        privacy: communities.privacy,
+        isPrivate: communities.isPrivate,
         status: communities.status,
         coverImage: communities.coverImage,
         memberCount: communities.memberCount,
-        postCount: communities.postCount,
+        postsCount: communities.postsCount,
         createdAt: communities.createdAt,
         creator: {
           id: users.id,
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (privacy && privacy !== 'all') {
-      conditions.push(eq(communities.privacy, privacy));
+      conditions.push(eq(communities.isPrivate, privacy === 'private'));
     }
 
     if (status && status !== 'all') {
