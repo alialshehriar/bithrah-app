@@ -99,7 +99,7 @@ export default function EvaluatePage() {
       <Navigation />
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-pink-600 to-teal-600 py-20">
+      <div className="relative overflow-hidden bg-white py-20 border-b border-gray-200">
         <div className="absolute inset-0 bg-black/10" />
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
@@ -113,33 +113,33 @@ export default function EvaluatePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-teal-50 to-purple-50 rounded-full text-teal-700 mb-6 border border-teal-100">
               <Brain className="w-5 h-5" />
               <span className="font-semibold">تقييم بالذكاء الاصطناعي</span>
             </div>
             
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               قيّم فكرتك بذكاء اصطناعي متقدم
             </h1>
             
-            <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
               احصل على تقييم شامل ودقيق لفكرتك باستخدام أحدث تقنيات الذكاء الاصطناعي، مع تحليل عميق للسوق والجدوى المالية
             </p>
 
             <div className="flex items-center justify-center gap-8 mt-12">
               <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-2">98%</div>
-                <div className="text-white/80">دقة التقييم</div>
+                <div className="text-4xl font-bold bg-gradient-to-r from-teal-600 to-purple-600 bg-clip-text text-transparent mb-2">98%</div>
+                <div className="text-gray-600 font-medium">دقة التقييم</div>
               </div>
-              <div className="w-px h-12 bg-white/30" />
+              <div className="w-px h-12 bg-gray-300" />
               <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-2">15+</div>
-                <div className="text-white/80">معيار تقييم</div>
+                <div className="text-4xl font-bold bg-gradient-to-r from-teal-600 to-purple-600 bg-clip-text text-transparent mb-2">15+</div>
+                <div className="text-gray-600 font-medium">معيار تقييم</div>
               </div>
-              <div className="w-px h-12 bg-white/30" />
+              <div className="w-px h-12 bg-gray-300" />
               <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-2">5 دقائق</div>
-                <div className="text-white/80">وقت التقييم</div>
+                <div className="text-4xl font-bold bg-gradient-to-r from-teal-600 to-purple-600 bg-clip-text text-transparent mb-2">5 دقائق</div>
+                <div className="text-gray-600 font-medium">وقت التقييم</div>
               </div>
             </div>
           </motion.div>
