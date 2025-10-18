@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { projects, users } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { projects, users, supportTiers } from '@/lib/db/schema';
+import { eq, asc } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
@@ -56,8 +56,28 @@ export async function GET(
       .from(projects)
       .where(eq(projects.creatorId, project.creatorId));
 
+    // Get support tiers for this project
+    const tiers = await db
+      .select()
+      .from(supportTiers)
+      .where(eq(supportTiers.projectId, projectId))
+      .orderBy(asc(supportTiers.amount));
+
+    // Format support tiers to match the expected package structure
+    const formattedPackages = tiers.map(tier => ({
+      id: tier.id.toString(),
+      title: tier.title,
+      description: tier.description || '',
+      price: tier.amount,
+      deliveryDays: 30, // Default value
+      features: tier.rewards ? (typeof tier.rewards === 'string' ? JSON.parse(tier.rewards) : tier.rewards) : [],
+      maxBackers: tier.maxBackers || 999,
+      currentBackers: tier.currentBackers || 0,
+    }));
+
     const formattedProject = {
       ...project,
+      packages: formattedPackages.length > 0 ? formattedPackages : (project.packages || []),
       creator: {
         id: project.creatorId,
         name: project.creatorName,
