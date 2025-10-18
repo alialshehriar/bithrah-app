@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import Navigation from '@/components/layout/Navigation';
+import Navigation from '@/components/Navigation';
 import Footer from '@/components/layout/Footer';
 import DemoBanner from '@/components/DemoBanner';
 import { 
