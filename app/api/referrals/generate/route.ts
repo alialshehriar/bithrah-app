@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     // Verify token
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    const userId = payload.userId as string;
+    const userId = payload.id as number;
 
     const sql = neon(process.env.DATABASE_URL!);
 

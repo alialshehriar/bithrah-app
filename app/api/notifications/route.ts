@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify token
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    const userId = payload.userId as string;
+    const { payload} = await jwtVerify(token, JWT_SECRET);
+    const userId = payload.id as number;
 
     const sql = neon(process.env.DATABASE_URL!);
     const { searchParams } = new URL(request.url);
@@ -118,8 +118,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verify token
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    const userId = payload.userId as string;
+    const { payload} = await jwtVerify(token, JWT_SECRET);
+    const userId = payload.id as number;
 
     const body = await request.json();
     const { notificationId, markAsRead, markAllAsRead } = body;
@@ -182,8 +182,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verify token
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    const userId = payload.userId as string;
+    const { payload} = await jwtVerify(token, JWT_SECRET);
+    const userId = payload.id as number;
 
     const { searchParams } = new URL(request.url);
     const notificationId = searchParams.get('notificationId');

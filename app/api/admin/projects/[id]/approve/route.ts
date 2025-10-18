@@ -24,7 +24,7 @@ export async function POST(
     // Verify token and check if user is admin
     const { payload } = await jwtVerify(token, JWT_SECRET);
     const userRole = payload.role as string;
-    const adminId = payload.userId as string;
+    const adminId = payload.id as number;
 
     if (userRole !== 'admin') {
       return NextResponse.json(
