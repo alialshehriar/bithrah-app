@@ -846,14 +846,168 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* Other Tabs - Coming Soon */}
-              {['funding', 'communities', 'messages', 'analytics', 'settings'].includes(activeTab) && (
-                <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-teal-500 to-purple-500 flex items-center justify-center mx-auto mb-6">
-                    <Sparkles className="w-10 h-10 text-white" />
+              {/* Funding Tab */}
+              {activeTab === 'funding' && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">إحصائيات التمويل</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">إجمالي التمويل</p>
+                        <p className="text-3xl font-bold text-green-600">{stats?.overview.totalFunding.toLocaleString() || 0} ر.س</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">عمليات الدعم</p>
+                        <p className="text-3xl font-bold text-blue-600">{stats?.overview.totalBackings || 0}</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">متوسط الدعم</p>
+                        <p className="text-3xl font-bold text-purple-600">
+                          {stats?.overview.totalBackings > 0 
+                            ? Math.round(stats.overview.totalFunding / stats.overview.totalBackings).toLocaleString()
+                            : 0} ر.س
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">قريباً</h3>
-                  <p className="text-gray-600">هذا القسم قيد التطوير وسيكون متاحاً قريباً</p>
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
+                    <Database className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500">لعرض تفاصيل التمويل، استخدم قسم المشاريع</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Communities Tab */}
+              {activeTab === 'communities' && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">إحصائيات المجتمعات</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="p-4 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">إجمالي المجتمعات</p>
+                        <p className="text-3xl font-bold text-teal-600">{stats?.overview.totalCommunities || 0}</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">إجمالي الأعضاء</p>
+                        <p className="text-3xl font-bold text-purple-600">{stats?.overview.totalUsers || 0}</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">متوسط الأعضاء</p>
+                        <p className="text-3xl font-bold text-orange-600">
+                          {stats?.overview.totalCommunities > 0
+                            ? Math.round(stats.overview.totalUsers / stats.overview.totalCommunities)
+                            : 0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
+                    <Globe className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500">لإدارة المجتمعات، انتقل إلى صفحة المجتمعات</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Messages Tab */}
+              {activeTab === 'messages' && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">إحصائيات المحادثات</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">إجمالي الرسائل</p>
+                        <p className="text-3xl font-bold text-blue-600">{stats?.overview.totalMessages || 0}</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">محادثات نشطة</p>
+                        <p className="text-3xl font-bold text-green-600">-</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">متوسط الرسائل</p>
+                        <p className="text-3xl font-bold text-purple-600">-</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
+                    <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500">لعرض المحادثات، استخدم قسم التفاوض</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Analytics Tab */}
+              {activeTab === 'analytics' && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">التحليلات</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="p-4 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">نمو المستخدمين</p>
+                        <p className="text-3xl font-bold text-teal-600">+{stats?.growth.usersGrowth || 0}%</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">نمو المشاريع</p>
+                        <p className="text-3xl font-bold text-purple-600">+{stats?.growth.projectsGrowth || 0}%</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-2">نمو التمويل</p>
+                        <p className="text-3xl font-bold text-orange-600">+{stats?.growth.fundingGrowth || 0}%</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
+                    <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500">للحصول على تحليلات متقدمة، استخدم قسم النظرة العامة</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Settings Tab */}
+              {activeTab === 'settings' && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6">إعدادات المنصة</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div>
+                          <p className="font-medium text-gray-900">وضع Sandbox</p>
+                          <p className="text-sm text-gray-600">تفعيل وضع الاختبار</p>
+                        </div>
+                        <button
+                          onClick={() => setSandboxMode(!sandboxMode)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            sandboxMode ? 'bg-teal-600' : 'bg-gray-300'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              sandboxMode ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div>
+                          <p className="font-medium text-gray-900">الفترة الزمنية</p>
+                          <p className="text-sm text-gray-600">اختر فترة عرض البيانات</p>
+                        </div>
+                        <select
+                          value={timeRange}
+                          onChange={(e) => setTimeRange(e.target.value)}
+                          className="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        >
+                          <option value="7d">7 أيام</option>
+                          <option value="30d">30 يوم</option>
+                          <option value="90d">90 يوم</option>
+                          <option value="1y">سنة</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
+                    <Settings className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500">للمزيد من الإعدادات، اتصل بالدعم الفني</p>
+                  </div>
                 </div>
               )}
             </>
