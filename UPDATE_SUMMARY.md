@@ -303,7 +303,7 @@ git push origin master
 
 - **GitHub**: alialshehriar/bithrah-app
 - **الموقع**: www.bithrahapp.com
-- **البريد**: ali.saeed202@hotmail.com
+- **البريد**: info@bithrahapp.com
 
 ---
 
