@@ -199,6 +199,31 @@ export default function AdminDashboard() {
           ))}
         </div>
 
+        {/* Quick Links */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[
+            { title: 'إدارة المستخدمين', icon: Users, link: '/admin/users', color: 'from-blue-500 to-blue-600', desc: 'تحكم كامل في المستخدمين' },
+            { title: 'إدارة المشاريع', icon: Rocket, link: '/admin/projects', color: 'from-purple-500 to-purple-600', desc: 'اعتماد ومراجعة المشاريع' },
+            { title: 'إدارة المحافظ', icon: Wallet, link: '/admin/wallets', color: 'from-green-500 to-green-600', desc: 'إدارة الأرصدة والمعاملات' },
+            { title: 'إدارة المجتمعات', icon: MessageSquare, link: '/admin/communities', color: 'from-teal-500 to-teal-600', desc: 'إدارة المجتمعات والمحتوى' },
+          ].map((item, index) => (
+            <Link
+              key={index}
+              href={item.link}
+              className="group relative overflow-hidden bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700 hover:border-teal-500/50 transition-all hover:shadow-xl hover:shadow-teal-500/10"
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-0 group-hover:opacity-10 transition-opacity`}></div>
+              <div className="relative">
+                <div className={`p-3 rounded-xl bg-gradient-to-br ${item.color} w-fit mb-4`}>
+                  <item.icon className="text-white" size={24} />
+                </div>
+                <h3 className="text-white font-bold text-lg mb-2">{item.title}</h3>
+                <p className="text-gray-400 text-sm">{item.desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+
         {/* Recent Users */}
         {stats?.recentUsers && stats.recentUsers.length > 0 && (
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700 mb-8">
