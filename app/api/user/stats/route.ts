@@ -65,13 +65,13 @@ export async function GET(request: NextRequest) {
     const projectsCount = await sql`
       SELECT COUNT(*) as count
       FROM projects
-      WHERE owner_id = ${userId}
+      WHERE creator_id = ${userId}
     `;
 
-    const investmentsCount = await sql`
+    const backingsCount = await sql`
       SELECT COUNT(*) as count
-      FROM investments
-      WHERE investor_id = ${userId}
+      FROM backings
+      WHERE user_id = ${userId}
     `;
 
     return NextResponse.json({
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       onboardingCompleted: user.onboarding_completed || false,
       stats: {
         projects: parseInt(projectsCount[0].count),
-        investments: parseInt(investmentsCount[0].count),
+        backings: parseInt(backingsCount[0].count),
       },
     });
   } catch (error) {
