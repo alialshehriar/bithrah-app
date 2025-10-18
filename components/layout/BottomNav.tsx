@@ -14,7 +14,7 @@ export default function BottomNav() {
       href: '/home',
       icon: (active: boolean) => (
         <svg
-          className={`w-6 h-6 ${active ? 'text-teal' : 'text-text-secondary'}`}
+          className={`w-6 h-6 ${active ? 'text-teal' : 'text-gray-600'}`}
           fill={active ? 'currentColor' : 'none'}
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -33,7 +33,7 @@ export default function BottomNav() {
       href: '/projects',
       icon: (active: boolean) => (
         <svg
-          className={`w-6 h-6 ${active ? 'text-teal' : 'text-text-secondary'}`}
+          className={`w-6 h-6 ${active ? 'text-teal' : 'text-gray-600'}`}
           fill={active ? 'currentColor' : 'none'}
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -64,7 +64,7 @@ export default function BottomNav() {
       href: '/communities',
       icon: (active: boolean) => (
         <svg
-          className={`w-6 h-6 ${active ? 'text-teal' : 'text-text-secondary'}`}
+          className={`w-6 h-6 ${active ? 'text-teal' : 'text-gray-600'}`}
           fill={active ? 'currentColor' : 'none'}
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -83,7 +83,7 @@ export default function BottomNav() {
       href: '/leaderboard',
       icon: (active: boolean) => (
         <svg
-          className={`w-6 h-6 ${active ? 'text-teal' : 'text-text-secondary'}`}
+          className={`w-6 h-6 ${active ? 'text-teal' : 'text-gray-600'}`}
           fill={active ? 'currentColor' : 'none'}
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -111,10 +111,10 @@ export default function BottomNav() {
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 animate-fade-in"
           onClick={() => setShowCreateMenu(false)}
         >
-          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-64 glass-strong rounded-2xl p-4 shadow-luxury animate-slide-up">
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-64 bg-white rounded-2xl p-4 shadow-luxury border border-gray-200 animate-slide-up">
             <Link
               href="/projects/create"
-              className="flex items-center gap-3 p-4 rounded-xl hover:bg-bg-hover transition-colors duration-200 group"
+              className="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 group"
               onClick={() => setShowCreateMenu(false)}
             >
               <div className="w-10 h-10 rounded-xl bg-teal/10 flex items-center justify-center group-hover:bg-teal/20 transition-colors">
@@ -128,13 +128,13 @@ export default function BottomNav() {
                 </svg>
               </div>
               <div>
-                <p className="font-semibold text-text-primary">إنشاء مشروع</p>
-                <p className="text-sm text-text-muted">شارك فكرتك واحصل على التمويل</p>
+                <p className="font-semibold text-gray-900">إنشاء مشروع</p>
+                <p className="text-sm text-gray-600">شارك فكرتك واحصل على التمويل</p>
               </div>
             </Link>
             <Link
               href="/ai-evaluation"
-              className="flex items-center gap-3 p-4 rounded-xl hover:bg-bg-hover transition-colors duration-200 group mt-2"
+              className="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 group mt-2"
               onClick={() => setShowCreateMenu(false)}
             >
               <div className="w-10 h-10 rounded-xl bg-purple/10 flex items-center justify-center group-hover:bg-purple/20 transition-colors">
@@ -148,8 +148,8 @@ export default function BottomNav() {
                 </svg>
               </div>
               <div>
-                <p className="font-semibold text-text-primary">تقييم فكرة</p>
-                <p className="text-sm text-text-muted">احصل على تقييم ذكي لفكرتك</p>
+                <p className="font-semibold text-gray-900">تقييم فكرة</p>
+                <p className="text-sm text-gray-600">احصل على تقييم ذكي لفكرتك</p>
               </div>
             </Link>
           </div>
@@ -186,7 +186,7 @@ export default function BottomNav() {
                   {item.icon(isActive)}
                   <span
                     className={`text-xs font-medium transition-colors duration-200 ${
-                      isActive ? 'text-teal' : 'text-text-muted'
+                      isActive ? 'text-teal' : 'text-gray-600'
                     }`}
                   >
                     {item.name}

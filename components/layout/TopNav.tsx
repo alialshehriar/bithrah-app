@@ -51,12 +51,12 @@ export default function TopNav() {
               <input
                 type="text"
                 placeholder="ابحث عن مشاريع، مجتمعات، أشخاص..."
-                className="w-full px-5 py-2.5 pr-12 rounded-xl bg-bg-card/50 border border-gray-700/50 text-text-primary placeholder-text-muted focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all duration-200"
+                className="w-full px-5 py-2.5 pr-12 rounded-xl bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-teal focus:ring-4 focus:ring-teal/10 transition-all duration-200"
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
               />
               <svg
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -74,9 +74,9 @@ export default function TopNav() {
           {/* Right Section */}
           <div className="flex items-center gap-4">
             {/* Notifications */}
-            <button className="relative p-2 rounded-xl hover:bg-bg-hover transition-colors duration-200 group">
+            <button className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 group">
               <svg
-                className="w-6 h-6 text-text-secondary group-hover:text-text-primary transition-colors"
+                className="w-6 h-6 text-gray-600 group-hover:text-gray-900 transition-colors"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -94,10 +94,10 @@ export default function TopNav() {
             {/* Messages */}
             <Link
               href="/messages"
-              className="relative p-2 rounded-xl hover:bg-bg-hover transition-colors duration-200 group"
+              className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 group"
             >
               <svg
-                className="w-6 h-6 text-text-secondary group-hover:text-text-primary transition-colors"
+                className="w-6 h-6 text-gray-600 group-hover:text-gray-900 transition-colors"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -115,12 +115,12 @@ export default function TopNav() {
             {/* Profile */}
             <Link
               href="/profile"
-              className="flex items-center gap-2 p-1 pr-3 rounded-xl hover:bg-bg-hover transition-colors duration-200 group"
+              className="flex items-center gap-2 p-1 pr-3 rounded-xl hover:bg-gray-100 transition-colors duration-200 group"
             >
               <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center text-white font-bold text-sm shadow-glow">
                 ف
               </div>
-              <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary transition-colors hidden lg:block">
+              <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors hidden lg:block">
                 فاطمة الأحمد
               </span>
             </Link>

@@ -33,11 +33,26 @@
 }
 
 @layer components {
+  /* Glass Effects for Light Theme */
+  .glass-strong {
+    @apply bg-white/95 backdrop-blur-xl border border-gray-200/50;
+  }
+  
+  .glass-medium {
+    @apply bg-white/90 backdrop-blur-lg border border-gray-200/40;
+  }
+  
+  .glass-light {
+    @apply bg-white/80 backdrop-blur-md border border-gray-200/30;
+  }
+  
+  /* Card Styles */
   .card-luxury {
     @apply bg-white rounded-2xl p-6 shadow-lg border border-gray-100 
            hover:shadow-xl transition-all duration-300;
   }
   
+  /* Gradient Styles */
   .gradient-bg {
     @apply bg-gradient-to-r from-teal-500 to-purple-500;
   }
@@ -46,6 +61,7 @@
     @apply bg-gradient-to-r from-teal-600 to-purple-600 bg-clip-text text-transparent;
   }
   
+  /* Shadow Effects */
   .shadow-glow {
     box-shadow: 0 10px 40px -10px rgba(20, 184, 166, 0.3);
   }
@@ -54,15 +70,31 @@
     box-shadow: 0 20px 60px -15px rgba(20, 184, 166, 0.4);
   }
   
+  .shadow-glow-purple {
+    box-shadow: 0 10px 40px -10px rgba(139, 92, 246, 0.3);
+  }
+  
+  /* Input Styles */
   .input-luxury {
     @apply w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl
            focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10
-           transition-all duration-200 outline-none;
+           transition-all duration-200 outline-none text-gray-900 placeholder-gray-500;
   }
   
+  /* Button Styles */
   .btn-primary {
     @apply px-6 py-3 rounded-xl font-bold gradient-bg text-white shadow-glow 
-           hover:shadow-glow-lg transition-all duration-300;
+           hover:shadow-glow-lg transition-all duration-300 active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 rounded-xl font-bold bg-gray-100 text-gray-900 
+           hover:bg-gray-200 transition-all duration-200 active:scale-95;
+  }
+  
+  /* Safe Area for Mobile */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
