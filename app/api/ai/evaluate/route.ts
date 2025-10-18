@@ -1,187 +1,102 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-import { verifySession } from '@/lib/auth';
-import { query } from '@/lib/db';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_API_BASE,
-});
-
-// Helper function to log user activity
-async function logActivity(
-  userId: number | null,
-  activityType: string,
-  activityData: any,
-  request: NextRequest
-) {
-  try {
-    const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    const userAgent = request.headers.get('user-agent') || 'unknown';
-
-    await query(
-      `INSERT INTO user_activities (user_id, activity_type, activity_data, ip_address, user_agent) 
-       VALUES ($1, $2, $3, $4, $5)`,
-      [userId, activityType, JSON.stringify(activityData), ipAddress, userAgent]
-    );
-  } catch (error) {
-    console.error('Error logging activity:', error);
-  }
-}
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_API_BASE = process.env.OPENAI_API_BASE || 'https://api.openai.com/v1';
 
 export async function POST(request: NextRequest) {
   try {
-    // Get user session (optional - can evaluate without login)
-    let userId: number | null = null;
-    try {
-      const session = await verifySession(request);
-      userId = session?.id || null;
-    } catch {
-      // Continue without user session
-    }
-
     const body = await request.json();
+    
     const { title, description, category, fundingGoal, targetMarket, competitiveAdvantage } = body;
 
-    // Log evaluation request
-    await logActivity(userId, 'ai_evaluation_request', {
-      title,
-      category,
-      fundingGoal,
-    }, request);
-
-    if (!title || !description || !fundingGoal) {
+    if (!title || !description) {
       return NextResponse.json(
-        { success: false, error: 'الرجاء إدخال جميع الحقول المطلوبة' },
+        { success: false, error: 'الرجاء إدخال عنوان ووصف المشروع' },
         { status: 400 }
       );
     }
 
-    // Create comprehensive prompt for AI evaluation
-    const prompt = `أنت خبير في تقييم المشاريع الريادية والاستثمارية في السوق السعودي. قيّم المشروع التالي بدقة واحترافية:
+    const prompt = `أنت خبير تقييم المشاريع والأفكار الريادية في السوق السعودي. قم بتقييم المشروع التالي بدقة واحترافية عالية:
 
 **عنوان المشروع:** ${title}
 **الوصف:** ${description}
-**التصنيف:** ${category}
-**هدف التمويل:** ${fundingGoal} ريال سعودي
+**التصنيف:** ${category || 'غير محدد'}
+**هدف التمويل:** ${fundingGoal || 'غير محدد'} ريال سعودي
 **السوق المستهدف:** ${targetMarket || 'غير محدد'}
 **الميزة التنافسية:** ${competitiveAdvantage || 'غير محددة'}
 
-قدم تقييماً شاملاً ومفصلاً يتضمن:
+قم بتقييم المشروع من خلال "قبعات التفكير الست" لإدوارد دي بونو:
+1. **القبعة البيضاء** (الحقائق والمعلومات): ما هي الحقائق والبيانات المتوفرة؟
+2. **القبعة الحمراء** (المشاعر والحدس): ما هو الانطباع الأولي والمشاعر تجاه الفكرة؟
+3. **القبعة السوداء** (التفكير الناقد): ما هي المخاطر والتحديات المحتملة؟
+4. **القبعة الصفراء** (التفكير الإيجابي): ما هي الفوائد والفرص؟
+5. **القبعة الخضراء** (الإبداع): ما هي الأفكار الإبداعية لتطوير المشروع؟
+6. **القبعة الزرقاء** (التنظيم): ما هي الخطوات العملية التالية؟
 
-1. **التقييم الإجمالي** (من 10): رقم دقيق يعكس جودة المشروع
-2. **نقاط القوة** (3-5 نقاط): أهم نقاط القوة في المشروع
-3. **نقاط الضعف** (3-5 نقاط): التحديات والمخاطر المحتملة
-4. **التوصيات** (3-5 توصيات): نصائح عملية لتحسين المشروع
-5. **تقييم تفصيلي** لكل من:
-   - **الابتكار** (من 10): مدى ابتكارية الفكرة
-   - **جدوى السوق** (من 10): حجم السوق والطلب
-   - **الجدوى المالية** (من 10): واقعية التمويل والعوائد
-   - **قابلية التنفيذ** (من 10): سهولة تنفيذ المشروع
-   - **الميزة التنافسية** (من 10): قوة المشروع مقارنة بالمنافسين
-
-**مهم جداً:**
-- كن دقيقاً وواقعياً في التقييم
-- راعِ خصوصية السوق السعودي
-- قدم تقييماً متوازناً (ليس متفائلاً جداً ولا متشائماً جداً)
-- استخدم أرقام دقيقة (مثل 7.5، 8.2) وليس أرقام تقريبية فقط
-
-أرجع النتيجة بصيغة JSON فقط بدون أي نص إضافي:
+قدم التقييم بصيغة JSON بالشكل التالي:
 {
-  "overallScore": رقم من 10,
-  "strengths": ["نقطة قوة 1", "نقطة قوة 2", ...],
-  "weaknesses": ["نقطة ضعف 1", "نقطة ضعف 2", ...],
-  "recommendations": ["توصية 1", "توصية 2", ...],
-  "detailedScores": {
-    "innovation": رقم من 10,
-    "marketViability": رقم من 10,
-    "financialViability": رقم من 10,
-    "feasibility": رقم من 10,
-    "competitiveAdvantage": رقم من 10
-  }
-}`;
+  "overallScore": رقم من 1 إلى 10,
+  "innovationScore": رقم من 1 إلى 10,
+  "marketViabilityScore": رقم من 1 إلى 10,
+  "financialViabilityScore": رقم من 1 إلى 10,
+  "executionFeasibilityScore": رقم من 1 إلى 10,
+  "strengths": [قائمة بنقاط القوة],
+  "weaknesses": [قائمة بنقاط الضعف],
+  "opportunities": [قائمة بالفرص],
+  "threats": [قائمة بالتهديدات],
+  "recommendations": [قائمة بالتوصيات المفصلة],
+  "nextSteps": [قائمة بالخطوات التالية]
+}
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: 'أنت خبير في تقييم المشاريع الريادية والاستثمارية في السوق السعودي. تقدم تقييمات دقيقة ومفصلة وواقعية.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
+تأكد من أن التقييم دقيق وواقعي ومبني على السوق السعودي.`;
+
+    const response = await fetch(`${OPENAI_API_BASE}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4',
+        messages: [
+          {
+            role: 'system',
+            content: 'أنت خبير تقييم مشاريع ريادية متخصص في السوق السعودي. تقدم تقييمات دقيقة وواقعية ومفصلة باستخدام منهجية قبعات التفكير الست.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      }),
     });
 
-    const evaluationText = completion.choices[0].message.content;
-    if (!evaluationText) {
-      throw new Error('No evaluation received from AI');
+    if (!response.ok) {
+      throw new Error('فشل الاتصال بخدمة الذكاء الاصطناعي');
     }
 
-    const evaluation = JSON.parse(evaluationText);
+    const data = await response.json();
+    const content = data.choices[0].message.content;
 
-    // Save evaluation to database
-    try {
-      await query(
-        `INSERT INTO project_evaluations (
-          user_id, title, description, category, funding_goal, target_market, competitive_advantage,
-          overall_score, innovation_score, market_viability_score, financial_viability_score,
-          feasibility_score, competitive_advantage_score, strengths, weaknesses, recommendations,
-          evaluation_data
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
-        [
-          userId,
-          title,
-          description,
-          category,
-          parseFloat(fundingGoal),
-          targetMarket || null,
-          competitiveAdvantage || null,
-          evaluation.overallScore,
-          evaluation.detailedScores.innovation,
-          evaluation.detailedScores.marketViability,
-          evaluation.detailedScores.financialViability,
-          evaluation.detailedScores.feasibility,
-          evaluation.detailedScores.competitiveAdvantage,
-          JSON.stringify(evaluation.strengths),
-          JSON.stringify(evaluation.weaknesses),
-          JSON.stringify(evaluation.recommendations),
-          JSON.stringify(evaluation),
-        ]
-      );
-
-      // Log successful evaluation
-      await logActivity(userId, 'ai_evaluation_success', {
-        title,
-        overallScore: evaluation.overallScore,
-      }, request);
-    } catch (dbError) {
-      console.error('Error saving evaluation to database:', dbError);
-      // Continue even if DB save fails
+    // Extract JSON from response
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('فشل في استخراج التقييم');
     }
+
+    const evaluation = JSON.parse(jsonMatch[0]);
 
     return NextResponse.json({
       success: true,
       evaluation,
     });
-  } catch (error) {
-    console.error('Error in AI evaluation:', error);
-    
-    // Log evaluation error
-    try {
-      await logActivity(null, 'ai_evaluation_error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      }, request);
-    } catch {}
-
+  } catch (error: any) {
+    console.error('AI Evaluation error:', error);
     return NextResponse.json(
-      { success: false, error: 'حدث خطأ في التقييم. الرجاء المحاولة مرة أخرى.' },
+      { success: false, error: error.message || 'حدث خطأ في التقييم' },
       { status: 500 }
     );
   }
 }
-
