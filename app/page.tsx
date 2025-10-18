@@ -18,16 +18,14 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
+    // Just check if user is logged in without redirecting
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/auth/session');
         if (response.ok) {
           const data = await response.json();
           if (data.user) {
-            // User is logged in, redirect to dashboard
-            router.replace('/dashboard');
-            return;
+            setIsLoggedIn(true);
           }
         }
       } catch (error) {
@@ -36,7 +34,7 @@ export default function Home() {
       setIsLoading(false);
     };
     checkAuth();
-  }, [router]);
+  }, []);
 
   if (isLoading) {
     return (
