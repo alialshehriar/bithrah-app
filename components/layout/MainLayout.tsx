@@ -2,6 +2,7 @@
 
 import TopNav from './TopNav';
 import BottomNav from './BottomNav';
+import BetaBanner from '../BetaBanner';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ export default function MainLayout({
 }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
+      <BetaBanner />
       {showTopNav && <TopNav />}
       
       <main className={`${showTopNav ? 'pt-16' : ''} ${showBottomNav ? 'pb-16' : ''}`}>

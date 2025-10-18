@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import { Brain, Sparkles, Shield, TrendingUp, Rocket, Users, Award, Zap } from 'lucide-react';
+import BetaBanner from '@/components/BetaBanner';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <BetaBanner />
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md border-b border-gray-200 z-50 shadow-sm">
+      <nav className="fixed top-10 w-full bg-white/80 backdrop-blur-md border-b border-gray-200 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
@@ -46,7 +48,7 @@ export default function LandingPage() {
           </h1>
           
           <p className="text-2xl text-gray-700 mb-4 max-w-3xl mx-auto font-medium">
-            منصة تمويل جماعي ذكية مدعومة بالذكاء الاصطناعي
+            بيئة وساطة ذكية مدعومة بالذكاء الاصطناعي
           </p>
           
           <p className="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">
