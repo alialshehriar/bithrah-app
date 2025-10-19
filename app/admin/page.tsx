@@ -7,7 +7,7 @@ import {
   Users, Rocket, Wallet, MessageSquare, Settings,
   TrendingUp, DollarSign, Eye, Activity, AlertCircle,
   CheckCircle, Clock, BarChart3, Shield, Database,
-  Server, Globe, Star, Target, Award
+  Server, Globe, Star, Target, Award, Lightbulb
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -206,6 +206,7 @@ export default function AdminDashboard() {
             { title: 'إدارة المشاريع', icon: Rocket, link: '/admin/projects', color: 'from-purple-500 to-purple-600', desc: 'اعتماد ومراجعة المشاريع' },
             { title: 'إدارة المحافظ', icon: Wallet, link: '/admin/wallets', color: 'from-green-500 to-green-600', desc: 'إدارة الأرصدة والمعاملات' },
             { title: 'إدارة المجتمعات', icon: MessageSquare, link: '/admin/communities', color: 'from-teal-500 to-teal-600', desc: 'إدارة المجتمعات والمحتوى' },
+            { title: 'تقييمات الأفكار', icon: Lightbulb, link: '/admin/evaluations', color: 'from-yellow-500 to-orange-600', desc: 'عرض جميع التقييمات بالذكاء الاصطناعي' },
           ].map((item, index) => (
             <Link
               key={index}

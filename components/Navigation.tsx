@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import {
   Home, Rocket, Users, Sparkles, Gift, Bell,
   Wallet, User, Menu, X, TrendingUp, Trophy, MessageCircle,
-  Calendar, Award, Settings, Shield, Crown
+  Calendar, Award, Settings, Shield, Crown, Lightbulb
 } from 'lucide-react';
 import DemoBanner from './DemoBanner';
 
@@ -51,6 +51,7 @@ export default function Navigation() {
     { href: '/home', label: 'الرئيسية', icon: Home },
     { href: '/dashboard', label: 'لوحة التحكم', icon: TrendingUp },
     { href: '/projects', label: 'المشاريع', icon: Rocket },
+    { href: '/evaluate', label: 'تقييم الأفكار', icon: Lightbulb },
     { href: '/communities', label: 'المجتمعات', icon: Users },
     { href: '/events', label: 'الفعاليات', icon: Calendar },
     { href: '/leaderboard', label: 'لوحة الصدارة', icon: Trophy },
