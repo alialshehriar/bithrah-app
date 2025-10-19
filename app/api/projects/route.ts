@@ -8,8 +8,9 @@ import { sandboxProjects } from '@/lib/sandbox/comprehensive-data';
 // GET - Get all projects with filters
 export async function GET(request: NextRequest) {
   try {
-    // Check if sandbox mode is enabled
-    const sandboxMode = request.cookies.get('sandbox-mode')?.value === 'true';
+    // Check if sandbox mode is enabled (default to true if cookie doesn't exist)
+    const sandboxModeCookie = request.cookies.get('sandbox-mode')?.value;
+    const sandboxMode = sandboxModeCookie === undefined || sandboxModeCookie === 'true';
 
     // If sandbox mode is enabled, return fake data
     if (sandboxMode) {

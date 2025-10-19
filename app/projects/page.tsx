@@ -18,7 +18,8 @@ interface Project {
   fundingGoal: string;
   currentFunding: string;
   status: string;
-  endDate: Date;
+  endDate?: Date;
+  daysLeft?: number;
   image: string | null;
   views: number;
   creator: {
@@ -273,7 +274,7 @@ export default function ProjectsPage() {
                       <div className="flex items-center justify-between text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          <span>{getDaysLeft(project.endDate)} يوم</span>
+                          <span>{project.daysLeft !== undefined ? project.daysLeft : (project.endDate ? getDaysLeft(project.endDate) : 0)} يوم</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Eye className="w-4 h-4" />
