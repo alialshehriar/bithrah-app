@@ -11,6 +11,7 @@ import { useState } from 'react';
 export default function BottomNav() {
   const pathname = usePathname();
   const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [notificationCount] = useState(3); // Placeholder - replace with actual API call
 
   const navItems = [
     { name: 'الرئيسية', icon: Home, href: '/home', color: 'text-blue-600' },
