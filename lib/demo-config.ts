@@ -4,8 +4,8 @@
  */
 
 export const demoConfig = {
-  // Demo mode status
-  isEnabled: process.env.DEMO_MODE === 'true',
+  // Demo mode status - enabled by default for demo experience
+  isEnabled: process.env.NEXT_PUBLIC_DEMO_MODE !== 'false',
   
   // Wallet configuration
   wallet: {

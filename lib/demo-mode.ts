@@ -76,7 +76,7 @@ export const demoBithrahProject = {
   goal: 50000,
   raised: 35000,
   backers: 45,
-  daysLeft: 15,
+  daysLeft: 30,
   image: '/demo-project.jpg',
   featured: true,
   trending: true,

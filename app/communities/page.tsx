@@ -19,6 +19,7 @@ interface Community {
   memberCount: number;
   postCount: number;
   createdAt: string;
+  isDemo?: boolean;
   creator: {
     id: number;
     name: string;
@@ -230,7 +231,13 @@ export default function CommunitiesPage() {
                       )}
                       
                       {/* Privacy Badge */}
-                      <div className="absolute top-3 right-3">
+                      <div className="absolute top-3 right-3 flex gap-2">
+                        {community.isDemo && (
+                          <div className="bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                            <Sparkles className="w-3 h-3 text-white" />
+                            <span className="text-xs font-bold text-white">تجريبي</span>
+                          </div>
+                        )}
                         <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
                           {community.privacy === 'private' ? (
                             <>

@@ -256,14 +256,20 @@ export default function EvaluatePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      وصف الفكرة *
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        وصف الفكرة *
+                      </label>
+                      <span className="text-sm text-gray-500">
+                        {formData.description.length} / 1000 حرف
+                      </span>
+                    </div>
                     <textarea
                       value={formData.description}
                       onChange={(e) => handleInputChange('description', e.target.value)}
                       placeholder="اشرح فكرتك بالتفصيل..."
                       rows={5}
+                      maxLength={1000}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                     />
                   </div>

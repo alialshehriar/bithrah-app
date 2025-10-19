@@ -195,11 +195,146 @@ export default function SubscriptionsPage() {
           ))}
         </div>
 
-        {/* Features Comparison */}
+        {/* Detailed Comparison Table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
+          className="bg-white rounded-2xl shadow-lg p-8 mb-8"
+        >
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+            جدول مقارنة شاملة للباقات
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-right">
+              <thead>
+                <tr className="border-b-2 border-gray-200">
+                  <th className="py-4 px-4 text-gray-700 font-semibold">الميزة</th>
+                  <th className="py-4 px-4 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-600 rounded-xl flex items-center justify-center">
+                        <Award className="w-6 h-6 text-white" />
+                      </div>
+                      <span className="font-bold text-gray-900">الفضي</span>
+                      <span className="text-sm text-gray-600">99 ر.س / شهر</span>
+                    </div>
+                  </th>
+                  <th className="py-4 px-4 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+                        <Crown className="w-6 h-6 text-white" />
+                      </div>
+                      <span className="font-bold text-gray-900">الذهبي</span>
+                      <span className="text-sm text-gray-600">199 ر.س / شهر</span>
+                      <span className="text-xs bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-2 py-1 rounded-full font-bold">الأكثر شعبية</span>
+                    </div>
+                  </th>
+                  <th className="py-4 px-4 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                        <Sparkles className="w-6 h-6 text-white" />
+                      </div>
+                      <span className="font-bold text-gray-900">البلاتيني</span>
+                      <span className="text-sm text-gray-600">399 ر.س / شهر</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">إشعارات مبكرة للمشاريع</td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">تنبيهات للمشاريع القريبة من الاكتمال</td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">وصول لمجتمعات حصرية</td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">تحليلات أساسية بالذكاء الاصطناعي</td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400 text-sm">متقدمة</span></td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400 text-sm">متقدمة جداً</span></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">خصم على رسوم التفاوض</td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-700 font-semibold">5%</span></td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-700 font-semibold">10%</span></td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-700 font-semibold">20%</span></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">وصول للمجتمعات الذهبية</td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">توصيات مشاريع مخصصة</td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">أولوية في التواصل مع أصحاب المشاريع</td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">تقارير شهرية مفصلة</td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400 text-sm">أسبوعية</span></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">وصول مبكر حصري للمشاريع</td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">مستشار استثماري شخصي</td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">تحليلات AI متقدمة وتنبؤات</td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">دعوات لفعاليات VIP</td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-gray-700">وصول لمجتمع المستثمرين النخبة</td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><span className="text-gray-400">—</span></td>
+                  <td className="py-4 px-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+
+        {/* Features Comparison */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
           className="bg-white rounded-2xl shadow-lg p-8"
         >
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">

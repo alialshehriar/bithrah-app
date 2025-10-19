@@ -13,6 +13,7 @@ const sandboxCommunities = [
     memberCount: 2547,
     postCount: 450,
     createdAt: new Date('2024-01-15').toISOString(),
+    isDemo: false,
     creator: {
       id: 1,
       name: 'أحمد محمد',
@@ -30,6 +31,7 @@ const sandboxCommunities = [
     memberCount: 1823,
     postCount: 320,
     createdAt: new Date('2024-02-01').toISOString(),
+    isDemo: false,
     creator: {
       id: 2,
       name: 'فاطمة علي',
@@ -47,6 +49,7 @@ const sandboxCommunities = [
     memberCount: 3421,
     postCount: 580,
     createdAt: new Date('2024-01-20').toISOString(),
+    isDemo: false,
     creator: {
       id: 3,
       name: 'محمد سعيد',
@@ -64,6 +67,7 @@ const sandboxCommunities = [
     memberCount: 1654,
     postCount: 280,
     createdAt: new Date('2024-02-10').toISOString(),
+    isDemo: false,
     creator: {
       id: 4,
       name: 'سارة أحمد',
@@ -81,6 +85,7 @@ const sandboxCommunities = [
     memberCount: 4521,
     postCount: 890,
     createdAt: new Date('2024-01-10').toISOString(),
+    isDemo: false,
     creator: {
       id: 5,
       name: 'خالد عبدالله',
@@ -98,6 +103,7 @@ const sandboxCommunities = [
     memberCount: 2134,
     postCount: 410,
     createdAt: new Date('2024-02-15').toISOString(),
+    isDemo: false,
     creator: {
       id: 6,
       name: 'نورة سعد',
@@ -115,6 +121,7 @@ const sandboxCommunities = [
     memberCount: 3876,
     postCount: 620,
     createdAt: new Date('2024-01-25').toISOString(),
+    isDemo: false,
     creator: {
       id: 7,
       name: 'عمر حسن',
@@ -132,6 +139,7 @@ const sandboxCommunities = [
     memberCount: 1987,
     postCount: 340,
     createdAt: new Date('2024-02-05').toISOString(),
+    isDemo: false,
     creator: {
       id: 8,
       name: 'ليلى أحمد',
@@ -163,6 +171,7 @@ export async function GET(request: NextRequest) {
         memberCount: demoBithrahCommunity.members,
         postCount: demoBithrahCommunity.posts,
         createdAt: new Date().toISOString(),
+        isDemo: true,
         creator: {
           id: 0,
           name: 'فريق بذرة',
