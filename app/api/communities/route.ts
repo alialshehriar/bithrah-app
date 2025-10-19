@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isDemoMode, demoBithrahCommunity } from '@/lib/demo-mode';
 
 // Sandbox communities data with correct structure
 const sandboxCommunities = [
@@ -149,6 +150,27 @@ export async function GET(request: NextRequest) {
     
     // Use sandbox data
     let filtered = [...sandboxCommunities];
+    
+    // Add demo community if demo mode is enabled
+    if (isDemoMode()) {
+      filtered.unshift({
+        id: 999,
+        name: demoBithrahCommunity.name,
+        description: demoBithrahCommunity.description,
+        category: demoBithrahCommunity.category,
+        privacy: 'public',
+        coverImage: null,
+        memberCount: demoBithrahCommunity.members,
+        postCount: demoBithrahCommunity.posts,
+        createdAt: new Date().toISOString(),
+        creator: {
+          id: 0,
+          name: 'فريق بذرة',
+          username: 'bithrah_team',
+          avatar: null,
+        },
+      });
+    }
     
     // Filter by search
     if (search) {
