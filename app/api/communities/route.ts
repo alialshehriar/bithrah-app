@@ -3,6 +3,25 @@ import { isDemoMode, demoBithrahCommunity } from '@/lib/demo-mode';
 
 // Sandbox communities data with correct structure
 const sandboxCommunities = [
+  // Demo community - always first
+  {
+    id: 999,
+    name: 'مجتمع بذرة التجريبي',
+    description: 'مجتمع تجريبي لتوضيح كيفية التواصل والمشاركة داخل منصة بذرة',
+    category: 'other',
+    privacy: 'public',
+    coverImage: null,
+    memberCount: 1250,
+    postCount: 45,
+    createdAt: new Date().toISOString(),
+    isDemo: true,
+    creator: {
+      id: 0,
+      name: 'فريق بذرة',
+      username: 'bithrah_team',
+      avatar: null,
+    },
+  },
   {
     id: 1,
     name: 'مجتمع التقنية والابتكار',
@@ -156,30 +175,8 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category') || '';
     const sort = searchParams.get('sort') || 'popular';
     
-    // Use sandbox data
+    // Use sandbox data (demo community is already included)
     let filtered = [...sandboxCommunities];
-    
-    // Add demo community if demo mode is enabled
-    if (isDemoMode()) {
-      filtered.unshift({
-        id: 999,
-        name: demoBithrahCommunity.name,
-        description: demoBithrahCommunity.description,
-        category: demoBithrahCommunity.category,
-        privacy: 'public',
-        coverImage: null,
-        memberCount: demoBithrahCommunity.members,
-        postCount: demoBithrahCommunity.posts,
-        createdAt: new Date().toISOString(),
-        isDemo: true,
-        creator: {
-          id: 0,
-          name: 'فريق بذرة',
-          username: 'bithrah_team',
-          avatar: null,
-        },
-      });
-    }
     
     // Filter by search
     if (search) {
