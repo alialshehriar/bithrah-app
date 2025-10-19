@@ -7,10 +7,6 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['images.unsplash.com', 'via.placeholder.com'],
   },
-  // Force cache invalidation with unique build ID
-  generateBuildId: async () => {
-    return `build-${Date.now()}`;
-  },
 };
 
 export default nextConfig;
