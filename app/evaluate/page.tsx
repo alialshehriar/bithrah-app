@@ -7,6 +7,9 @@ import {
   AlertCircle, CheckCircle, Lightbulb, BarChart3, Shield,
   Zap, Clock, Globe, Award, ArrowRight, Loader2
 } from 'lucide-react';
+import ProgressSteps from '@/components/ui/ProgressSteps';
+import { Input, Textarea } from '@/components/ui/Input';
+import { useToast } from '@/components/ui/Toast';
 
 interface EvaluationResult {
   overallScore: number;
