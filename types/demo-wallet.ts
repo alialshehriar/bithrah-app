@@ -60,6 +60,7 @@ export interface Subscription {
   color: string;
   gradient: string;
   popular?: boolean;
+  badge?: string;
 }
 
 export interface NegotiationFeeCalculation {

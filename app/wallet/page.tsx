@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import { demoConfig } from '@/lib/demo-config';
 
 interface Transaction {
   id: number;
@@ -192,6 +193,32 @@ export default function WalletPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">المحفظة</h1>
           <p className="text-gray-600">إدارة رصيدك ومعاملاتك المالية</p>
         </motion.div>
+
+        {/* Demo Notice */}
+        {demoConfig.isEnabled && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-8 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-2xl p-6"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-purple-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-purple-900 font-semibold mb-1">
+                  ✨ {demoConfig.messages.demoNotice}
+                </p>
+                <p className="text-purple-700 text-sm mb-1">
+                  الرصيد التجريبي يستخدم لتجربة جميع ميزات المنصة
+                </p>
+                <p className="text-purple-600 text-xs">
+                  {demoConfig.messages.refundNotice}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Balance Card */}
         <motion.div
