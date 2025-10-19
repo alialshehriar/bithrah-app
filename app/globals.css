@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './animations.css';
+
 :root {
   --teal: #14B8A6;
   --purple: #8B5CF6;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Footer from "@/components/layout/Footer";
+import Walkthrough from "@/components/Walkthrough";
 
 export const metadata: Metadata = {
   title: "بذرة - بيئة الوساطة الذكية الأولى في السعودية",
@@ -57,6 +58,7 @@ export default function RootLayout({
       <body className="antialiased">
         {children}
         <Footer />
+        <Walkthrough />
       </body>
     </html>
   );

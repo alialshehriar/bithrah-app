@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Brain, Target, TrendingUp, Users, DollarSign,
@@ -44,6 +44,11 @@ export default function EvaluatePage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EvaluationResult | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(false);
+
+  useEffect(() => {
+    setIsDemoMode(process.env.NEXT_PUBLIC_DEMO_MODE === 'true');
+  }, []);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -139,6 +144,17 @@ export default function EvaluatePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-teal-50 pb-24">
+      {/* Demo Mode Notice */}
+      {isDemoMode && (
+        <div className="bg-gradient-to-r from-amber-100 to-orange-100 border-b border-amber-200">
+          <div className="max-w-7xl mx-auto px-4 py-3">
+            <div className="flex items-center justify-center gap-2 text-amber-900">
+              <AlertCircle className="w-5 h-5" />
+              <span className="font-medium">نسخة تجريبية - النسخة النهائية قريباً</span>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-teal-600 text-white">
         <div className="max-w-5xl mx-auto px-4 py-16">
