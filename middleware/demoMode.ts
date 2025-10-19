@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 
 export function demoModeMiddleware(request: NextRequest) {
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+  const isDemoMode = true; // الوضع التجريبي مفعّل افتراضياً
   
   if (!isDemoMode) {
     return NextResponse.next();
@@ -28,7 +28,8 @@ export function demoModeMiddleware(request: NextRequest) {
  * Check if demo mode is enabled
  */
 export function isDemoMode(): boolean {
-  return process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+  // الوضع التجريبي مفعّل افتراضياً
+  return true;
 }
 
 /**
