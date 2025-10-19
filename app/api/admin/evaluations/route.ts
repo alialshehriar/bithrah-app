@@ -1,0 +1,143 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+// Sandbox evaluations data
+const sandboxEvaluations = [
+  {
+    id: '1',
+    title: 'منصة تعليمية بالذكاء الاصطناعي',
+    category: 'education',
+    userName: 'أحمد محمد',
+    userEmail: 'ahmed@example.com',
+    overallScore: 85,
+    marketPotential: 90,
+    feasibility: 82,
+    innovation: 88,
+    scalability: 85,
+    financialViability: 80,
+    competitiveAdvantage: 85,
+    createdAt: new Date('2024-10-15').toISOString(),
+  },
+  {
+    id: '2',
+    title: 'تطبيق صحي لمتابعة الأمراض المزمنة',
+    category: 'health',
+    userName: 'سارة أحمد',
+    userEmail: 'sara@example.com',
+    overallScore: 78,
+    marketPotential: 85,
+    feasibility: 75,
+    innovation: 80,
+    scalability: 72,
+    financialViability: 76,
+    competitiveAdvantage: 78,
+    createdAt: new Date('2024-10-14').toISOString(),
+  },
+  {
+    id: '3',
+    title: 'منصة تجارة إلكترونية للمنتجات المحلية',
+    category: 'business',
+    userName: 'خالد عبدالله',
+    userEmail: 'khaled@example.com',
+    overallScore: 72,
+    marketPotential: 80,
+    feasibility: 78,
+    innovation: 65,
+    scalability: 75,
+    financialViability: 70,
+    competitiveAdvantage: 68,
+    createdAt: new Date('2024-10-13').toISOString(),
+  },
+  {
+    id: '4',
+    title: 'تطبيق للطاقة المتجددة المنزلية',
+    category: 'environment',
+    userName: 'فاطمة علي',
+    userEmail: 'fatima@example.com',
+    overallScore: 88,
+    marketPotential: 92,
+    feasibility: 85,
+    innovation: 90,
+    scalability: 88,
+    financialViability: 84,
+    competitiveAdvantage: 89,
+    createdAt: new Date('2024-10-12').toISOString(),
+  },
+  {
+    id: '5',
+    title: 'منصة للربط بين المستقلين والشركات',
+    category: 'business',
+    userName: 'محمد سعيد',
+    userEmail: 'mohammed@example.com',
+    overallScore: 68,
+    marketPotential: 75,
+    feasibility: 70,
+    innovation: 62,
+    scalability: 68,
+    financialViability: 65,
+    competitiveAdvantage: 68,
+    createdAt: new Date('2024-10-11').toISOString(),
+  },
+  {
+    id: '6',
+    title: 'تطبيق لتعلم البرمجة للأطفال',
+    category: 'education',
+    userName: 'نورة القحطاني',
+    userEmail: 'noura@example.com',
+    overallScore: 82,
+    marketPotential: 88,
+    feasibility: 80,
+    innovation: 85,
+    scalability: 82,
+    financialViability: 78,
+    competitiveAdvantage: 79,
+    createdAt: new Date('2024-10-10').toISOString(),
+  },
+  {
+    id: '7',
+    title: 'منصة للتبرعات الخيرية الشفافة',
+    category: 'other',
+    userName: 'عبدالرحمن الحربي',
+    userEmail: 'abdulrahman@example.com',
+    overallScore: 75,
+    marketPotential: 80,
+    feasibility: 72,
+    innovation: 78,
+    scalability: 75,
+    financialViability: 70,
+    competitiveAdvantage: 75,
+    createdAt: new Date('2024-10-09').toISOString(),
+  },
+  {
+    id: '8',
+    title: 'تطبيق ذكي لإدارة المشاريع الصغيرة',
+    category: 'technology',
+    userName: 'ريم المطيري',
+    userEmail: 'reem@example.com',
+    overallScore: 80,
+    marketPotential: 85,
+    feasibility: 82,
+    innovation: 78,
+    scalability: 80,
+    financialViability: 76,
+    competitiveAdvantage: 79,
+    createdAt: new Date('2024-10-08').toISOString(),
+  },
+];
+
+export async function GET(request: NextRequest) {
+  try {
+    // Always use sandbox data for now
+    return NextResponse.json({
+      success: true,
+      evaluations: sandboxEvaluations,
+      total: sandboxEvaluations.length,
+    });
+  } catch (error) {
+    console.error('Error fetching evaluations:', error);
+    return NextResponse.json(
+      { success: false, error: 'فشل في جلب التقييمات', evaluations: [] },
+      { status: 500 }
+    );
+  }
+}
+
