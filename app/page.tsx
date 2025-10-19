@@ -112,26 +112,26 @@ export default function Home() {
     }
   ];
 
-  const displayStats = [
+  const aiAgentFeatures = [
     { 
-      value: stats.totalProjects > 0 ? `${stats.totalProjects}+` : '---', 
-      label: 'مشروع نشط', 
-      icon: Rocket 
+      value: 'GPT-4', 
+      label: 'مدعوم بـ OpenAI', 
+      icon: Sparkles 
     },
     { 
-      value: stats.totalFunding > 0 ? `${(stats.totalFunding / 1000000).toFixed(1)}M+` : '---', 
-      label: 'ريال تمويل', 
-      icon: DollarSign 
+      value: '6', 
+      label: 'معايير تقييم شاملة', 
+      icon: BarChart3 
     },
     { 
-      value: stats.activeUsers > 0 ? `${stats.activeUsers}+` : '---', 
-      label: 'مستخدم نشط', 
-      icon: Users 
-    },
-    { 
-      value: stats.successRate > 0 ? `${stats.successRate}%` : '---', 
-      label: 'نسبة النجاح', 
+      value: 'SWOT', 
+      label: 'تحليل استراتيجي', 
       icon: Target 
+    },
+    { 
+      value: '100%', 
+      label: 'تقرير مفصل فوري', 
+      icon: CheckCircle 
     }
   ];
 
@@ -199,27 +199,53 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Stats - Only show if we have real data */}
-            {stats.totalProjects > 0 && (
+            {/* AI Evaluation Agent Features */}
+            <div className="mb-12">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-center mb-8"
+              >
+                <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#14B8A6]/10 to-[#8B5CF6]/10 rounded-full border border-[#14B8A6]/20 mb-4">
+                  <Sparkles className="w-5 h-5 text-[#14B8A6]" />
+                  <span className="text-sm font-bold text-gray-700">وكيل تقييم الأفكار بالذكاء الاصطناعي</span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-3">
+                  احصل على تقييم احترافي لفكرتك في دقائق
+                </h3>
+                <p className="text-gray-600 max-w-2xl mx-auto mb-6">
+                  وكيل ذكي متقدم يستخدم GPT-4 لتحليل فكرتك وتقديم تقرير شامل يغطي جميع جوانب مشروعك
+                </p>
+                <Link
+                  href="/evaluate"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] text-white rounded-2xl font-bold text-lg hover:shadow-2xl transition-all"
+                >
+                  <Sparkles className="w-6 h-6" />
+                  قيّم فكرتك الآن
+                  <ArrowLeft className="w-5 h-5" />
+                </Link>
+              </motion.div>
+              
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-                {displayStats.map((stat, index) => (
+                {aiAgentFeatures.map((feature, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + index * 0.1 }}
+                    transition={{ delay: 0.3 + index * 0.1 }}
                     className="relative group"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#14B8A6]/10 to-[#8B5CF6]/10 rounded-2xl blur-xl" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#8B5CF6]/10 to-[#7C3AED]/10 rounded-2xl blur-xl" />
                     <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/50 shadow-lg">
-                      <stat.icon className="w-8 h-8 text-[#14B8A6] mb-2 mx-auto" />
-                      <div className="text-3xl font-black text-gray-900 mb-1">{stat.value}</div>
-                      <div className="text-sm text-gray-600 font-bold">{stat.label}</div>
+                      <feature.icon className="w-8 h-8 text-[#8B5CF6] mb-2 mx-auto" />
+                      <div className="text-3xl font-black text-gray-900 mb-1">{feature.value}</div>
+                      <div className="text-sm text-gray-600 font-bold">{feature.label}</div>
                     </div>
                   </motion.div>
                 ))}
               </div>
-            )}
+            </div>
           </motion.div>
         </div>
       </section>
