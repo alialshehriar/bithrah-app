@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import FeaturedProjects from '@/components/FeaturedProjects';
 
 export default function Home() {
   const router = useRouter();
@@ -249,6 +250,9 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+
+      {/* Featured Projects Section */}
+      <FeaturedProjects />
 
       {/* Features Section */}
       <section className="py-20 px-4 bg-white/50">

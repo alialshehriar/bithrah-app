@@ -8,6 +8,7 @@ import {
   Plus, Grid, List, ChevronDown, Star, Heart, Eye, ArrowRight,
   Sparkles, Zap, Target, Rocket
 } from 'lucide-react';
+import { ProjectCardSkeleton } from '@/components/ui/Skeleton';
 
 interface Project {
   id: number;
@@ -210,8 +211,10 @@ export default function ProjectsPage() {
       {/* Projects Grid/List */}
       <div className="max-w-7xl mx-auto px-4 mt-8">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-16 h-16 border-4 border-teal-500 border-t-transparent rounded-full animate-spin" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <ProjectCardSkeleton key={i} />
+            ))}
           </div>
         ) : projects.length === 0 ? (
           <div className="text-center py-20">
