@@ -1,137 +1,217 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { db } from '@/lib/db';
-import { projects, users } from '@/lib/db/schema';
-import { eq, desc, like, or, and, sql } from 'drizzle-orm';
-import { sandboxProjects } from '@/lib/sandbox/comprehensive-data';
+import { neon } from '@neondatabase/serverless';
 
 // GET - Get all projects with filters
 export async function GET(request: NextRequest) {
   try {
-    // Check if sandbox mode is enabled
-    const sandboxMode = request.cookies.get('sandbox-mode')?.value === 'true';
-
-    // If sandbox mode is enabled, return fake data
-    if (sandboxMode) {
-      const { searchParams } = new URL(request.url);
-      const featured = searchParams.get('featured') === 'true';
-      const trending = searchParams.get('trending') === 'true';
-      const limit = parseInt(searchParams.get('limit') || '20');
-
-      let filteredProjects = [...sandboxProjects];
-
-      if (featured) {
-        filteredProjects = filteredProjects.filter(p => p.featured);
-      }
-
-      if (trending) {
-        filteredProjects = filteredProjects.filter(p => p.trending);
-      }
-
-      filteredProjects = filteredProjects.slice(0, limit);
-
-      return NextResponse.json({
-        success: true,
-        projects: filteredProjects,
-        total: filteredProjects.length,
-        sandbox: true
-      });
-    }
-
-    // Real data mode
+    const sql = neon(process.env.DATABASE_URL!);
     const { searchParams } = new URL(request.url);
-    const search = searchParams.get('search');
-    const category = searchParams.get('category');
-    const status = searchParams.get('status');
+    
+    const search = searchParams.get('search') || '';
+    const category = searchParams.get('category') || '';
     const sortBy = searchParams.get('sortBy') || 'recent';
     const limit = parseInt(searchParams.get('limit') || '20');
     const featured = searchParams.get('featured') === 'true';
     const trending = searchParams.get('trending') === 'true';
 
-    let query = db.select({
-      id: projects.id,
-      title: projects.title,
-      description: projects.description,
-      category: projects.category,
-      fundingGoal: projects.fundingGoal,
-      currentFunding: projects.currentFunding,
-      status: projects.status,
-      image: projects.image,
-      featured: projects.featured,
-      trending: projects.trending,
-      createdAt: projects.createdAt,
-      creator: {
-        id: users.id,
-        name: users.name,
-        email: users.email,
-      },
-    })
-    .from(projects)
-    .leftJoin(users, eq(projects.creatorId, users.id));
+    // Build query
+    let query = `
+      SELECT 
+        p.id,
+        p.title,
+        p.slug,
+        p.description,
+        p.short_description,
+        p.category,
+        p.tags,
+        p.image,
+        p.cover_image,
+        p.funding_goal,
+        p.current_funding,
+        p.currency,
+        p.backers_count,
+        p.deadline,
+        p.status,
+        p.featured,
+        p.trending,
+        p.is_sandbox,
+        p.created_at,
+        p.published_at,
+        u.id as creator_id,
+        u.name as creator_name,
+        u.username as creator_username,
+        u.avatar as creator_avatar
+      FROM projects p
+      LEFT JOIN users u ON p.creator_id = u.id
+      WHERE p.status = 'active'
+    `;
 
-    // Apply filters
-    const conditions = [];
-    
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    // Add search filter
     if (search) {
-      conditions.push(
-        or(
-          like(projects.title, `%${search}%`),
-          like(projects.description, `%${search}%`)
-        )
-      );
+      query += ` AND (p.title ILIKE $${paramIndex} OR p.description ILIKE $${paramIndex})`;
+      params.push(`%${search}%`);
+      paramIndex++;
     }
 
-    if (category && category !== 'all') {
-      conditions.push(eq(projects.category, category));
+    // Add category filter
+    if (category) {
+      query += ` AND p.category = $${paramIndex}`;
+      params.push(category);
+      paramIndex++;
     }
 
-    if (status && status !== 'all') {
-      conditions.push(eq(projects.status, status));
-    }
-
+    // Add featured filter
     if (featured) {
-      conditions.push(eq(projects.featured, true));
+      query += ` AND p.featured = true`;
     }
 
+    // Add trending filter
     if (trending) {
-      conditions.push(eq(projects.trending, true));
+      query += ` AND p.trending = true`;
     }
 
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
+    // Add sorting
+    if (sortBy === 'recent') {
+      query += ` ORDER BY p.created_at DESC`;
+    } else if (sortBy === 'popular') {
+      query += ` ORDER BY p.backers_count DESC`;
+    } else if (sortBy === 'funded') {
+      query += ` ORDER BY p.current_funding DESC`;
+    } else if (sortBy === 'ending') {
+      query += ` ORDER BY p.deadline ASC`;
     }
 
-    // Apply sorting
-    switch (sortBy) {
-      case 'popular':
-        query = query.orderBy(desc(projects.currentFunding)) as any;
-        break;
-      case 'funded':
-        query = query.orderBy(desc(projects.currentFunding)) as any;
-        break;
-      case 'ending':
-        query = query.orderBy(desc(projects.createdAt)) as any;
-        break;
-      default: // recent
-        query = query.orderBy(desc(projects.createdAt)) as any;
-    }
+    // Add limit
+    query += ` LIMIT $${paramIndex}`;
+    params.push(limit);
 
-    query = query.limit(limit) as any;
+    // Execute query
+    const results = await sql(query, params);
 
-    const allProjects = await query;
+    // Transform results
+    const projects = results.map((row: any) => ({
+      id: row.id,
+      title: row.title,
+      slug: row.slug,
+      description: row.short_description || row.description,
+      fullDescription: row.description,
+      category: row.category,
+      tags: row.tags,
+      image: row.image,
+      coverImage: row.cover_image,
+      fundingGoal: row.funding_goal.toString(),
+      currentFunding: row.current_funding.toString(),
+      currency: row.currency,
+      backersCount: row.backers_count,
+      deadline: row.deadline,
+      status: row.status,
+      featured: row.featured,
+      trending: row.trending,
+      isSandbox: row.is_sandbox,
+      createdAt: row.created_at,
+      publishedAt: row.published_at,
+      creator: {
+        id: row.creator_id,
+        name: row.creator_name,
+        username: row.creator_username,
+        avatar: row.creator_avatar,
+      },
+      // Calculate progress percentage
+      progress: Math.round((parseFloat(row.current_funding) / parseFloat(row.funding_goal)) * 100),
+      // Calculate days left
+      daysLeft: Math.max(0, Math.ceil((new Date(row.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))),
+    }));
 
-    // Return real data
     return NextResponse.json({
       success: true,
-      projects: allProjects,
-      total: allProjects.length,
-      sandbox: false
+      projects,
+      total: projects.length,
     });
-
   } catch (error) {
-    console.error('Projects fetch error:', error);
+    console.error('Error fetching projects:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ أثناء جلب المشاريع' },
+      { 
+        success: false, 
+        error: 'فشل في جلب المشاريع',
+        projects: [],
+        total: 0
+      },
+      { status: 200 }
+    );
+  }
+}
+
+// POST - Create new project
+export async function POST(request: NextRequest) {
+  try {
+    const sql = neon(process.env.DATABASE_URL!);
+    const body = await request.json();
+
+    // Validate required fields
+    const required = ['title', 'description', 'category', 'fundingGoal', 'deadline', 'creatorId'];
+    for (const field of required) {
+      if (!body[field]) {
+        return NextResponse.json(
+          { success: false, error: `الحقل ${field} مطلوب` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Create slug from title
+    const slug = body.title
+      .toLowerCase()
+      .replace(/[^\u0600-\u06FFa-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-');
+
+    // Insert project
+    const result = await sql`
+      INSERT INTO projects (
+        creator_id, title, slug, description, short_description,
+        category, tags, image, cover_image, video,
+        funding_goal, current_funding, currency,
+        backers_count, deadline, status, visibility,
+        featured, verified, is_sandbox, trending,
+        created_at, updated_at
+      ) VALUES (
+        ${body.creatorId},
+        ${body.title},
+        ${slug},
+        ${body.description},
+        ${body.shortDescription || body.description.substring(0, 200)},
+        ${body.category},
+        ${JSON.stringify(body.tags || [])},
+        ${body.image || null},
+        ${body.coverImage || null},
+        ${body.video || null},
+        ${body.fundingGoal},
+        0,
+        ${body.currency || 'SAR'},
+        0,
+        ${body.deadline},
+        'draft',
+        'public',
+        false,
+        false,
+        false,
+        false,
+        NOW(),
+        NOW()
+      )
+      RETURNING id, slug
+    `;
+
+    return NextResponse.json({
+      success: true,
+      project: result[0],
+    });
+  } catch (error) {
+    console.error('Error creating project:', error);
+    return NextResponse.json(
+      { success: false, error: 'فشل في إنشاء المشروع' },
       { status: 500 }
     );
   }
