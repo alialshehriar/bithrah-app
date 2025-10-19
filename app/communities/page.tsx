@@ -8,6 +8,8 @@ import {
   UserPlus, Lock, Globe, Star, MessageSquare, Eye,
   Sparkles, Target, Briefcase, Heart, Zap, BookOpen
 } from 'lucide-react';
+import { CommunityCardSkeleton } from '@/components/ui/Skeleton';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface Community {
   id: number;
@@ -193,14 +195,19 @@ export default function CommunitiesPage() {
 
         {/* Communities Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-teal-500 border-t-transparent"></div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <CommunityCardSkeleton key={i} />
+            ))}
           </div>
         ) : communities.length === 0 ? (
-          <div className="text-center py-20">
-            <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600 text-lg">لا توجد مجتمعات متاحة</p>
-          </div>
+          <EmptyState
+            icon={Users}
+            title="لا توجد مجتمعات"
+            description="جرّب تغيير معايير البحث أو الفلاتر للعثور على مجتمعات تناسبك"
+            actionLabel="إنشاء مجتمع جديد"
+            actionHref="/communities/create"
+          />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {communities.map((community, index) => {

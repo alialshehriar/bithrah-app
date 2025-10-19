@@ -9,6 +9,7 @@ import {
   Sparkles, Zap, Target, Rocket
 } from 'lucide-react';
 import { ProjectCardSkeleton } from '@/components/ui/Skeleton';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface Project {
   id: number;
@@ -217,13 +218,13 @@ export default function ProjectsPage() {
             ))}
           </div>
         ) : projects.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">لا توجد مشاريع</h3>
-            <p className="text-gray-600">جرب تغيير معايير البحث أو الفلاتر</p>
-          </div>
+          <EmptyState
+            icon={Rocket}
+            title="لا توجد مشاريع"
+            description="جرّب تغيير معايير البحث أو الفلاتر للعثور على مشاريع تناسبك"
+            actionLabel="إنشاء مشروع جديد"
+            actionHref="/projects/create"
+          />
         ) : (
           <div
             className={
