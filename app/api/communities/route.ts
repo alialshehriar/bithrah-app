@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Sandbox communities data
+// Sandbox communities data with correct structure
 const sandboxCommunities = [
   {
     id: 1,
@@ -87,17 +87,67 @@ const sandboxCommunities = [
       avatar: null,
     },
   },
+  {
+    id: 6,
+    name: 'مجتمع التسويق الرقمي',
+    description: 'مجتمع للمهتمين بالتسويق الرقمي ووسائل التواصل الاجتماعي',
+    category: 'business',
+    privacy: 'public',
+    coverImage: null,
+    memberCount: 2134,
+    postCount: 410,
+    createdAt: new Date('2024-02-15').toISOString(),
+    creator: {
+      id: 6,
+      name: 'نورة سعد',
+      username: 'noura_marketing',
+      avatar: null,
+    },
+  },
+  {
+    id: 7,
+    name: 'مجتمع الذكاء الاصطناعي',
+    description: 'مجتمع متخصص في الذكاء الاصطناعي والتعلم الآلي',
+    category: 'technology',
+    privacy: 'public',
+    coverImage: null,
+    memberCount: 3876,
+    postCount: 620,
+    createdAt: new Date('2024-01-25').toISOString(),
+    creator: {
+      id: 7,
+      name: 'عمر حسن',
+      username: 'omar_ai',
+      avatar: null,
+    },
+  },
+  {
+    id: 8,
+    name: 'مجتمع الأمن السيبراني',
+    description: 'مجتمع للمهتمين بالأمن السيبراني وحماية البيانات',
+    category: 'technology',
+    privacy: 'public',
+    coverImage: null,
+    memberCount: 1987,
+    postCount: 340,
+    createdAt: new Date('2024-02-05').toISOString(),
+    creator: {
+      id: 8,
+      name: 'ليلى أحمد',
+      username: 'layla_security',
+      avatar: null,
+    },
+  },
 ];
 
 export async function GET(request: NextRequest) {
   try {
-    const sandboxMode = request.cookies.get('sandbox-mode')?.value === 'true';
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const category = searchParams.get('category') || '';
     const sort = searchParams.get('sort') || 'popular';
     
-    // Always use sandbox data for now to ensure it works
+    // Use sandbox data
     let filtered = [...sandboxCommunities];
     
     // Filter by search
