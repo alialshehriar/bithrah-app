@@ -1,148 +1,205 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { db } from '@/lib/db';
-import { projects, users, backings } from '@/lib/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { neon } from '@neondatabase/serverless';
 
-// GET - Get project details
+// GET - Get project details by ID
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   try {
+    const sql = neon(process.env.DATABASE_URL!);
     const projectId = parseInt(id);
 
-    // Get project with creator info
-    const project = await db.query.projects.findFirst({
-      where: eq(projects.id, projectId),
-      with: {
-        creator: {
-          columns: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    if (!project) {
+    if (isNaN(projectId)) {
       return NextResponse.json(
-        { error: 'المشروع غير موجود' },
+        { success: false, error: 'معرف المشروع غير صالح' },
+        { status: 400 }
+      );
+    }
+
+    // Get project details with creator info
+    const projectResult = await sql`
+      SELECT 
+        p.*,
+        u.id as creator_id,
+        u.name as creator_name,
+        u.username as creator_username,
+        u.email as creator_email,
+        u.avatar as creator_avatar,
+        u.bio as creator_bio
+      FROM projects p
+      LEFT JOIN users u ON p.creator_id = u.id
+      WHERE p.id = ${projectId}
+    `;
+
+    if (projectResult.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'المشروع غير موجود' },
         { status: 404 }
       );
     }
 
-    // Get investment stats
-    const investmentStats = await db
-      .select({
-        totalInvestors: sql<number>`COUNT(DISTINCT ${backings.userId})`,
-        totalInvested: sql<string>`COALESCE(SUM(${backings.amount}), 0)`,
-      })
-      .from(backings)
-      .where(eq(backings.projectId, projectId));
+    const projectData = projectResult[0];
 
-    const stats = investmentStats[0];
+    // Get support packages
+    const packagesResult = await sql`
+      SELECT *
+      FROM support_packages
+      WHERE project_id = ${projectId}
+      AND is_active = true
+      ORDER BY amount ASC
+    `;
 
-      // Views tracking removed - field doesn't exist in schema));
+    // Calculate progress
+    const progress = Math.round(
+      (parseFloat(projectData.current_funding) / parseFloat(projectData.funding_goal)) * 100
+    );
+
+    // Calculate days left
+    const daysLeft = Math.max(
+      0,
+      Math.ceil((new Date(projectData.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    );
+
+    // Build response
+    const project = {
+      id: projectData.id,
+      title: projectData.title,
+      slug: projectData.slug,
+      description: projectData.description,
+      shortDescription: projectData.short_description,
+      category: projectData.category,
+      tags: projectData.tags,
+      image: projectData.image,
+      coverImage: projectData.cover_image,
+      video: projectData.video,
+      fundingGoal: projectData.funding_goal.toString(),
+      currentFunding: projectData.current_funding.toString(),
+      currency: projectData.currency,
+      backersCount: projectData.backers_count,
+      deadline: projectData.deadline,
+      status: projectData.status,
+      visibility: projectData.visibility,
+      featured: projectData.featured,
+      verified: projectData.verified,
+      isSandbox: projectData.is_sandbox,
+      trending: projectData.trending,
+      negotiationEnabled: projectData.negotiation_enabled,
+      negotiationDeposit: projectData.negotiation_deposit,
+      progress,
+      daysLeft,
+      createdAt: projectData.created_at,
+      updatedAt: projectData.updated_at,
+      publishedAt: projectData.published_at,
+      creator: {
+        id: projectData.creator_id,
+        name: projectData.creator_name,
+        username: projectData.creator_username,
+        email: projectData.creator_email,
+        avatar: projectData.creator_avatar,
+        bio: projectData.creator_bio,
+      },
+      packages: packagesResult.map((pkg: any) => ({
+        id: pkg.id,
+        name: pkg.name,
+        description: pkg.description,
+        amount: pkg.amount.toString(),
+        features: pkg.features,
+        maxBackers: pkg.max_backers,
+        currentBackers: pkg.current_backers,
+        isActive: pkg.is_active,
+        createdAt: pkg.created_at,
+      })),
+    };
 
     return NextResponse.json({
       success: true,
-      project: {
-        ...project,
-        totalInvestors: stats.totalInvestors || 0,
-        totalInvested: stats.totalInvested || '0',
-      },
+      project,
     });
   } catch (error) {
-    console.error('Project fetch error:', error);
+    console.error('Error fetching project details:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ أثناء جلب تفاصيل المشروع' },
+      { success: false, error: 'فشل في جلب تفاصيل المشروع' },
       { status: 500 }
     );
   }
 }
 
-// PUT - Update project
-export async function PUT(
+// PATCH - Update project
+export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   try {
-    const session = await auth();
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'غير مصرح' },
-        { status: 401 }
-      );
-    }
-
+    const sql = neon(process.env.DATABASE_URL!);
     const projectId = parseInt(id);
-    const userId = parseInt(session.user.id);
-
-    // Check if user owns the project
-    const project = await db.query.projects.findFirst({
-      where: eq(projects.id, projectId),
-    });
-
-    if (!project) {
-      return NextResponse.json(
-        { error: 'المشروع غير موجود' },
-        { status: 404 }
-      );
-    }
-
-    if (project.creatorId !== userId) {
-      return NextResponse.json(
-        { error: 'غير مصرح لك بتعديل هذا المشروع' },
-        { status: 403 }
-      );
-    }
-
     const body = await request.json();
-    const {
-      title,
-      description,
-      category,
-      fundingGoal,
-      endDate,
-      image,
-      packages,
-      risks,
-      timeline,
-      status,
-    } = body;
 
-    // Update project
-    const [updatedProject] = await db
-      .update(projects)
-      .set({
-        ...(title && { title }),
-        ...(description && { description }),
-        ...(category && { category }),
-        ...(fundingGoal && { fundingGoal: fundingGoal.toString() }),
-        ...(endDate && { endDate: new Date(endDate) }),
-        ...(image !== undefined && { image }),
-        ...(packages && { packages: JSON.stringify(packages) }),
-        ...(risks !== undefined && { risks }),
-        ...(timeline && { timeline: JSON.stringify(timeline) }),
-        ...(status && { status }),
-      })
-      .where(eq(projects.id, projectId))
-      .returning();
+    if (isNaN(projectId)) {
+      return NextResponse.json(
+        { success: false, error: 'معرف المشروع غير صالح' },
+        { status: 400 }
+      );
+    }
+
+    // Build update query dynamically
+    const updates: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    const allowedFields = [
+      'title',
+      'description',
+      'short_description',
+      'category',
+      'tags',
+      'image',
+      'cover_image',
+      'video',
+      'funding_goal',
+      'deadline',
+      'status',
+      'visibility',
+    ];
+
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updates.push(`${field} = $${paramIndex}`);
+        values.push(body[field]);
+        paramIndex++;
+      }
+    }
+
+    if (updates.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'لا توجد حقول للتحديث' },
+        { status: 400 }
+      );
+    }
+
+    updates.push(`updated_at = NOW()`);
+    values.push(projectId);
+
+    const query = `
+      UPDATE projects
+      SET ${updates.join(', ')}
+      WHERE id = $${paramIndex}
+      RETURNING *
+    `;
+
+    const result = await sql(query, values);
 
     return NextResponse.json({
       success: true,
-      project: updatedProject,
+      project: result[0],
       message: 'تم تحديث المشروع بنجاح',
     });
   } catch (error) {
-    console.error('Project update error:', error);
+    console.error('Error updating project:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ أثناء تحديث المشروع' },
+      { success: false, error: 'فشل في تحديث المشروع' },
       { status: 500 }
     );
   }
@@ -155,48 +212,26 @@ export async function DELETE(
 ) {
   const { id } = await params;
   try {
-    const session = await auth();
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'غير مصرح' },
-        { status: 401 }
-      );
-    }
-
+    const sql = neon(process.env.DATABASE_URL!);
     const projectId = parseInt(id);
-    const userId = parseInt(session.user.id);
 
-    // Check if user owns the project
-    const project = await db.query.projects.findFirst({
-      where: eq(projects.id, projectId),
-    });
-
-    if (!project) {
+    if (isNaN(projectId)) {
       return NextResponse.json(
-        { error: 'المشروع غير موجود' },
-        { status: 404 }
+        { success: false, error: 'معرف المشروع غير صالح' },
+        { status: 400 }
       );
     }
 
-    if (project.creatorId !== userId) {
-      return NextResponse.json(
-        { error: 'غير مصرح لك بحذف هذا المشروع' },
-        { status: 403 }
-      );
-    }
-
-    // Delete project
-    await db.delete(projects).where(eq(projects.id, projectId));
+    await sql`DELETE FROM projects WHERE id = ${projectId}`;
 
     return NextResponse.json({
       success: true,
       message: 'تم حذف المشروع بنجاح',
     });
   } catch (error) {
-    console.error('Project deletion error:', error);
+    console.error('Error deleting project:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ أثناء حذف المشروع' },
+      { success: false, error: 'فشل في حذف المشروع' },
       { status: 500 }
     );
   }
