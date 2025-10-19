@@ -184,7 +184,9 @@ export default function AchievementsPage() {
             <Target className="w-10 h-10 mb-3" />
             <p className="text-sm opacity-90 mb-1">نسبة الإكمال</p>
             <p className="text-3xl font-black">
-              {Math.round((stats.unlockedAchievements / stats.totalAchievements) * 100)}%
+              {stats.totalAchievements > 0 
+                ? Math.round((stats.unlockedAchievements / stats.totalAchievements) * 100)
+                : 0}%
             </p>
           </motion.div>
 

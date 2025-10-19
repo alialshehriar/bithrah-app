@@ -12,7 +12,6 @@ const protectedRoutes = [
   '/dashboard',
   '/projects/create',
   '/communities/create',
-  '/communities',
   '/community',
   '/events/create',
   '/events',
@@ -47,9 +46,18 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow viewing projects list without authentication
-  // But project details will require login (handled in the page itself)
-  if (pathname === '/projects' && !pathname.includes('/projects/')) {
+  // Allow viewing projects list and details without authentication
+  if (pathname.startsWith('/projects')) {
+    return NextResponse.next();
+  }
+
+  // Allow viewing communities details without authentication
+  if (pathname.startsWith('/communities/')) {
+    return NextResponse.next();
+  }
+
+  // Allow viewing communities list without authentication
+  if (pathname === '/communities') {
     return NextResponse.next();
   }
 
