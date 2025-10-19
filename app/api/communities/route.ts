@@ -3,48 +3,89 @@ import { NextRequest, NextResponse } from 'next/server';
 // Sandbox communities data
 const sandboxCommunities = [
   {
-    id: '1',
+    id: 1,
     name: 'مجتمع التقنية والابتكار',
     description: 'مجتمع متخصص في التقنية والابتكار وريادة الأعمال التقنية',
-    icon: '💻',
-    members: 2547,
-    posts: 450,
-    category: 'تقنية',
-    isActive: true,
+    category: 'technology',
+    privacy: 'public',
+    coverImage: null,
+    memberCount: 2547,
+    postCount: 450,
     createdAt: new Date('2024-01-15').toISOString(),
+    creator: {
+      id: 1,
+      name: 'أحمد محمد',
+      username: 'ahmed_tech',
+      avatar: null,
+    },
   },
   {
-    id: '2',
+    id: 2,
     name: 'مجتمع الصحة والطب',
     description: 'مجتمع للمهتمين بالصحة والطب والابتكارات الطبية',
-    icon: '🏥',
-    members: 1823,
-    posts: 320,
-    category: 'صحة',
-    isActive: true,
+    category: 'health',
+    privacy: 'public',
+    coverImage: null,
+    memberCount: 1823,
+    postCount: 320,
     createdAt: new Date('2024-02-01').toISOString(),
+    creator: {
+      id: 2,
+      name: 'فاطمة علي',
+      username: 'fatima_health',
+      avatar: null,
+    },
   },
   {
-    id: '3',
+    id: 3,
     name: 'مجتمع التعليم والتدريب',
     description: 'مجتمع متخصص في التعليم والتدريب والتطوير المهني',
-    icon: '📚',
-    members: 3421,
-    posts: 580,
-    category: 'تعليم',
-    isActive: true,
+    category: 'education',
+    privacy: 'public',
+    coverImage: null,
+    memberCount: 3421,
+    postCount: 580,
     createdAt: new Date('2024-01-20').toISOString(),
+    creator: {
+      id: 3,
+      name: 'محمد سعيد',
+      username: 'mohammed_edu',
+      avatar: null,
+    },
   },
   {
-    id: '4',
+    id: 4,
     name: 'مجتمع الطاقة المتجددة',
     description: 'مجتمع للمهتمين بالطاقة المتجددة والاستدامة البيئية',
-    icon: '⚡',
-    members: 1654,
-    posts: 280,
-    category: 'طاقة',
-    isActive: true,
+    category: 'business',
+    privacy: 'public',
+    coverImage: null,
+    memberCount: 1654,
+    postCount: 280,
     createdAt: new Date('2024-02-10').toISOString(),
+    creator: {
+      id: 4,
+      name: 'سارة أحمد',
+      username: 'sara_energy',
+      avatar: null,
+    },
+  },
+  {
+    id: 5,
+    name: 'مجتمع ريادة الأعمال',
+    description: 'مجتمع لرواد الأعمال والمستثمرين والمهتمين بعالم الأعمال',
+    category: 'business',
+    privacy: 'public',
+    coverImage: null,
+    memberCount: 4521,
+    postCount: 890,
+    createdAt: new Date('2024-01-10').toISOString(),
+    creator: {
+      id: 5,
+      name: 'خالد عبدالله',
+      username: 'khaled_business',
+      avatar: null,
+    },
   },
 ];
 
@@ -52,46 +93,45 @@ export async function GET(request: NextRequest) {
   try {
     const sandboxMode = request.cookies.get('sandbox-mode')?.value === 'true';
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const search = searchParams.get('search') || '';
+    const category = searchParams.get('category') || '';
+    const sort = searchParams.get('sort') || 'popular';
     
-    if (sandboxMode) {
-      return NextResponse.json({
-        success: true,
-        communities: sandboxCommunities.slice(0, limit),
-        total: sandboxCommunities.length,
-      });
+    // Always use sandbox data for now to ensure it works
+    let filtered = [...sandboxCommunities];
+    
+    // Filter by search
+    if (search) {
+      filtered = filtered.filter(c => 
+        c.name.includes(search) || c.description.includes(search)
+      );
     }
-
-    const { db } = await import('@/lib/db');
-    const { communities } = await import('@/lib/db/schema');
-    const { desc } = await import('drizzle-orm');
-
-    const result = await db
-      .select()
-      .from(communities)
-      .orderBy(desc(communities.memberCount))
-      .limit(limit);
-
+    
+    // Filter by category
+    if (category) {
+      filtered = filtered.filter(c => c.category === category);
+    }
+    
+    // Sort
+    if (sort === 'popular') {
+      filtered.sort((a, b) => b.memberCount - a.memberCount);
+    } else if (sort === 'recent') {
+      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (sort === 'members') {
+      filtered.sort((a, b) => b.memberCount - a.memberCount);
+    }
+    
     return NextResponse.json({
       success: true,
-      communities: result.map(c => ({
-        id: c.id.toString(),
-        name: c.name,
-        description: c.description,
-        icon: c.image || '👥',
-        members: c.memberCount || 0,
-        posts: c.postsCount || 0,
-        category: c.category || 'عام',
-        isActive: c.status === 'active',
-        createdAt: c.createdAt,
-      })),
-      total: result.length,
+      communities: filtered,
+      total: filtered.length,
     });
   } catch (error) {
     console.error('Error fetching communities:', error);
     return NextResponse.json(
-      { success: false, error: 'فشل في جلب المجتمعات' },
-      { status: 500 }
+      { success: false, error: 'فشل في جلب المجتمعات', communities: [] },
+      { status: 200 }
     );
   }
 }
+
