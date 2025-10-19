@@ -1,5 +1,5 @@
 /**
- * نظام إدارة الوضع التجريبي المركزي
+ * نظام إدارة الوضع التجريبي المركزي - محدّث
  * يحتوي على جميع البيانات الوهمية والإعدادات للوضع التجريبي
  */
 
@@ -7,15 +7,19 @@ export const isDemoMode = () => {
   return process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || process.env.DEMO_MODE === 'true';
 };
 
+export const getDemoWalletCredit = () => {
+  return parseInt(process.env.NEXT_PUBLIC_DEMO_WALLET_CREDIT || '100000');
+};
+
 // بيانات المحفظة التجريبية
 export const demoWalletData = {
-  balance: 100000,
+  balance: getDemoWalletCredit(),
   currency: 'SAR',
   transactions: [
     {
       id: '1',
       type: 'deposit',
-      amount: 100000,
+      amount: getDemoWalletCredit(),
       description: 'رصيد افتتاحي - وضع تجريبي',
       date: new Date().toISOString(),
       status: 'completed'
@@ -24,7 +28,7 @@ export const demoWalletData = {
       id: '2',
       type: 'investment',
       amount: -5000,
-      description: 'استثمار في مشروع تطبيق التوصيل',
+      description: 'استثمار في مشروع بذرة التجريبي',
       date: new Date(Date.now() - 86400000).toISOString(),
       status: 'completed'
     },
@@ -32,7 +36,7 @@ export const demoWalletData = {
       id: '3',
       type: 'commission',
       amount: 250,
-      description: 'عمولة تسويق من مشروع المتجر الإلكتروني',
+      description: 'عمولة تسويق من مشروع تقني',
       date: new Date(Date.now() - 172800000).toISOString(),
       status: 'completed'
     },
@@ -46,129 +50,178 @@ export const demoWalletData = {
     },
     {
       id: '5',
-      type: 'investment',
-      amount: -3000,
-      description: 'استثمار في مشروع منصة التعليم',
+      type: 'subscription',
+      amount: -199,
+      description: 'اشتراك الباقة الذهبية',
       date: new Date(Date.now() - 345600000).toISOString(),
+      status: 'completed'
+    },
+    {
+      id: '6',
+      type: 'negotiation',
+      amount: -3000,
+      description: 'فتح باب التفاوض لمشروع تقني',
+      date: new Date(Date.now() - 432000000).toISOString(),
       status: 'completed'
     }
   ]
 };
 
-// بيانات المشاريع التجريبية
-export const demoProjects = [
-  {
-    id: '1',
-    title: 'تطبيق توصيل ذكي',
-    description: 'منصة توصيل مدعومة بالذكاء الاصطناعي لتحسين تجربة العملاء',
-    category: 'تقنية',
-    goal: 50000,
-    raised: 35000,
-    backers: 45,
-    daysLeft: 15,
-    image: '/projects/delivery-app.jpg',
-    featured: true,
-    trending: true
+// مشروع بذرة التجريبي (Demo Project)
+export const demoBithrahProject = {
+  id: 'demo-bithrah-project',
+  title: 'مشروع بذرة التجريبي',
+  description: 'مشروع تجريبي يوضح كيفية عمل منصة بذرة. يمكنك تجربة جميع الميزات بدون أي مدفوعات حقيقية.',
+  category: 'تقنية',
+  goal: 50000,
+  raised: 35000,
+  backers: 45,
+  daysLeft: 15,
+  image: '/demo-project.jpg',
+  featured: true,
+  trending: true,
+  is_demo: true,
+  owner: {
+    name: 'فريق بذرة',
+    avatar: '/bithrah-logo.png'
   },
-  {
-    id: '2',
-    title: 'متجر إلكتروني للمنتجات المحلية',
-    description: 'منصة لدعم المنتجات السعودية المحلية',
-    category: 'تجارة',
-    goal: 30000,
-    raised: 28000,
-    backers: 67,
-    daysLeft: 8,
-    image: '/projects/local-store.jpg',
-    featured: true
-  },
-  {
-    id: '3',
-    title: 'منصة تعليمية تفاعلية',
-    description: 'تعليم البرمجة للأطفال بطريقة ممتعة وتفاعلية',
-    category: 'تعليم',
-    goal: 40000,
-    raised: 15000,
-    backers: 32,
-    daysLeft: 22,
-    image: '/projects/edu-platform.jpg',
-    trending: true
+  packages: [
+    {
+      id: 1,
+      name: 'باقة البداية',
+      price: 500,
+      description: 'عرض المشروع لمدة 30 يوم',
+      features: ['ظهور في القائمة العادية', 'دعم فني أساسي']
+    },
+    {
+      id: 2,
+      name: 'باقة النمو',
+      price: 1500,
+      description: 'عرض المشروع لمدة 60 يوم',
+      features: ['ظهور مميز', 'شارة مشروع مميز', 'تحليلات أساسية', 'دعم متقدم']
+    },
+    {
+      id: 3,
+      name: 'باقة الاحتراف',
+      price: 3000,
+      description: 'عرض المشروع لمدة 90 يوم',
+      features: ['أعلى القائمة', 'شارة احترافية', 'تحليلات AI', 'دعم 24/7', 'ترويج بريدي']
+    }
+  ],
+  negotiation: {
+    available: true,
+    baseFee: 2000,
+    rate: 0.02,
+    calculatedFee: 3000
   }
-];
-
-// بيانات المجتمعات التجريبية
-export const demoCommunities = [
-  {
-    id: '1',
-    name: 'رواد الأعمال التقنيين',
-    description: 'مجتمع لمناقشة أفكار المشاريع التقنية',
-    members: 1250,
-    posts: 450,
-    category: 'تقنية',
-    isGolden: true
-  },
-  {
-    id: '2',
-    name: 'المستثمرون الملائكة',
-    description: 'مجتمع حصري للمستثمرين والداعمين',
-    members: 340,
-    posts: 180,
-    category: 'استثمار',
-    isGolden: true
-  },
-  {
-    id: '3',
-    name: 'التجارة الإلكترونية',
-    description: 'نصائح وخبرات في مجال التجارة الإلكترونية',
-    members: 890,
-    posts: 320,
-    category: 'تجارة',
-    isGolden: false
-  }
-];
-
-// بيانات المستخدمين التجريبية
-export const demoUsers = [
-  {
-    id: '1',
-    name: 'أحمد محمد',
-    email: 'ahmed@example.com',
-    role: 'investor',
-    level: 5,
-    points: 2500,
-    joinDate: '2024-01-15'
-  },
-  {
-    id: '2',
-    name: 'فاطمة علي',
-    email: 'fatima@example.com',
-    role: 'project_owner',
-    level: 4,
-    points: 1800,
-    joinDate: '2024-02-20'
-  },
-  {
-    id: '3',
-    name: 'خالد سعيد',
-    email: 'khaled@example.com',
-    role: 'marketer',
-    level: 3,
-    points: 1200,
-    joinDate: '2024-03-10'
-  }
-];
-
-// إحصائيات المنصة التجريبية
-export const demoPlatformStats = {
-  totalUsers: 2847,
-  activeProjects: 1234,
-  totalFunding: 5420000,
-  activeCommunities: 45,
-  totalTransactions: 8950,
-  successRate: 78.5
 };
 
-// بيانات التقييمات التجريبية
+// مجتمع بذرة التجريبي (Demo Community)
+export const demoBithrahCommunity = {
+  id: 'demo-bithrah-community',
+  name: 'مجتمع بذرة التجريبي',
+  description: 'مجتمع تجريبي لتوضيح كيفية التواصل والمشاركة داخل منصة بذرة',
+  members: 1250,
+  posts: 45,
+  category: 'عام',
+  is_demo: true,
+  isGolden: false,
+  topics: [
+    {
+      id: 1,
+      title: 'مرحباً بك في مجتمع بذرة التجريبي',
+      content: 'هذا موضوع تجريبي يوضح كيف يمكنك نشر المواضيع والتفاعل مع الأعضاء الآخرين.',
+      author: 'فريق بذرة',
+      replies: 12,
+      likes: 25,
+      date: new Date().toISOString()
+    },
+    {
+      id: 2,
+      title: 'كيف تنشر موضوع جديد؟',
+      content: 'يمكنك نشر موضوع جديد من خلال الضغط على زر "موضوع جديد" في أعلى الصفحة.',
+      author: 'فريق بذرة',
+      replies: 8,
+      likes: 18,
+      date: new Date(Date.now() - 86400000).toISOString()
+    },
+    {
+      id: 3,
+      title: 'كيف ترد على الآخرين؟',
+      content: 'يمكنك الرد على أي موضوع من خلال الضغط على زر "رد" أسفل الموضوع.',
+      author: 'فريق بذرة',
+      replies: 5,
+      likes: 10,
+      date: new Date(Date.now() - 172800000).toISOString()
+    }
+  ]
+};
+
+// باقات الاشتراك
+export const subscriptionPlans = [
+  {
+    id: 'silver',
+    name: 'الباقة الفضية',
+    price: 99,
+    duration: 30,
+    features: [
+      'إشعارات مبكرة للمشاريع الجديدة',
+      'تنبيهات للمشاريع القريبة من الاكتمال',
+      'وصول لمجتمعات حصرية',
+      'تحليلات أساسية بالذكاء الاصطناعي',
+      'خصم 5% على رسوم التفاوض'
+    ],
+    color: 'from-gray-400 to-gray-500'
+  },
+  {
+    id: 'gold',
+    name: 'الباقة الذهبية',
+    price: 199,
+    duration: 30,
+    popular: true,
+    features: [
+      'جميع مزايا الباقة الفضية',
+      'وصول للمجتمعات الذهبية الحصرية',
+      'تحليلات متقدمة بالذكاء الاصطناعي',
+      'توصيات مشاريع مخصصة',
+      'أولوية في التواصل مع أصحاب المشاريع',
+      'خصم 10% على رسوم التفاوض',
+      'تقارير شهرية مفصلة'
+    ],
+    color: 'from-amber-400 to-orange-500'
+  },
+  {
+    id: 'platinum',
+    name: 'الباقة البلاتينية',
+    price: 399,
+    duration: 30,
+    features: [
+      'جميع مزايا الباقة الذهبية',
+      'وصول مبكر حصري للمشاريع',
+      'مستشار استثماري شخصي',
+      'تحليلات AI متقدمة وتنبؤات',
+      'أولوية قصوى في جميع الميزات',
+      'خصم 20% على رسوم التفاوض',
+      'دعوات لفعاليات VIP',
+      'تقارير أسبوعية مخصصة',
+      'وصول لمجتمع المستثمرين النخبة'
+    ],
+    color: 'from-purple-500 to-indigo-600'
+  }
+];
+
+// حساب رسوم التفاوض
+export const calculateNegotiationFee = (targetAmount: number) => {
+  const baseFee = parseInt(process.env.NEGOTIATION_BASE_FEE || '2000');
+  const rate = parseFloat(process.env.NEGOTIATION_RATE || '0.02');
+  const min = parseInt(process.env.NEGOTIATION_MIN || '1000');
+  const max = parseInt(process.env.NEGOTIATION_MAX || '20000');
+  
+  const calculatedFee = baseFee + (targetAmount * rate);
+  return Math.max(min, Math.min(max, calculatedFee));
+};
+
+// بيانات تقييم الأفكار التجريبية
 export const demoEvaluations = [
   {
     id: '1',
@@ -176,37 +229,47 @@ export const demoEvaluations = [
     score: 8.5,
     category: 'تقنية',
     date: new Date().toISOString(),
+    metrics: {
+      marketValue: 8.5,
+      risks: 6.5,
+      innovation: 9.0,
+      feasibility: 8.0,
+      marketFit: 8.5
+    },
     strengths: ['فكرة مبتكرة', 'سوق واعد', 'فريق متمرس'],
     weaknesses: ['منافسة عالية', 'تكلفة تسويق مرتفعة'],
     recommendation: 'يُنصح بالاستثمار مع خطة تسويق قوية'
-  },
-  {
-    id: '2',
-    projectName: 'منصة تعليم اللغات',
-    score: 7.2,
-    category: 'تعليم',
-    date: new Date(Date.now() - 86400000).toISOString(),
-    strengths: ['محتوى تعليمي متميز', 'واجهة سهلة الاستخدام'],
-    weaknesses: ['نموذج عمل غير واضح', 'حاجة لمزيد من المعلمين'],
-    recommendation: 'يحتاج لتطوير استراتيجية الإيرادات'
   }
 ];
+
+// نظام حماية الملكية الفكرية
+export const intellectualProtectionInfo = {
+  title: 'نظام حماية الملكية الفكرية',
+  description: 'في بذرة، أي فكرة تُسجل أو تُعرض داخل المنصة تخضع لنظام حماية ذكي يضمن سريتها وحقوق مالكها. لا يمكن لأي مستخدم نسخ أو إعادة نشر أي مشروع دون موافقة صاحبه. جميع المشاريع مسجلة زمنياً ومحفوظة في قاعدة بيانات مشفرة.',
+  features: [
+    'تسجيل زمني لجميع الأفكار والمشاريع',
+    'قاعدة بيانات مشفرة بأعلى معايير الأمان',
+    'حماية من النسخ وإعادة النشر',
+    'نظام تتبع للتعديلات والتحديثات',
+    'إثبات ملكية قانوني عند الحاجة'
+  ]
+};
 
 // دالة للحصول على البيانات التجريبية حسب النوع
 export const getDemoData = (type: string) => {
   switch (type) {
     case 'wallet':
       return demoWalletData;
-    case 'projects':
-      return demoProjects;
-    case 'communities':
-      return demoCommunities;
-    case 'users':
-      return demoUsers;
-    case 'stats':
-      return demoPlatformStats;
+    case 'project':
+      return demoBithrahProject;
+    case 'community':
+      return demoBithrahCommunity;
+    case 'subscriptions':
+      return subscriptionPlans;
     case 'evaluations':
       return demoEvaluations;
+    case 'intellectualProtection':
+      return intellectualProtectionInfo;
     default:
       return null;
   }
@@ -222,9 +285,30 @@ export const canAccessDemoFeature = (feature: string) => {
     'communities',
     'evaluations',
     'subscriptions',
-    'leaderboard'
+    'negotiation',
+    'leaderboard',
+    'referrals'
   ];
   
   return allowedFeatures.includes(feature);
+};
+
+// دالة لمعالجة عملية تجريبية (خصم واسترداد)
+export const processDemoTransaction = async (
+  userId: string,
+  amount: number,
+  type: string,
+  description: string
+) => {
+  if (!isDemoMode()) return { success: false, message: 'الوضع التجريبي غير مفعل' };
+  
+  // في الوضع التجريبي، نقوم بخصم المبلغ واستراداده تلقائياً بعد فترة
+  return {
+    success: true,
+    message: 'تمت العملية بنجاح (تجريبي)',
+    transactionId: `demo-${Date.now()}`,
+    refundScheduled: true,
+    refundTime: new Date(Date.now() + 300000).toISOString() // 5 دقائق
+  };
 };
 
