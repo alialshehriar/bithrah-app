@@ -2,550 +2,362 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
-  Users, ArrowLeft, UserPlus, UserMinus, Globe, Lock,
-  MessageSquare, Send, Loader2, Trophy, Star, Crown,
-  Medal, Heart, Share2, MoreVertical, Edit, Trash2,
-  Image as ImageIcon, Paperclip
+  Users, MessageSquare, TrendingUp, Award, Calendar,
+  Share2, Bell, Settings, Plus, Heart, MessageCircle,
+  Send, Image as ImageIcon, Smile, MoreVertical
 } from 'lucide-react';
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 
 interface Community {
   id: number;
   name: string;
   description: string;
   category: string;
-  privacy: string;
-  coverImage: string | null;
-  rules: string | null;
+  creatorId: number;
+  creatorName: string;
+  creatorUsername: string;
   memberCount: number;
   postCount: number;
   createdAt: string;
-  creator: {
+  posts: Array<{
+    id: number;
+    content: string;
+    authorId: number;
+    authorName: string;
+    authorUsername: string;
+    createdAt: string;
+    likesCount: number;
+    commentsCount: number;
+  }>;
+  members: Array<{
     id: number;
     name: string;
     username: string;
-    avatar: string | null;
-  };
+    points: number;
+  }>;
 }
 
-interface Post {
-  id: number;
-  content: string;
-  attachments: any;
-  likesCount: number;
-  commentsCount: number;
-  createdAt: string;
-  author: {
-    id: number;
-    name: string;
-    username: string;
-    avatar: string | null;
-    level: number;
-  };
-}
-
-interface Member {
-  id: number;
-  role: string;
-  points: number;
-  joinedAt: string;
-  user: {
-    id: number;
-    name: string;
-    username: string;
-    avatar: string | null;
-    level: number;
-  };
-}
-
-export default function CommunityDetailPage() {
+export default function CommunityPage() {
   const params = useParams();
   const router = useRouter();
-  const communityId = params.id as string;
-
   const [community, setCommunity] = useState<Community | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [isMember, setIsMember] = useState(false);
-  const [memberRole, setMemberRole] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'posts' | 'members'>('posts');
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'posts' | 'leaderboard'>('posts');
   const [newPost, setNewPost] = useState('');
-  const [posting, setPosting] = useState(false);
-  const [joining, setJoining] = useState(false);
 
   useEffect(() => {
-    fetchCommunityData();
-  }, [communityId]);
+    fetchCommunity();
+  }, [params.id]);
 
-  const fetchCommunityData = async () => {
+  const fetchCommunity = async () => {
     try {
-      const response = await fetch(`/api/communities/${communityId}`);
+      const response = await fetch(`/api/communities/${params.id}`);
+      if (!response.ok) throw new Error('Community not found');
       const data = await response.json();
-      
-      if (data.success) {
-        setCommunity(data.community);
-        setPosts(data.posts || []);
-        setMembers(data.members || []);
-        setIsMember(data.isMember);
-        setMemberRole(data.memberRole);
-      }
+      setCommunity(data);
     } catch (error) {
-      console.error('Error fetching community:', error);
+      console.error(error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleJoin = async () => {
-    setJoining(true);
-    try {
-      const response = await fetch(`/api/communities/${communityId}/join`, {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        setIsMember(true);
-        fetchCommunityData();
-      }
-    } catch (error) {
-      console.error('Error joining community:', error);
-    } finally {
-      setJoining(false);
-    }
-  };
-
-  const handleLeave = async () => {
-    if (!confirm('هل أنت متأكد من مغادرة المجتمع؟')) return;
-    
-    setJoining(true);
-    try {
-      const response = await fetch(`/api/communities/${communityId}/join`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setIsMember(false);
-        setMemberRole(null);
-        fetchCommunityData();
-      }
-    } catch (error) {
-      console.error('Error leaving community:', error);
-    } finally {
-      setJoining(false);
-    }
-  };
-
-  const handlePost = async () => {
+  const handleCreatePost = async () => {
     if (!newPost.trim()) return;
-
-    setPosting(true);
+    
     try {
-      const response = await fetch(`/api/communities/${communityId}/posts`, {
+      const response = await fetch(`/api/communities/${params.id}/posts`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: newPost }),
       });
-
-      const data = await response.json();
-
+      
       if (response.ok) {
-        setPosts([data.post, ...posts]);
         setNewPost('');
+        fetchCommunity();
       }
     } catch (error) {
-      console.error('Error creating post:', error);
-    } finally {
-      setPosting(false);
+      console.error(error);
     }
   };
 
-  const getRankIcon = (index: number) => {
-    if (index === 0) return <Crown className="w-5 h-5 text-yellow-500" />;
-    if (index === 1) return <Medal className="w-5 h-5 text-gray-400" />;
-    if (index === 2) return <Medal className="w-5 h-5 text-amber-600" />;
-    return null;
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-teal-500 border-t-transparent"></div>
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="flex items-center justify-center h-screen">
+          <div className="w-16 h-16 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+        </div>
       </div>
     );
   }
 
   if (!community) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg">المجتمع غير موجود</p>
-          <Link
-            href="/communities"
-            className="inline-block mt-4 text-teal-600 hover:text-teal-700"
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="flex flex-col items-center justify-center h-screen">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">المجتمع غير موجود</h1>
+          <button
+            onClick={() => router.push('/communities')}
+            className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
           >
             العودة للمجتمعات
-          </Link>
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-24">
-      {/* Cover Image */}
-      <div className="relative h-64 bg-gradient-to-br from-teal-500 to-purple-600 overflow-hidden">
-        {community.coverImage ? (
-          <img
-            src={community.coverImage}
-            alt={community.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Users className="w-24 h-24 text-white/30" />
-          </div>
-        )}
-        
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
 
-        {/* Back Button */}
-        <Link
-          href="/communities"
-          className="absolute top-4 right-4 flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-all"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>العودة</span>
-        </Link>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 -mt-20">
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Community Info Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-3xl font-bold text-gray-900">{community.name}</h1>
-                    <div className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full">
-                      {community.privacy === 'private' ? (
-                        <>
-                          <Lock className="w-4 h-4 text-gray-600" />
-                          <span className="text-sm text-gray-600">خاص</span>
-                        </>
-                      ) : (
-                        <>
-                          <Globe className="w-4 h-4 text-gray-600" />
-                          <span className="text-sm text-gray-600">عام</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <p className="text-gray-600 mb-4">{community.description}</p>
-
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      <span>{community.memberCount.toLocaleString()} عضو</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <MessageSquare className="w-4 h-4" />
-                      <span>{community.postCount || 0} منشور</span>
-                    </div>
-                  </div>
-                </div>
-
-                {isMember ? (
-                  <button
-                    onClick={handleLeave}
-                    disabled={joining}
-                    className="flex items-center gap-2 px-4 py-2 border-2 border-red-500 text-red-600 rounded-lg hover:bg-red-50 transition-all disabled:opacity-50"
-                  >
-                    <UserMinus className="w-4 h-4" />
-                    مغادرة
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleJoin}
-                    disabled={joining}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
-                  >
-                    {joining ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <UserPlus className="w-4 h-4" />
-                    )}
-                    انضم الآن
-                  </button>
-                )}
-              </div>
-
-              {/* Creator Info */}
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center">
-                  {community.creator.avatar ? (
-                    <img
-                      src={community.creator.avatar}
-                      alt={community.creator.name}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <Users className="w-5 h-5 text-white" />
-                  )}
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-teal-600 to-blue-600 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                  <Users className="w-10 h-10" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">أنشأ بواسطة</p>
-                  <p className="font-medium text-gray-900">@{community.creator.username}</p>
+                  <h1 className="text-4xl font-bold mb-2">{community.name}</h1>
+                  <p className="text-white/90">
+                    أنشأه {community.creatorName} • {new Date(community.createdAt).toLocaleDateString('ar-SA')}
+                  </p>
                 </div>
               </div>
-            </motion.div>
-
-            {/* Tabs */}
-            <div className="flex gap-2 bg-white rounded-xl p-2 shadow-sm">
-              <button
-                onClick={() => setActiveTab('posts')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
-                  activeTab === 'posts'
-                    ? 'bg-gradient-to-r from-teal-500 to-purple-600 text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                <MessageSquare className="w-4 h-4" />
-                المنشورات
+              <p className="text-xl text-white/90 mb-6 max-w-2xl">
+                {community.description}
+              </p>
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  <span className="font-semibold">{community.memberCount} عضو</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5" />
+                  <span className="font-semibold">{community.postCount} منشور</span>
+                </div>
+                <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <span className="font-semibold">{community.category}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button className="px-6 py-3 bg-white text-teal-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2">
+                <Bell className="w-5 h-5" />
+                متابعة
               </button>
-              <button
-                onClick={() => setActiveTab('members')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
-                  activeTab === 'members'
-                    ? 'bg-gradient-to-r from-teal-500 to-purple-600 text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                <Trophy className="w-4 h-4" />
-                لوحة الصدارة
+              <button className="px-6 py-3 bg-white/20 backdrop-blur-sm text-white rounded-lg font-semibold hover:bg-white/30 transition-colors flex items-center gap-2">
+                <Share2 className="w-5 h-5" />
+                مشاركة
               </button>
             </div>
-
-            {/* Content */}
-            <AnimatePresence mode="wait">
-              {activeTab === 'posts' ? (
-                <motion.div
-                  key="posts"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="space-y-4"
-                >
-                  {/* New Post */}
-                  {isMember && (
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                      <textarea
-                        value={newPost}
-                        onChange={(e) => setNewPost(e.target.value)}
-                        placeholder="شارك أفكارك مع المجتمع..."
-                        rows={3}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none mb-3"
-                      />
-                      <div className="flex items-center justify-between">
-                        <div className="flex gap-2">
-                          <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all">
-                            <ImageIcon className="w-5 h-5" />
-                          </button>
-                          <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all">
-                            <Paperclip className="w-5 h-5" />
-                          </button>
-                        </div>
-                        <button
-                          onClick={handlePost}
-                          disabled={posting || !newPost.trim()}
-                          className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-teal-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {posting ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Send className="w-4 h-4" />
-                          )}
-                          نشر
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Posts List */}
-                  {posts.length === 0 ? (
-                    <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-                      <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-600">لا توجد منشورات بعد</p>
-                    </div>
-                  ) : (
-                    posts.map((post) => (
-                      <div key={post.id} className="bg-white rounded-2xl shadow-lg p-6">
-                        <div className="flex items-start gap-3 mb-4">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                            {post.author.avatar ? (
-                              <img
-                                src={post.author.avatar}
-                                alt={post.author.name}
-                                className="w-full h-full rounded-full object-cover"
-                              />
-                            ) : (
-                              <Users className="w-6 h-6 text-white" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-bold text-gray-900">{post.author.name}</h3>
-                              <span className="text-sm text-gray-500">@{post.author.username}</span>
-                              <span className="text-xs text-gray-400">
-                                • {new Date(post.createdAt).toLocaleDateString('ar')}
-                              </span>
-                            </div>
-                            <p className="text-gray-600 whitespace-pre-wrap">{post.content}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
-                          <button className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors">
-                            <Heart className="w-5 h-5" />
-                            <span className="text-sm">{post.likesCount || 0}</span>
-                          </button>
-                          <button className="flex items-center gap-2 text-gray-500 hover:text-teal-500 transition-colors">
-                            <MessageSquare className="w-5 h-5" />
-                            <span className="text-sm">{post.commentsCount || 0}</span>
-                          </button>
-                          <button className="flex items-center gap-2 text-gray-500 hover:text-purple-500 transition-colors mr-auto">
-                            <Share2 className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="members"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden"
-                >
-                  <div className="p-6 border-b border-gray-100">
-                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                      <Trophy className="w-6 h-6 text-teal-600" />
-                      لوحة صدارة المجتمع
-                    </h2>
-                  </div>
-
-                  {members.length === 0 ? (
-                    <div className="p-12 text-center">
-                      <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-600">لا يوجد أعضاء بعد</p>
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-gray-100">
-                      {members.map((member, index) => (
-                        <div key={member.id} className="p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 text-center">
-                              {getRankIcon(index) || (
-                                <span className="text-lg font-bold text-gray-400">#{index + 1}</span>
-                              )}
-                            </div>
-
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center">
-                              {member.user.avatar ? (
-                                <img
-                                  src={member.user.avatar}
-                                  alt={member.user.name}
-                                  className="w-full h-full rounded-full object-cover"
-                                />
-                              ) : (
-                                <Users className="w-6 h-6 text-white" />
-                              )}
-                            </div>
-
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-bold text-gray-900">{member.user.name}</h3>
-                                {member.role === 'admin' && (
-                                  <span className="text-xs px-2 py-0.5 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-full">
-                                    مشرف
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-sm text-gray-500">@{member.user.username}</p>
-                            </div>
-
-                            <div className="text-right">
-                              <p className="text-lg font-bold text-teal-600">{member.points || 0}</p>
-                              <p className="text-xs text-gray-500">نقطة</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Rules */}
-            {community.rules && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white rounded-2xl shadow-lg p-6"
-              >
-                <h2 className="text-lg font-bold text-gray-900 mb-4">قواعد المجتمع</h2>
-                <p className="text-gray-600 text-sm whitespace-pre-wrap">{community.rules}</p>
-              </motion.div>
-            )}
-
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
-            >
-              <h2 className="text-lg font-bold text-gray-900 mb-4">إحصائيات</h2>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">الأعضاء</span>
-                  <span className="font-bold text-gray-900">{community.memberCount.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">المنشورات</span>
-                  <span className="font-bold text-gray-900">{community.postCount || 0}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">تاريخ الإنشاء</span>
-                  <span className="font-bold text-gray-900">
-                    {new Date(community.createdAt).toLocaleDateString('ar')}
-                  </span>
-                </div>
-              </div>
-            </motion.div>
           </div>
         </div>
       </div>
+
+      {/* Tabs */}
+      <div className="bg-white border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex gap-8">
+            <button
+              onClick={() => setActiveTab('posts')}
+              className={`py-4 px-2 font-semibold border-b-2 transition-colors ${
+                activeTab === 'posts'
+                  ? 'border-teal-600 text-teal-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              المنشورات
+            </button>
+            <button
+              onClick={() => setActiveTab('leaderboard')}
+              className={`py-4 px-2 font-semibold border-b-2 transition-colors ${
+                activeTab === 'leaderboard'
+                  ? 'border-teal-600 text-teal-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              لوحة الصدارة
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {activeTab === 'posts' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Create Post */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4">إنشاء منشور جديد</h3>
+                <textarea
+                  value={newPost}
+                  onChange={(e) => setNewPost(e.target.value)}
+                  placeholder="شارك أفكارك مع المجتمع..."
+                  className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  rows={4}
+                />
+                <div className="flex items-center justify-between mt-4">
+                  <div className="flex gap-2">
+                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                      <ImageIcon className="w-5 h-5 text-gray-600" />
+                    </button>
+                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Smile className="w-5 h-5 text-gray-600" />
+                    </button>
+                  </div>
+                  <button
+                    onClick={handleCreatePost}
+                    disabled={!newPost.trim()}
+                    className="px-6 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    نشر
+                  </button>
+                </div>
+              </div>
+
+              {/* Posts */}
+              {community.posts && community.posts.length > 0 ? (
+                community.posts.map((post) => (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-xl shadow-sm p-6"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                          {post.authorName?.charAt(0) || 'A'}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900">{post.authorName}</h4>
+                          <p className="text-sm text-gray-500">
+                            @{post.authorUsername} • {new Date(post.createdAt).toLocaleDateString('ar-SA')}
+                          </p>
+                        </div>
+                      </div>
+                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <MoreVertical className="w-5 h-5 text-gray-600" />
+                      </button>
+                    </div>
+                    <p className="text-gray-700 mb-4 leading-relaxed">{post.content}</p>
+                    <div className="flex items-center gap-6 pt-4 border-t">
+                      <button className="flex items-center gap-2 text-gray-600 hover:text-red-600 transition-colors">
+                        <Heart className="w-5 h-5" />
+                        <span className="font-semibold">{post.likesCount || 0}</span>
+                      </button>
+                      <button className="flex items-center gap-2 text-gray-600 hover:text-teal-600 transition-colors">
+                        <MessageCircle className="w-5 h-5" />
+                        <span className="font-semibold">{post.commentsCount || 0}</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                  <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">لا توجد منشورات بعد</h3>
+                  <p className="text-gray-600">كن أول من ينشر في هذا المجتمع!</p>
+                </div>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Top Members */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-yellow-500" />
+                  أفضل الأعضاء
+                </h3>
+                <div className="space-y-4">
+                  {community.members && community.members.slice(0, 5).map((member, index) => (
+                    <div key={member.id} className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+                        index === 0 ? 'bg-yellow-500' :
+                        index === 1 ? 'bg-gray-400' :
+                        index === 2 ? 'bg-orange-600' :
+                        'bg-gray-300'
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-sm">{member.name}</h4>
+                        <p className="text-xs text-gray-500">@{member.username}</p>
+                      </div>
+                      <div className="text-sm font-semibold text-teal-600">
+                        {member.points} نقطة
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Community Stats */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4">إحصائيات المجتمع</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">إجمالي الأعضاء</span>
+                    <span className="font-semibold text-gray-900">{community.memberCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">إجمالي المنشورات</span>
+                    <span className="font-semibold text-gray-900">{community.postCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">تاريخ الإنشاء</span>
+                    <span className="font-semibold text-gray-900">
+                      {new Date(community.createdAt).toLocaleDateString('ar-SA')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Leaderboard */
+          <div className="bg-white rounded-xl shadow-sm p-8">
+            <h2 className="text-2xl font-bold mb-6">لوحة الصدارة</h2>
+            <div className="space-y-4">
+              {community.members && community.members.map((member, index) => (
+                <div key={member.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${
+                    index === 0 ? 'bg-yellow-500' :
+                    index === 1 ? 'bg-gray-400' :
+                    index === 2 ? 'bg-orange-600' :
+                    'bg-gray-300'
+                  }`}>
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">{member.name}</h3>
+                    <p className="text-gray-500">@{member.username}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-teal-600">{member.points}</div>
+                    <div className="text-sm text-gray-500">نقطة</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Footer />
     </div>
   );
 }

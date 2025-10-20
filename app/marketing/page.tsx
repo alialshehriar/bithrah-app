@@ -36,22 +36,9 @@ export default function MarketingDashboard() {
 
   const fetchMarketingStats = async () => {
     try {
-      // TODO: Implement API call
-      // const response = await fetch('/api/marketing/stats');
-      // const data = await response.json();
-      
-      // Demo data
-      setStats({
-        totalReferrals: 47,
-        totalCommissions: '2,350.00',
-        pendingCommissions: '850.00',
-        paidCommissions: '1,500.00',
-        topProjects: [
-          { id: 1, title: 'تطبيق توصيل طعام صحي', referrals: 15, commission: '750.00' },
-          { id: 2, title: 'منصة تعليم إلكتروني', referrals: 12, commission: '600.00' },
-          { id: 3, title: 'متجر إلكتروني للحرف اليدوية', referrals: 10, commission: '500.00' },
-        ],
-      });
+      const response = await fetch('/api/marketing/stats');
+      const data = await response.json();
+      setStats(data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -59,9 +46,15 @@ export default function MarketingDashboard() {
     }
   };
 
-  const generateReferralCode = () => {
-    // TODO: Get from API
-    setReferralCode('MKT' + Math.random().toString(36).substring(2, 8).toUpperCase());
+  const generateReferralCode = async () => {
+    try {
+      const response = await fetch('/api/marketing/generate-code', { method: 'POST' });
+      const data = await response.json();
+      setReferralCode(data.referralCode);
+    } catch (error) {
+      console.error(error);
+      setReferralCode('MKT' + Math.random().toString(36).substring(2, 8).toUpperCase());
+    }
   };
 
   const getReferralLink = (projectId?: number) => {
