@@ -183,12 +183,14 @@ export function WalkthroughProvider({ children }: { children: ReactNode }) {
                 stiffness: 200,
                 duration: 0.5
               }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[92%] max-w-3xl"
+              className="fixed inset-0 flex items-center justify-center z-[9999] p-4"
+              style={{ pointerEvents: 'none' }}
             >
               {/* Glow Effect */}
-              <div className={`absolute inset-0 bg-gradient-to-r ${step.color} blur-3xl opacity-40 rounded-[3rem]`} />
+              <div className="w-full max-w-3xl" style={{ pointerEvents: 'auto' }}>
+                <div className={`absolute inset-0 bg-gradient-to-r ${step.color} blur-3xl opacity-40 rounded-[3rem]`} />
               
-              <div className="relative bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_25px_80px_-15px_rgba(0,0,0,0.4)] overflow-hidden border border-white/20">
+                <div className="relative bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_25px_80px_-15px_rgba(0,0,0,0.4)] overflow-hidden border border-white/20">
                 {/* Animated Background Pattern */}
                 <div className="absolute inset-0 opacity-5">
                   <motion.div
@@ -393,6 +395,7 @@ export function WalkthroughProvider({ children }: { children: ReactNode }) {
                     </motion.button>
                   </div>
                 </div>
+              </div>
               </div>
             </motion.div>
           </>
