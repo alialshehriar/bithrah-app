@@ -25,7 +25,7 @@ interface Community {
   posts: Array<{
     id: number;
     content: string;
-    authorId: number;
+    userId: number;
     authorName: string;
     authorUsername: string;
     createdAt: string;
@@ -54,10 +54,13 @@ export default function CommunityPage() {
 
   const fetchCommunity = async () => {
     try {
-      const response = await fetch(`/api/communities/${params.id}`);
-      if (!response.ok) throw new Error('Community not found');
-      const data = await response.json();
-      setCommunity(data);
+      const { getCommunityById } = await import('@/app/actions/communities');
+      const data = await getCommunityById(Number(params.id));
+      if ('error' in data) {
+        console.error(data.error);
+      } else {
+        setCommunity(data);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -69,13 +72,10 @@ export default function CommunityPage() {
     if (!newPost.trim()) return;
     
     try {
-      const response = await fetch(`/api/communities/${params.id}/posts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newPost }),
-      });
+      const { createCommunityPost } = await import('@/app/actions/communities');
+      const result = await createCommunityPost(Number(params.id), newPost, 44); // Using test user ID
       
-      if (response.ok) {
+      if ('success' in result) {
         setNewPost('');
         fetchCommunity();
       }
