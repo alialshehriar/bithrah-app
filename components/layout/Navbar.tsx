@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '../brand/Logo';
 import { 
-  Home, 
+  Home,
+  Sparkles, 
   Briefcase, 
   Users, 
   Calendar, 
@@ -33,6 +34,7 @@ const Navbar = () => {
     { name: 'المجتمعات', href: '/communities', icon: Users },
     { name: 'الفعاليات', href: '/events', icon: Calendar },
     { name: 'لوحة الصدارة', href: '/leaderboard', icon: Trophy },
+    { name: 'تقييم الأفكار', href: '/evaluate', icon: Sparkles },
   ];
 
   const userMenuItems = [
