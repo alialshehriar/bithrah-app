@@ -21,47 +21,64 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify token
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    try {
+      const { payload } = await jwtVerify(token, JWT_SECRET);
 
-    // Get user from database
-    const [user] = await db
-      .select({
-        id: users.id,
-        email: users.email,
-        username: users.username,
-        avatar: users.avatar,
-        role: users.role,
-        level: users.level,
-        points: users.points,
-      })
-      .from(users)
-      .where(eq(users.id, parseInt(payload.userId as string)))
-      .limit(1);
+      // Get user from database
+      const [user] = await db
+        .select({
+          id: users.id,
+          email: users.email,
+          username: users.username,
+          avatar: users.avatar,
+          role: users.role,
+          level: users.level,
+          points: users.points,
+        })
+        .from(users)
+        .where(eq(users.id, parseInt(payload.userId as string)))
+        .limit(1);
 
-    if (!user) {
-      return NextResponse.json(
+      if (!user) {
+        // User not found, clear cookie
+        const response = NextResponse.json(
+          { user: null },
+          { status: 200 }
+        );
+        response.cookies.delete('bithrah-token');
+        return response;
+      }
+
+      return NextResponse.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          avatar: user.avatar,
+          role: user.role,
+          level: user.level,
+          points: user.points,
+        },
+      });
+    } catch (verifyError) {
+      // Token verification failed (invalid signature, expired, etc.)
+      // Clear the invalid cookie
+      const response = NextResponse.json(
         { user: null },
         { status: 200 }
       );
+      response.cookies.delete('bithrah-token');
+      return response;
     }
-
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        avatar: user.avatar,
-        role: user.role,
-        level: user.level,
-        points: user.points,
-      },
-    });
   } catch (error) {
     console.error('Session error:', error);
-    return NextResponse.json(
+    // Clear cookie on any error
+    const response = NextResponse.json(
       { user: null },
       { status: 200 }
     );
+    response.cookies.delete('bithrah-token');
+    return response;
   }
 }
 
