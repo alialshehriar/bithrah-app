@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { evaluateIdea, IdeaEvaluationInput } from '@/lib/ai/ideaEvaluator';
-import { getServerSession } from 'next-auth';
+import { getSession } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await getSession();
     
-    if (!session?.user?.email) {
+    if (!session?.email) {
       return NextResponse.json(
         { error: 'يجب تسجيل الدخول أولاً' },
         { status: 401 }
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.email, session.user.email))
+      .where(eq(users.email, session.email))
       .limit(1);
 
     if (!user) {

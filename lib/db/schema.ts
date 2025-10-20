@@ -1317,29 +1317,4 @@ export const supportPackages = pgTable('support_packages', {
   tierIdx: index('support_packages_tier_idx').on(table.tier),
 }));
 
-// ============================================
-// NEGOTIATIONS
-// ============================================
-
-export const negotiations = pgTable('negotiations', {
-  id: serial('id').primaryKey(),
-  uuid: uuid('uuid').defaultRandom().unique().notNull(),
-  projectId: integer('project_id').references(() => projects.id).notNull(),
-  investorId: integer('investor_id').references(() => users.id).notNull(),
-  depositAmount: decimal('deposit_amount', { precision: 10, scale: 2 }).notNull(),
-  currency: varchar('currency', { length: 10 }).default('SAR'),
-  status: varchar('status', { length: 50 }).default('active'), // active, completed, cancelled, expired
-  ndaSigned: boolean('nda_signed').default(false),
-  ndaSignedAt: timestamp('nda_signed_at'),
-  startDate: timestamp('start_date').defaultNow().notNull(),
-  endDate: timestamp('end_date').notNull(),
-  notes: text('notes'),
-  metadata: jsonb('metadata'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}, (table) => ({
-  projectIdx: index('negotiations_project_idx').on(table.projectId),
-  investorIdx: index('negotiations_investor_idx').on(table.investorId),
-  statusIdx: index('negotiations_status_idx').on(table.status),
-}));
 
