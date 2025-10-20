@@ -1,247 +1,362 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
-  Rocket, TrendingUp, Users, Sparkles, Shield, Award,
-  Target, Heart, Zap, Crown, Star, ArrowLeft, CheckCircle,
-  DollarSign, MessageCircle, BarChart3, Gift
+  Sparkles, TrendingUp, Users, Shield, Zap, ArrowLeft,
+  Rocket, Target, Heart, Award, CheckCircle, Star
 } from 'lucide-react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
-import FeaturedProjects from '@/components/FeaturedProjects';
+import Navbar from '@/components/layout/Navbar';
 
-export default function Home() {
-  const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+export default function HomePage() {
   const [stats, setStats] = useState({
-    totalProjects: 1,
-    totalFunding: 45000,
-    activeUsers: 2,
-    successRate: 95
+    projects: 1,
+    funding: 125000,
+    users: 4,
+    communities: 3
   });
 
   useEffect(() => {
-    // Safe initialization with error handling
-    const initializePage = async () => {
+    // Fetch real stats from API
+    const fetchStats = async () => {
       try {
-        // Check auth status with timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        
-        try {
-          const response = await fetch('/api/auth/session', {
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data?.user) {
-              setIsLoggedIn(true);
-            }
+        const res = await fetch('/api/stats/platform');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            setStats({
+              projects: data.stats.totalProjects || 1,
+              funding: data.stats.totalFunding || 125000,
+              users: data.stats.activeUsers || 4,
+              communities: data.stats.totalCommunities || 3
+            });
           }
-        } catch (fetchError) {
-          console.warn('Auth check failed:', fetchError);
-          // Continue with default logged-out state
-        }
-
-        // Try to fetch stats with fallback
-        try {
-          const statsController = new AbortController();
-          const statsTimeoutId = setTimeout(() => statsController.abort(), 5000);
-          
-          const statsRes = await fetch('/api/stats/platform', {
-            signal: statsController.signal
-          });
-          clearTimeout(statsTimeoutId);
-          
-          if (statsRes.ok) {
-            const statsData = await statsRes.json();
-            if (statsData?.success && statsData?.stats) {
-              setStats({
-                totalProjects: Number(statsData.stats.totalProjects ?? 1),
-                totalFunding: Number(statsData.stats.totalFunding ?? 45000),
-                activeUsers: Number(statsData.stats.activeUsers ?? 2),
-                successRate: Number(statsData.stats.successRate ?? 95)
-              });
-            }
-          }
-        } catch (statsError) {
-          console.warn('Stats fetch failed, using defaults:', statsError);
-          // Keep default stats
         }
       } catch (error) {
-        console.error('Page initialization error:', error);
-        // Keep defaults
-      } finally {
-        setIsLoading(false);
+        console.error('Failed to fetch stats:', error);
       }
     };
 
-    initializePage();
+    fetchStats();
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-teal-50/20 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#14B8A6] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-bold">جاري التحميل...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const features = [
-    {
-      icon: Rocket,
-      title: 'إطلاق مشاريعك',
-      description: 'أطلق مشروعك بسهولة واحصل على التمويل من المجتمع',
-      color: 'from-blue-500 to-blue-600',
-      bgColor: 'from-blue-50 to-blue-100'
-    },
-    {
-      icon: Users,
-      title: 'مجتمع داعم',
-      description: 'انضم لمجتمع من رواد الأعمال والمستثمرين',
-      color: 'from-purple-500 to-purple-600',
-      bgColor: 'from-purple-50 to-purple-100'
-    },
-    {
-      icon: Shield,
-      title: 'آمن وموثوق',
-      description: 'منصة آمنة ومرخصة لحماية استثماراتك',
-      color: 'from-green-500 to-green-600',
-      bgColor: 'from-green-50 to-green-100'
-    },
-    {
-      icon: TrendingUp,
-      title: 'نمو مستمر',
-      description: 'تتبع نمو مشاريعك وعوائدك بسهولة',
-      color: 'from-orange-500 to-orange-600',
-      bgColor: 'from-orange-50 to-orange-100'
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-teal-50/20">
-      <Navigation />
-
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50/20">
+      <Navbar />
+      
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-32 pb-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+      <section className="relative pt-32 pb-20 px-4 overflow-hidden">
+        {/* Background Decorations */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
+            {/* Badge */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-teal-500/10 to-purple-500/10 rounded-full border border-teal-500/20 mb-6"
             >
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                حوّل أفكارك إلى{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#14B8A6] to-[#0F9A8A]">
-                  واقع
-                </span>
-              </h1>
-              <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-                منصة التمويل الجماعي الرائدة في السعودية. نربط بين أصحاب الأفكار والمستثمرين لتحويل الأحلام إلى مشاريع ناجحة.
-              </p>
-              <div className="flex gap-4 justify-center flex-wrap">
-                <Link
-                  href="/projects/create"
-                  className="bg-[#14B8A6] hover:bg-[#0F9A8A] text-white font-bold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                >
-                  ابدأ مشروعك الآن
-                </Link>
-                <Link
-                  href="/projects"
-                  className="bg-white hover:bg-gray-50 text-gray-700 font-bold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border-2 border-gray-200"
-                >
-                  استكشف المشاريع
-                </Link>
-              </div>
+              <Sparkles className="w-4 h-4 text-teal-600" />
+              <span className="text-sm font-medium text-gray-700">
+                مدعوم بالذكاء الاصطناعي GPT-4
+              </span>
             </motion.div>
-          </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20">
-            {[
-              { label: 'مشاريع نشطة', value: stats.totalProjects, icon: Rocket },
-              { label: 'مستخدمون نشطون', value: stats.activeUsers, icon: Users },
-              { label: 'إجمالي التمويل', value: `${stats.totalFunding.toLocaleString()} ر.س`, icon: DollarSign },
-              { label: 'معدل النجاح', value: `${stats.successRate}%`, icon: TrendingUp }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
-              >
-                <stat.icon className="w-8 h-8 text-[#14B8A6] mb-3" />
-                <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                <div className="text-sm text-gray-600">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+            {/* Main Heading */}
+            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+              حوّل{' '}
+              <span className="bg-gradient-to-r from-teal-600 to-purple-600 bg-clip-text text-transparent">
+                أفكارك
+              </span>
+              {' '}إلى{' '}
+              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                واقع
+              </span>
+            </h1>
 
-      {/* Features */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              لماذا بذرة؟
-            </h2>
-            <p className="text-xl text-gray-600">
-              نوفر لك كل ما تحتاجه لإطلاق مشروعك الناجح
+            {/* Description */}
+            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+              بذره تربط أصحاب الأفكار والمستثمرين في بيئة وساطة سعودية ذكية تعتمد على الذكاء الاصطناعي لتقييم الأفكار وتحفيز التمويل الآمن
             </p>
-          </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+              <Link
+                href="/evaluate"
+                className="group relative px-8 py-4 bg-gradient-to-r from-teal-600 to-purple-600 text-white rounded-xl font-semibold text-lg shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+              >
+                <Sparkles className="w-5 h-5" />
+                <span>قيّم فكرتك بالذكاء الاصطناعي</span>
+                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              </Link>
+
+              <Link
+                href="/projects"
+                className="px-8 py-4 bg-white text-gray-900 rounded-xl font-semibold text-lg border-2 border-gray-200 hover:border-teal-500 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+              >
+                <Rocket className="w-5 h-5" />
+                <span>استكشف المشاريع</span>
+              </Link>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
               <motion.div
-                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+                transition={{ delay: 0.3 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-teal-500 transition-all duration-300 hover:shadow-lg"
               >
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.bgColor} flex items-center justify-center mb-6`}>
-                  <feature.icon className={`w-8 h-8 bg-gradient-to-br ${feature.color} bg-clip-text text-transparent`} />
+                <div className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                  {stats.projects}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600">
-                  {feature.description}
-                </p>
+                <div className="text-sm text-gray-600 font-medium">مشاريع نشطة</div>
               </motion.div>
-            ))}
-          </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-teal-500 transition-all duration-300 hover:shadow-lg"
+              >
+                <div className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                  {(stats.funding / 1000).toFixed(0)}K
+                </div>
+                <div className="text-sm text-gray-600 font-medium">ريال تمويل</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-teal-500 transition-all duration-300 hover:shadow-lg"
+              >
+                <div className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                  {stats.users}
+                </div>
+                <div className="text-sm text-gray-600 font-medium">مستخدمون نشطون</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-teal-500 transition-all duration-300 hover:shadow-lg"
+              >
+                <div className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                  {stats.communities}
+                </div>
+                <div className="text-sm text-gray-600 font-medium">مجتمعات فعالة</div>
+              </motion.div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Featured Projects */}
+      {/* AI Evaluation Feature Section */}
+      <section className="py-20 px-4 bg-gradient-to-br from-teal-50 to-purple-50">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-teal-500/20 mb-4">
+              <Sparkles className="w-4 h-4 text-teal-600" />
+              <span className="text-sm font-medium text-gray-700">الميزة الرئيسية</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              تقييم الأفكار بالذكاء الاصطناعي
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              احصل على تقييم شامل ودقيق لفكرتك الاستثمارية من 6 منظورات مختلفة باستخدام GPT-4
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Target,
+                title: 'تحليل استراتيجي',
+                description: 'تقييم الرؤية الاستراتيجية والتموضع في السوق',
+                color: 'from-teal-500 to-cyan-500'
+              },
+              {
+                icon: TrendingUp,
+                title: 'جدوى مالية',
+                description: 'تحليل نموذج الإيرادات والجدوى المالية',
+                color: 'from-purple-500 to-pink-500'
+              },
+              {
+                icon: Shield,
+                title: 'تحليل المخاطر',
+                description: 'تحديد وتقييم المخاطر المحتملة',
+                color: 'from-orange-500 to-red-500'
+              },
+              {
+                icon: Users,
+                title: 'السوق السعودي',
+                description: 'تحليل الملاءمة للسوق المحلي',
+                color: 'from-blue-500 to-indigo-500'
+              },
+              {
+                icon: Zap,
+                title: 'قابلية التنفيذ',
+                description: 'تقييم الموارد والجدول الزمني',
+                color: 'from-green-500 to-emerald-500'
+              },
+              {
+                icon: Rocket,
+                title: 'استراتيجية النمو',
+                description: 'تحليل خطة التسويق والنمو',
+                color: 'from-yellow-500 to-amber-500'
+              }
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-teal-500 transition-all duration-300 hover:shadow-xl group"
+              >
+                <div className={`w-14 h-14 bg-gradient-to-r ${feature.color} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <Link
+              href="/evaluate"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-600 to-purple-600 text-white rounded-xl font-semibold text-lg shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all duration-300 hover:scale-105"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span>ابدأ التقييم الآن</span>
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Why Bithrah Section */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              المشاريع المميزة
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              لماذا بذرة؟
             </h2>
-            <p className="text-xl text-gray-600">
-              اكتشف أحدث المشاريع الواعدة
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              منصة متكاملة تجمع بين التقنية والذكاء الاصطناعي لتحويل الأفكار إلى مشاريع ناجحة
             </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: Sparkles,
+                title: 'ذكاء اصطناعي متقدم',
+                description: 'تقييم دقيق للأفكار باستخدام GPT-4 من OpenAI'
+              },
+              {
+                icon: Shield,
+                title: 'تفاوض آمن',
+                description: 'نظام تفاوض محمي باتفاقية سرية (NDA)'
+              },
+              {
+                icon: Heart,
+                title: 'باقات دعم مرنة',
+                description: 'خيارات دعم متنوعة تناسب جميع المستثمرين'
+              },
+              {
+                icon: Award,
+                title: 'مجتمعات نشطة',
+                description: 'تواصل مع رواد الأعمال والمستثمرين'
+              }
+            ].map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="text-center"
+              >
+                <div className="w-16 h-16 bg-gradient-to-r from-teal-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <item.icon className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{item.description}</p>
+              </motion.div>
+            ))}
           </div>
-          <FeaturedProjects />
         </div>
       </section>
 
-      <Footer />
+      {/* CTA Section */}
+      <section className="py-20 px-4 bg-gradient-to-br from-teal-600 to-purple-600">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <Star className="w-16 h-16 text-white/90 mx-auto mb-6" />
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              جاهز لتحويل فكرتك إلى واقع؟
+            </h2>
+            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+              انضم إلى مجتمع بذرة اليوم واحصل على تقييم مجاني لفكرتك بالذكاء الاصطناعي
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/evaluate"
+                className="px-8 py-4 bg-white text-teal-600 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center gap-2"
+              >
+                <Sparkles className="w-5 h-5" />
+                <span>ابدأ الآن مجاناً</span>
+              </Link>
+              <Link
+                href="/projects"
+                className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-semibold text-lg border-2 border-white/30 hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+              >
+                <Rocket className="w-5 h-5" />
+                <span>استكشف المشاريع</span>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 }
+
