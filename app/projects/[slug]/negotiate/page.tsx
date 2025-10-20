@@ -76,7 +76,17 @@ export default function NegotiatePage() {
   const fetchNegotiationData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/negotiate/${slug}`);
+      // Get project ID first
+      const projectResponse = await fetch(`/api/projects/slug/${slug}`);
+      const projectData = await projectResponse.json();
+      
+      if (!projectData.success) {
+        setError('المشروع غير موجود');
+        setLoading(false);
+        return;
+      }
+      
+      const response = await fetch(`/api/projects/${projectData.project.id}/negotiate`);
       const data = await response.json();
 
       if (data.success) {
