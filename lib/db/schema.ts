@@ -1291,3 +1291,55 @@ export const ideaEvaluations = pgTable('idea_evaluations', {
   createdAtIdx: index('idea_evaluations_created_at_idx').on(table.createdAt),
 }));
 
+
+
+// ============================================
+// SUPPORT PACKAGES
+// ============================================
+
+export const supportPackages = pgTable('support_packages', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  projectId: integer('project_id').references(() => projects.id).notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+  currency: varchar('currency', { length: 10 }).default('SAR'),
+  tier: varchar('tier', { length: 50 }).default('basic'), // basic, standard, premium
+  features: jsonb('features'), // Array of features
+  maxBackers: integer('max_backers'),
+  currentBackers: integer('current_backers').default(0),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  projectIdx: index('support_packages_project_idx').on(table.projectId),
+  tierIdx: index('support_packages_tier_idx').on(table.tier),
+}));
+
+// ============================================
+// NEGOTIATIONS
+// ============================================
+
+export const negotiations = pgTable('negotiations', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  projectId: integer('project_id').references(() => projects.id).notNull(),
+  investorId: integer('investor_id').references(() => users.id).notNull(),
+  depositAmount: decimal('deposit_amount', { precision: 10, scale: 2 }).notNull(),
+  currency: varchar('currency', { length: 10 }).default('SAR'),
+  status: varchar('status', { length: 50 }).default('active'), // active, completed, cancelled, expired
+  ndaSigned: boolean('nda_signed').default(false),
+  ndaSignedAt: timestamp('nda_signed_at'),
+  startDate: timestamp('start_date').defaultNow().notNull(),
+  endDate: timestamp('end_date').notNull(),
+  notes: text('notes'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  projectIdx: index('negotiations_project_idx').on(table.projectId),
+  investorIdx: index('negotiations_investor_idx').on(table.investorId),
+  statusIdx: index('negotiations_status_idx').on(table.status),
+}));
+
