@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { negotiations, negotiationMessages, projects, users } from '@/lib/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,60 +11,54 @@ export async function GET(
   try {
     const { slug } = await context.params;
 
-    // Get project
-    const [project] = await db
-      .select({
-        id: projects.id,
-        title: projects.title,
-        slug: projects.slug,
-        fundingGoal: projects.fundingGoal,
-        currentFunding: projects.currentFunding,
-        ownerId: projects.creatorId,
-        ownerName: users.name,
-        ownerAvatar: users.avatar,
-      })
-      .from(projects)
-      .leftJoin(users, eq(projects.creatorId, users.id))
-      .where(eq(projects.slug, slug))
-      .limit(1);
+    // Get project with raw SQL to avoid schema mismatches
+    const projectResult = await db.execute(sql`
+      SELECT 
+        p.id, p.title, p.slug, p.funding_goal, p.current_funding, p.creator_id,
+        u.name as owner_name, u.avatar as owner_avatar
+      FROM projects p
+      LEFT JOIN users u ON p.creator_id = u.id
+      WHERE p.slug = ${slug}
+      LIMIT 1
+    `);
 
-    if (!project) {
+    if (projectResult.rows.length === 0) {
       return NextResponse.json(
         { success: false, error: 'المشروع غير موجود' },
         { status: 404 }
       );
     }
 
-    // Get any active negotiation for this project (for demo purposes)
-    const [negotiation] = await db
-      .select()
-      .from(negotiations)
-      .where(eq(negotiations.projectId, project.id))
-      .orderBy(desc(negotiations.createdAt))
-      .limit(1);
+    const project = projectResult.rows[0] as any;
 
-    if (!negotiation) {
+    // Get any active negotiation for this project
+    const negotiationResult = await db.execute(sql`
+      SELECT *
+      FROM negotiations
+      WHERE project_id = ${project.id}
+      ORDER BY created_at DESC
+      LIMIT 1
+    `);
+
+    if (negotiationResult.rows.length === 0) {
       return NextResponse.json(
         { success: false, error: 'لا توجد جلسة تفاوض نشطة' },
         { status: 404 }
       );
     }
 
+    const negotiation = negotiationResult.rows[0] as any;
+
     // Get messages
-    const messagesData = await db
-      .select({
-        id: negotiationMessages.id,
-        content: negotiationMessages.content,
-        senderId: negotiationMessages.senderId,
-        senderName: users.name,
-        senderAvatar: users.avatar,
-        createdAt: negotiationMessages.createdAt,
-        status: negotiationMessages.status,
-      })
-      .from(negotiationMessages)
-      .leftJoin(users, eq(negotiationMessages.senderId, users.id))
-      .where(eq(negotiationMessages.negotiationId, negotiation.id))
-      .orderBy(negotiationMessages.createdAt);
+    const messagesResult = await db.execute(sql`
+      SELECT 
+        nm.id, nm.content, nm.sender_id, nm.created_at,
+        u.name as sender_name, u.avatar as sender_avatar
+      FROM negotiation_messages nm
+      LEFT JOIN users u ON nm.sender_id = u.id
+      WHERE nm.negotiation_id = ${negotiation.id}
+      ORDER BY nm.created_at ASC
+    `);
 
     return NextResponse.json({
       success: true,
@@ -73,35 +66,35 @@ export async function GET(
         id: project.id,
         name: project.title,
         slug: project.slug,
-        fundingGoal: Number(project.fundingGoal),
-        currentAmount: Number(project.currentFunding),
+        fundingGoal: Number(project.funding_goal),
+        currentAmount: Number(project.current_funding || 0),
         owner: {
-          id: project.ownerId,
-          name: project.ownerName,
-          avatar: project.ownerAvatar,
+          id: project.creator_id,
+          name: project.owner_name,
+          avatar: project.owner_avatar,
         },
       },
       negotiation: {
         id: negotiation.id,
         uuid: negotiation.uuid,
         status: negotiation.status,
-        startDate: negotiation.startDate,
-        endDate: negotiation.endDate,
-        depositAmount: Number(negotiation.amount),
-        depositStatus: negotiation.paymentStatus,
-        hasFullAccess: negotiation.hasFullAccess,
-        agreedAmount: negotiation.agreedAmount ? Number(negotiation.agreedAmount) : null,
-        agreementTerms: negotiation.agreementTerms,
-        agreementReached: negotiation.agreementReached,
+        startDate: negotiation.start_date,
+        endDate: negotiation.end_date,
+        depositAmount: Number(negotiation.amount || 0),
+        depositStatus: negotiation.payment_status || 'pending',
+        hasFullAccess: negotiation.has_full_access || false,
+        agreedAmount: negotiation.agreed_amount ? Number(negotiation.agreed_amount) : null,
+        agreementTerms: negotiation.agreement_terms,
+        agreementReached: negotiation.agreement_reached || false,
       },
-      messages: messagesData.map(msg => ({
+      messages: messagesResult.rows.map((msg: any) => ({
         id: msg.id,
         content: msg.content,
-        senderId: msg.senderId,
-        senderName: msg.senderName,
-        senderAvatar: msg.senderAvatar,
-        createdAt: msg.createdAt,
-        status: msg.status,
+        senderId: msg.sender_id,
+        senderName: msg.sender_name,
+        senderAvatar: msg.sender_avatar,
+        createdAt: msg.created_at,
+        status: 'sent',
       })),
     });
   } catch (error) {
