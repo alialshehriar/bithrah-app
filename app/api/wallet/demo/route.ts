@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDemoCredit, isDemoMode } from '@/middleware/demoMode';
 
+export const dynamic = 'force-dynamic';
 /**
  * GET /api/wallet/demo
  * Get demo wallet information

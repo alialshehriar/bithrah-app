@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
 const sandboxLeaderboard = [
   {
     id: '1',
@@ -55,17 +56,9 @@ const sandboxLeaderboard = [
 
 export async function GET(request: NextRequest) {
   try {
-    const sandboxMode = request.cookies.get('sandbox-mode')?.value === 'true';
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
     
-    if (sandboxMode) {
-      return NextResponse.json({
-        success: true,
-        users: sandboxLeaderboard.slice(0, limit),
-        total: sandboxLeaderboard.length,
-      });
-    }
 
     // Real data from database
     const { db } = await import('@/lib/db');

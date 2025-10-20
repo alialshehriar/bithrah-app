@@ -1,64 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sandboxStats } from '@/lib/sandbox/data';
+import { db } from '@/lib/db';
+import { users, projects, communities } from '@/lib/db/schema';
+import { count, sql, desc, gte, eq } from 'drizzle-orm';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if sandbox mode is enabled from cookie
-    const sandboxMode = request.cookies.get('sandbox-mode')?.value === 'true';
-    
-    if (sandboxMode) {
-      // Return comprehensive sandbox stats
-      return NextResponse.json({
-        success: true,
-        stats: {
-          users: {
-            total: 10247,
-            active: 8932,
-            thisMonth: 1523,
-            growth: 15,
-          },
-          projects: {
-            total: 1247,
-            active: 892,
-            pending: 156,
-            funded: 623,
-          },
-          communities: {
-            total: 156,
-            active: 134,
-            thisMonth: 23,
-          },
-          events: {
-            total: 89,
-            upcoming: 34,
-            past: 55,
-          },
-          funding: {
-            total: 52847392.50,
-            thisMonth: 4523891.25,
-            avgPerProject: 42389.50,
-          },
-          subscriptions: [
-            { tier: 'مجاني', count: 8432, percentage: 82 },
-            { tier: 'مميز', count: 1234, percentage: 12 },
-            { tier: 'احترافي', count: 581, percentage: 6 },
-          ],
-          recentUsers: [
-            { id: 1, name: 'أحمد محمد', email: 'ahmed@example.com', role: 'user', created_at: new Date().toISOString() },
-            { id: 2, name: 'فاطمة علي', email: 'fatima@example.com', role: 'user', created_at: new Date().toISOString() },
-            { id: 3, name: 'محمد سعيد', email: 'mohammed@example.com', role: 'investor', created_at: new Date().toISOString() },
-            { id: 4, name: 'نورة خالد', email: 'noura@example.com', role: 'user', created_at: new Date().toISOString() },
-            { id: 5, name: 'عبدالله أحمد', email: 'abdullah@example.com', role: 'user', created_at: new Date().toISOString() },
-          ],
-        },
-      });
-    }
-
-    // Real data mode - import database connection
-    const { db } = await import('@/lib/db');
-    const { users, projects, communities } = await import('@/lib/db/schema');
-    const { count, sql, desc, gte } = await import('drizzle-orm');
-
     // Get total users
     const totalUsersResult = await db.select({ count: count() }).from(users);
     const totalUsers = totalUsersResult[0]?.count || 0;
@@ -77,7 +25,6 @@ export async function GET(request: NextRequest) {
     const totalProjects = totalProjectsResult[0]?.count || 0;
 
     // Get active projects
-    const { eq } = await import('drizzle-orm');
     const activeProjectsResult = await db
       .select({ count: count() })
       .from(projects)
@@ -122,7 +69,7 @@ export async function GET(request: NextRequest) {
       .orderBy(desc(users.createdAt))
       .limit(10);
 
-    // Calculate total funding (sum of current_funding from all projects)
+    // Calculate total funding
     const fundingResult = await db
       .select({
         total: sql<string>`COALESCE(SUM(CAST(current_funding AS NUMERIC)), 0)`,
@@ -133,7 +80,7 @@ export async function GET(request: NextRequest) {
     const stats = {
       users: {
         total: totalUsers,
-        active: totalUsers, // Assuming all users are active for now
+        active: totalUsers,
         thisMonth: usersThisMonth,
         growth: totalUsers > 0 ? Math.round((usersThisMonth / totalUsers) * 100) : 0,
       },
@@ -146,16 +93,16 @@ export async function GET(request: NextRequest) {
       communities: {
         total: totalCommunities,
         active: activeCommunities,
-        thisMonth: 0, // Can be calculated if needed
+        thisMonth: 0,
       },
       events: {
-        total: 0, // Events table not implemented yet
+        total: 0,
         upcoming: 0,
         past: 0,
       },
       funding: {
         total: totalFunding,
-        thisMonth: 0, // Can be calculated if needed
+        thisMonth: 0,
         avgPerProject: totalProjects > 0 ? totalFunding / totalProjects : 0,
       },
       subscriptions: [

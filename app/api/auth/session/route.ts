@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
 const JWT_SECRET = new TextEncoder().encode(
   process.env.NEXTAUTH_SECRET || 'bithrah-super-secret-key-2025-production-v1'
 );

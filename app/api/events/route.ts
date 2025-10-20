@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
 const sandboxEvents = [
   {
     id: '1',
@@ -35,24 +36,10 @@ const sandboxEvents = [
 
 export async function GET(request: NextRequest) {
   try {
-    const sandboxMode = request.cookies.get('sandbox-mode')?.value === 'true';
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
     const upcoming = searchParams.get('upcoming') === 'true';
     
-    if (sandboxMode) {
-      let events = [...sandboxEvents];
-      
-      if (upcoming) {
-        events = events.filter(e => new Date(e.date) > new Date());
-      }
-      
-      return NextResponse.json({
-        success: true,
-        events: events.slice(0, limit),
-        total: events.length,
-      });
-    }
 
     // Real data - return empty for now since events table doesn't exist
     return NextResponse.json({

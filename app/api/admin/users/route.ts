@@ -2,20 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users, projects, wallets, transactions } from '@/lib/db/schema';
 import { eq, sql, desc, and, gte } from 'drizzle-orm';
-import { sandboxUsers, sandboxStats } from '@/lib/sandbox/data';
 
+export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
-    // Check if sandbox mode is enabled
-    const sandboxMode = request.cookies.get('sandbox-mode')?.value === 'true';
     
-    if (sandboxMode) {
-      return NextResponse.json({
-        success: true,
-        users: sandboxUsers,
-        stats: sandboxStats.users,
-      });
-    }
     // Fetch all users with their stats
     const allUsers = await db
       .select({

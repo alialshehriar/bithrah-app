@@ -4,27 +4,11 @@ import { users, projects, transactions } from '@/lib/db/schema';
 import { eq, sql, and, gte } from 'drizzle-orm';
 import { cookies } from 'next/headers';
 
+export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const sandboxMode = cookieStore.get('sandbox-mode')?.value === 'true';
 
-    if (sandboxMode) {
-      // Return comprehensive sandbox data
-      return NextResponse.json({
-        success: true,
-        stats: {
-          activeProjects: 248,
-          activeUsers: 12500,
-          todayFunding: 850000,
-          newAchievements: 45,
-          totalProjects: 1247,
-          totalFunding: 52750000,
-          successRate: 95,
-        },
-        sandbox: true
-      });
-    }
 
     // Get real stats from database
     const now = new Date();

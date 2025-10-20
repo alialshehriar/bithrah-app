@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDemoMode, demoBithrahCommunity } from '@/lib/demo-mode';
 
+export const dynamic = 'force-dynamic';
 // Sandbox communities data with correct structure
 const sandboxCommunities = [
   // Demo community - always first

@@ -20,30 +20,19 @@ import {
 export default function AdminDashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [sandboxMode, setSandboxMode] = useState(false);
+
   const [stats, setStats] = useState<any>(null);
   const [timeRange, setTimeRange] = useState('7d'); // 7d, 30d, 90d, 1y
 
   useEffect(() => {
-    fetchSandboxMode();
     fetchAdminStats();
-  }, [sandboxMode, timeRange]);
+  }, [timeRange]);
 
-  const fetchSandboxMode = async () => {
-    try {
-      const res = await fetch('/api/admin/sandbox');
-      const data = await res.json();
-      if (data.success) {
-        setSandboxMode(data.isActive);
-      }
-    } catch (error) {
-      console.error('Error fetching sandbox mode:', error);
-    }
-  };
+
 
   const fetchAdminStats = async () => {
     try {
-      const res = await fetch(`/api/admin/stats?sandbox=${sandboxMode}&range=${timeRange}`);
+      const res = await fetch(`/api/admin/stats?range=${timeRange}`);
       const data = await res.json();
       if (data.success) {
         setStats(data.stats);
@@ -55,22 +44,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const toggleSandboxMode = async () => {
-    try {
-      const res = await fetch('/api/admin/sandbox', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: sandboxMode ? 'disable' : 'enable' }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSandboxMode(data.isActive);
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('Error toggling sandbox mode:', error);
-    }
-  };
+
 
   // Sample data for charts (will be replaced with real data from API)
   const userGrowthData = [
@@ -209,29 +183,7 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
-              {/* Sandbox Mode Toggle */}
-              <button
-                onClick={toggleSandboxMode}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all shadow-sm ${
-                  sandboxMode
-                    ? 'bg-amber-50 text-amber-700 border-2 border-amber-200 hover:bg-amber-100'
-                    : 'bg-green-50 text-green-700 border-2 border-green-200 hover:bg-green-100'
-                }`}
-              >
-                {sandboxMode ? (
-                  <>
-                    <Database size={18} />
-                    <span>وضع التجربة</span>
-                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-                  </>
-                ) : (
-                  <>
-                    <Server size={18} />
-                    <span>بيانات حقيقية</span>
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  </>
-                )}
-              </button>
+
 
               {/* Refresh Button */}
               <button
@@ -253,20 +205,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-
-      {/* Sandbox Mode Banner */}
-      {sandboxMode && (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-y border-amber-200 py-3.5">
-          <div className="max-w-[1600px] mx-auto px-6 lg:px-8">
-            <div className="flex items-center justify-center gap-2.5 text-amber-800">
-              <AlertCircle size={20} />
-              <p className="font-semibold">
-                أنت الآن في وضع التجربة - جميع البيانات المعروضة هي بيانات وهمية للاختبار
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="max-w-[1600px] mx-auto px-6 lg:px-8 py-8">
         {/* Stats Grid */}
