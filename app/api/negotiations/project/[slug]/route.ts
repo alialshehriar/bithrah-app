@@ -36,19 +36,11 @@ export async function GET(
       );
     }
 
-    // TODO: Get current user ID from session
-    const currentUserId = 1; // Temporary - should come from auth
-
-    // Get active negotiation for this user and project
+    // Get any active negotiation for this project (for demo purposes)
     const [negotiation] = await db
       .select()
       .from(negotiations)
-      .where(
-        and(
-          eq(negotiations.projectId, project.id),
-          eq(negotiations.investorId, currentUserId)
-        )
-      )
+      .where(eq(negotiations.projectId, project.id))
       .orderBy(desc(negotiations.createdAt))
       .limit(1);
 
@@ -95,8 +87,8 @@ export async function GET(
         status: negotiation.status,
         startDate: negotiation.startDate,
         endDate: negotiation.endDate,
-        depositAmount: Number(negotiation.depositAmount),
-        depositStatus: negotiation.depositStatus,
+        depositAmount: Number(negotiation.amount),
+        depositStatus: negotiation.paymentStatus,
         hasFullAccess: negotiation.hasFullAccess,
         agreedAmount: negotiation.agreedAmount ? Number(negotiation.agreedAmount) : null,
         agreementTerms: negotiation.agreementTerms,
