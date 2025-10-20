@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { projects, backings, wallets, transactions, supportPackages } from '@/lib/db/schema';
+import { projects, backings, wallets, transactions, supportPackages, users } from '@/lib/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { getServerSession } from 'next-auth';
 
@@ -24,8 +24,8 @@ export async function POST(
     // Get user
     const [user] = await db
       .select()
-      .from(require('@/lib/db/schema').users)
-      .where(eq(require('@/lib/db/schema').users.email, session.user.email))
+      .from(users)
+      .where(eq(users.email, session.user.email))
       .limit(1);
 
     if (!user) {
