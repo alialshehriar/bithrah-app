@@ -76,7 +76,7 @@ export default function NegotiatePage() {
   const fetchNegotiationData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/negotiations/project/${slug}`);
+      const response = await fetch(`/api/negotiate/${slug}`);
       const data = await response.json();
 
       if (data.success) {
