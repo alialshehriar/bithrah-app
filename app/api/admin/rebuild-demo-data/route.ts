@@ -1,37 +1,33 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { sql } from 'drizzle-orm';
+import { neon } from '@neondatabase/serverless';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 
 export async function POST() {
   try {
-    // تنفيذ سكريبت التنظيف وإعادة البناء
-    await db.execute(sql`
-      -- حذف البيانات المرتبطة
-      DELETE FROM community_posts WHERE is_demo = true;
-      DELETE FROM community_members WHERE is_demo = true;
-      DELETE FROM event_registrations WHERE is_demo = true;
-      DELETE FROM project_updates WHERE is_demo = true;
-      DELETE FROM backings WHERE is_demo = true;
-      DELETE FROM evaluations WHERE is_demo = true;
-      DELETE FROM transactions WHERE is_demo = true;
-      DELETE FROM wallets WHERE user_id IN (SELECT id FROM users WHERE is_demo = true);
-      
-      -- حذف الجداول الرئيسية
-      DELETE FROM projects WHERE is_demo = true;
-      DELETE FROM communities WHERE is_demo = true;
-      DELETE FROM events WHERE is_demo = true;
-      DELETE FROM leaderboard WHERE is_demo = true;
-      DELETE FROM users WHERE is_demo = true;
-    `);
-
+    // الاتصال بقاعدة البيانات
+    const sql = neon(process.env.DATABASE_URL!);
+    
+    // قراءة سكريبت SQL
+    const scriptPath = join(process.cwd(), 'scripts', 'phase1-cleanup-rebuild.sql');
+    const sqlScript = await readFile(scriptPath, 'utf-8');
+    
+    // تنفيذ السكريبت
+    const result = await sql(sqlScript);
+    
     return NextResponse.json({
       success: true,
-      message: 'تم تنظيف البيانات بنجاح'
+      message: 'تم تنظيف وإعادة بناء البيانات بنجاح',
+      data: result
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error rebuilding demo data:', error);
     return NextResponse.json(
-      { success: false, error: 'فشل في تنظيف البيانات' },
+      { 
+        success: false, 
+        error: 'فشل في تنظيف وإعادة بناء البيانات',
+        details: error.message 
+      },
       { status: 500 }
     );
   }

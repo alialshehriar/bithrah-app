@@ -68,6 +68,9 @@ export const users = pgTable('users', {
   // Onboarding
   onboardingCompleted: boolean('onboarding_completed').default(false),
   
+  // Demo flag
+  isDemo: boolean('is_demo').default(false),
+  
   // Metadata
   metadata: jsonb('metadata'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
