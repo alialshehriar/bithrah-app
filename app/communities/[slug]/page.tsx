@@ -63,7 +63,7 @@ interface Member {
 export default function CommunityDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const communityId = params.id as string;
+  const slug = params.slug as string;
 
   const [community, setCommunity] = useState<Community | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -78,11 +78,11 @@ export default function CommunityDetailPage() {
 
   useEffect(() => {
     fetchCommunityData();
-  }, [communityId]);
+  }, [slug]);
 
   const fetchCommunityData = async () => {
     try {
-      const response = await fetch(`/api/communities/${communityId}`);
+      const response = await fetch(`/api/communities/slug/${slug}`);
       const data = await response.json();
       
       if (data.success) {
@@ -102,7 +102,7 @@ export default function CommunityDetailPage() {
   const handleJoin = async () => {
     setJoining(true);
     try {
-      const response = await fetch(`/api/communities/${communityId}/join`, {
+      const response = await fetch(`/api/communities/slug/${slug}/join`, {
         method: 'POST',
       });
 
@@ -122,7 +122,7 @@ export default function CommunityDetailPage() {
     
     setJoining(true);
     try {
-      const response = await fetch(`/api/communities/${communityId}/join`, {
+      const response = await fetch(`/api/communities/slug/${slug}/join`, {
         method: 'DELETE',
       });
 
@@ -143,7 +143,7 @@ export default function CommunityDetailPage() {
 
     setPosting(true);
     try {
-      const response = await fetch(`/api/communities/${communityId}/posts`, {
+      const response = await fetch(`/api/communities/${slug}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
