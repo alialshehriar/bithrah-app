@@ -207,7 +207,6 @@ export const demoBithrahCommunity = {
       date: new Date(Date.now() - 172800000).toISOString(),
     },
   ],
-  is_demo: true,
 };
 
 /**
