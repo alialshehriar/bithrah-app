@@ -34,7 +34,7 @@ export const packages = pgTable('packages', {
   
   // Status
   isActive: boolean('is_active').notNull().default(true),
-  isSandbox: boolean('is_sandbox').notNull().default(false),
+
   
   // Timestamps
   createdAt: timestamp('created_at').notNull().defaultNow(),

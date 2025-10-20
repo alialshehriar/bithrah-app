@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         p.status,
         p.featured,
         p.trending,
-        p.is_sandbox,
+        
         p.created_at,
         p.published_at,
         u.id as creator_id,
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
       status: row.status,
       featured: row.featured,
       trending: row.trending,
-      isSandbox: row.is_sandbox,
+      
       createdAt: row.created_at,
       publishedAt: row.published_at,
       creator: {
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
         category, tags, image, cover_image, video,
         funding_goal, current_funding, currency,
         backers_count, deadline, status, visibility,
-        featured, verified, is_sandbox, trending,
+        featured, verified, trending,
         created_at, updated_at
       ) VALUES (
         ${body.creatorId},
@@ -195,7 +195,6 @@ export async function POST(request: NextRequest) {
         ${body.deadline},
         'draft',
         'public',
-        false,
         false,
         false,
         false,

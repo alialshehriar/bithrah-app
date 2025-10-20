@@ -178,10 +178,10 @@ export default function FeaturedProjects() {
                         <div className="space-y-3">
                           <div className="flex justify-between items-center">
                             <span className="text-2xl font-black text-gray-900">
-                              {currentProject.currentAmount.toLocaleString('ar-SA')} ر.س
+                              {currentProject.currentAmount?.toLocaleString('ar-SA') || '0'} ر.س
                             </span>
                             <span className="text-sm text-gray-500">
-                              من {currentProject.targetAmount.toLocaleString('ar-SA')} ر.س
+                              من {currentProject.targetAmount?.toLocaleString('ar-SA') || '0'} ر.س
                             </span>
                           </div>
                           
