@@ -110,7 +110,6 @@ export const demoBithrahProject = {
       date: new Date().toISOString(),
     },
   ],
-  is_demo: true,
 };
 
 /**
