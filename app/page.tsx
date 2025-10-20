@@ -25,44 +25,31 @@ export default function Home() {
   });
 
   useEffect(() => {
-    // Check if user is logged in and fetch real stats
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/session');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.user) {
-            setIsLoggedIn(true);
-          }
-        }
-
-        // Use static demo data for now to avoid database connection issues
-        setStats({
-          totalProjects: 1,
-          totalFunding: 45000,
-          activeUsers: 2,
-          successRate: 95
-        });
-        
-        // TODO: Re-enable stats API after fixing database connection
-        // const statsRes = await fetch('/api/stats/platform');
-        // if (statsRes.ok) {
-        //   const statsData = await statsRes.json();
-        //   if (statsData.success) {
-        //     setStats({
-        //       totalProjects: statsData.stats.totalProjects || 0,
-        //       totalFunding: statsData.stats.totalFunding || 0,
-        //       activeUsers: statsData.stats.activeUsers || 0,
-        //       successRate: statsData.stats.successRate || 0
-        //     });
-        //   }
-        // }
-      } catch (error) {
-        console.error(error);
-      }
-      setIsLoading(false);
-    };
-    checkAuth();
+    // Simplified initialization without API calls
+    // Use static demo data
+    setStats({
+      totalProjects: 1,
+      totalFunding: 45000,
+      activeUsers: 2,
+      successRate: 95
+    });
+    setIsLoading(false);
+    
+    // TODO: Re-enable auth check and stats API after fixing issues
+    // const checkAuth = async () => {
+    //   try {
+    //     const response = await fetch('/api/auth/session');
+    //     if (response.ok) {
+    //       const data = await response.json();
+    //       if (data.user) {
+    //         setIsLoggedIn(true);
+    //       }
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
+    // checkAuth();
   }, []);
 
   if (isLoading) {
