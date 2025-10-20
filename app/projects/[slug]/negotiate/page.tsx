@@ -1,5 +1,7 @@
 'use client';
 
+import { getNegotiationData, sendNegotiationMessage } from '@/app/actions/negotiations';
+
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -76,18 +78,7 @@ export default function NegotiatePage() {
   const fetchNegotiationData = async () => {
     try {
       setLoading(true);
-      // Get project ID first
-      const projectResponse = await fetch(`/api/projects/slug/${slug}`);
-      const projectData = await projectResponse.json();
-      
-      if (!projectData.success) {
-        setError('المشروع غير موجود');
-        setLoading(false);
-        return;
-      }
-      
-      const response = await fetch(`/api/projects/${projectData.project.id}/negotiate`);
-      const data = await response.json();
+      const data = await getNegotiationData(slug as string);
 
       if (data.success) {
         setProject(data.project);
