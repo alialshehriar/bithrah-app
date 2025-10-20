@@ -9,6 +9,7 @@ import {
   Handshake, FileText, Lock, CheckCircle, AlertCircle,
   Eye, Bookmark, Calendar, MapPin, ExternalLink
 } from 'lucide-react';
+import NegotiationSection from '@/components/NegotiationSection';
 
 interface Project {
   id: number;
@@ -49,6 +50,8 @@ interface Project {
     currentBackers: number;
     isActive: boolean;
   }>;
+  negotiationEnabled: boolean;
+  negotiationDeposit: number;
 }
 
 export default function ProjectDetailsPage({ params }: { params: { id: string } }) {
@@ -80,8 +83,55 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
   };
 
   const handleSupport = async (packageId: number) => {
-    // Handle support logic
-    alert('سيتم إضافة نظام الدعم قريباً');
+    try {
+      const pkg = project?.packages.find(p => p.id === packageId);
+      if (!pkg) return;
+
+      const response = await fetch(`/api/projects/${id}/support`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageId,
+          amount: parseFloat(pkg.amount),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert(`✅ تم الدعم بنجاح!\n\nالمبلغ: ${pkg.amount} ${project?.currency}\nالرصيد المتبقي: ${data.newBalance.toLocaleString()} ${project?.currency}`);
+        // Refresh project data
+        fetchProject();
+      } else {
+        alert(`❌ فشل الدعم: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Support error:', error);
+      alert('حدث خطأ أثناء عملية الدعم');
+    }
+  };
+
+  const handleStartNegotiation = async (proposedAmount: number) => {
+    try {
+      const response = await fetch(`/api/projects/${id}/negotiate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ proposedAmount }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert(`✅ تم بدء التفاوض بنجاح!\n\nمبلغ التأمين: ${data.negotiation.depositAmount} ${project?.currency}\nالرصيد المتبقي: ${data.newBalance.toLocaleString()} ${project?.currency}\n\nيمكنك الآن الوصول لجميع تفاصيل المشروع والتفاوض مع صاحب المشروع`);
+        // Refresh project data
+        fetchProject();
+      } else {
+        alert(`❌ فشل بدء التفاوض: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Negotiation error:', error);
+      alert('حدث خطأ أثناء بدء التفاوض');
+    }
   };
 
   if (loading) {
@@ -366,6 +416,20 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
             )}
           </div>
         </div>
+
+        {/* Negotiation Section */}
+        {project.negotiationEnabled && (
+          <div className="mt-12">
+            <NegotiationSection
+              projectId={project.id}
+              projectTitle={project.title}
+              negotiationEnabled={project.negotiationEnabled}
+              negotiationDeposit={parseFloat(project.negotiationDeposit?.toString() || '0')}
+              currency={project.currency}
+              onStartNegotiation={handleStartNegotiation}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
