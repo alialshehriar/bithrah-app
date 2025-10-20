@@ -380,16 +380,13 @@ export default function ProjectPage() {
               className="bg-white rounded-2xl shadow-xl p-6 sticky top-6"
             >
               <h3 className="text-xl font-bold text-gray-900 mb-6">اتخذ إجراء</h3>
-              
-              <Link
-                href={`/projects/${slug}/negotiate`}
+                            <Link
+                href={`/negotiate/${project.id}`}
                 className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2 mb-4"
               >
                 <Shield className="w-5 h-5" />
                 بدء التفاوض
-              </Link>
-
-              <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold py-4 px-6 rounded-xl transition-all mb-4 flex items-center justify-center gap-2">
+              </Link>        <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold py-4 px-6 rounded-xl transition-all mb-4 flex items-center justify-center gap-2">
                 <Heart className="w-5 h-5" />
                 دعم المشروع
               </button>
