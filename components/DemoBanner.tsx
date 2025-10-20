@@ -1,8 +1,9 @@
 'use client';
 
-import { AlertCircle, X, HelpCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Sparkles, X, Wallet, Info } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { demoConfig } from '@/lib/demo-config';
 
 export default function DemoBanner() {
   const [isVisible, setIsVisible] = useState(true);
@@ -10,37 +11,41 @@ export default function DemoBanner() {
   if (!isVisible) return null;
 
   return (
-    <div className="bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 border-b border-amber-200 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+    <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 border-b border-purple-700 sticky top-0 z-50 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1">
-            <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-              <AlertCircle size={20} className="text-amber-600" />
+            <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+              <Sparkles size={20} className="text-white" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-amber-900 text-sm sm:text-base">
-                🎯 نسخة تجريبية كاملة - جرّب بذرة قبل الإطلاق الرسمي
+              <p className="font-bold text-white text-sm sm:text-base flex items-center gap-2">
+                <span>تجربة بذرة التفاعلية الكاملة</span>
+                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 bg-white/20 rounded-full text-xs backdrop-blur-sm">
+                  <Wallet size={12} />
+                  100,000 ر.س
+                </span>
               </p>
-              <p className="text-amber-700 text-xs sm:text-sm mt-0.5">
-                جميع المعاملات افتراضية ولا تُخصم فعليًا • رصيدك التجريبي: 100,000 ريال
+              <p className="text-white/90 text-xs sm:text-sm mt-0.5">
+                {demoConfig.messages.demoNotice}
               </p>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
             <Link
-              href="/help/demo"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors text-sm font-medium"
+              href="/wallet"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all backdrop-blur-sm text-sm font-medium"
             >
-              <HelpCircle size={16} />
-              <span className="hidden sm:inline">المساعدة</span>
+              <Info size={16} />
+              <span className="hidden sm:inline">المحفظة</span>
             </Link>
             <button
               onClick={() => setIsVisible(false)}
-              className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors flex-shrink-0"
+              className="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0 backdrop-blur-sm"
               aria-label="إخفاء الإشعار"
             >
-              <X size={18} className="text-amber-700" />
+              <X size={18} className="text-white" />
             </button>
           </div>
         </div>
