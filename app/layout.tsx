@@ -3,6 +3,7 @@ import "./globals.css";
 import Footer from "@/components/layout/Footer";
 import { WalkthroughProvider } from "@/components/walkthrough/WalkthroughProvider";
 import { ToastProvider } from "@/components/ui/Toast";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "بذرة - بيئة الوساطة الذكية الأولى في السعودية",
@@ -57,12 +58,14 @@ export default function RootLayout({
         <meta name="theme-color" content="#14B8A6" />
       </head>
       <body className="antialiased">
-        <ToastProvider>
-          <WalkthroughProvider>
-            {children}
-            <Footer />
-          </WalkthroughProvider>
-        </ToastProvider>
+        <ErrorBoundary>
+          <ToastProvider>
+            <WalkthroughProvider>
+              {children}
+              <Footer />
+            </WalkthroughProvider>
+          </ToastProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
