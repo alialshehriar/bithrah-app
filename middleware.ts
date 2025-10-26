@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
-import { db } from '@/lib/db';
-import { ndaAgreements } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.NEXTAUTH_SECRET || 'bithrah-super-secret-key-2025-production-v1'
@@ -30,43 +27,52 @@ const protectedRoutes = [
   '/marketing',
 ];
 
-// Routes that allow viewing but require login for actions
-const publicViewRoutes = [
-  '/projects',
-];
-
 // Routes that are only for guests (not logged in)
 const guestOnlyRoutes = [
   '/auth/signin',
   '/auth/register',
 ];
 
-// Routes that don't require NDA
+// Routes that don't require NDA (only NDA page itself and auth routes)
 const ndaExemptRoutes = [
   '/nda-agreement',
   '/auth',
   '/api/auth',
+  '/api/nda',
 ];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow access to homepage without authentication
+  // Check if route is exempt from NDA
+  const isNDAExempt = ndaExemptRoutes.some((route) => pathname.startsWith(route));
+  
+  // Check NDA cookie for all non-exempt routes
+  if (!isNDAExempt) {
+    const ndaCookie = request.cookies.get('nda-accepted')?.value;
+    
+    // Redirect to NDA agreement if cookie not present
+    if (!ndaCookie || ndaCookie !== 'true') {
+      return NextResponse.redirect(new URL('/nda-agreement', request.url));
+    }
+  }
+
+  // Allow access to homepage with NDA
   if (pathname === '/') {
     return NextResponse.next();
   }
 
-  // Allow viewing projects list and details without authentication
+  // Allow viewing projects list and details with NDA
   if (pathname.startsWith('/projects')) {
     return NextResponse.next();
   }
 
-  // Allow viewing communities details without authentication
+  // Allow viewing communities details with NDA
   if (pathname.startsWith('/communities/')) {
     return NextResponse.next();
   }
 
-  // Allow viewing communities list without authentication
+  // Allow viewing communities list with NDA
   if (pathname === '/communities') {
     return NextResponse.next();
   }
@@ -106,43 +112,6 @@ export async function middleware(request: NextRequest) {
   // Redirect to home if trying to access guest-only route while authenticated
   if (isGuestOnlyRoute && isAuthenticated) {
     return NextResponse.redirect(new URL('/home', request.url));
-  }
-
-  // Check NDA status for authenticated users on protected routes
-  if (isAuthenticated && isProtectedRoute) {
-    // Check if route is exempt from NDA
-    const isNDAExempt = ndaExemptRoutes.some((route) => pathname.startsWith(route));
-    
-    if (!isNDAExempt) {
-      try {
-        // Decode token to get user ID
-        const { payload } = await jwtVerify(token!, JWT_SECRET);
-        const userId = payload.sub ? parseInt(payload.sub as string) : null;
-        
-        if (userId) {
-          // Check if user has signed NDA
-          const agreement = await db
-            .select()
-            .from(ndaAgreements)
-            .where(
-              and(
-                eq(ndaAgreements.userId, userId),
-                eq(ndaAgreements.status, 'active'),
-                eq(ndaAgreements.isValid, true),
-                eq(ndaAgreements.otpVerified, true)
-              )
-            )
-            .limit(1);
-          
-          // Redirect to NDA agreement if not signed
-          if (agreement.length === 0) {
-            return NextResponse.redirect(new URL('/nda-agreement', request.url));
-          }
-        }
-      } catch (error) {
-        console.error('Error checking NDA status:', error);
-      }
-    }
   }
 
   return NextResponse.next();

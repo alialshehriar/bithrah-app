@@ -128,6 +128,9 @@ export default function NDAgreementPage() {
       });
 
       if (result.success) {
+        // Set NDA cookie for 5 years
+        document.cookie = `nda-accepted=true; path=/; max-age=${60 * 60 * 24 * 365 * 5}; SameSite=Lax`;
+        
         setSuccess('تم التحقق بنجاح! جاري التوجيه...');
         setTimeout(() => {
           router.push('/');
