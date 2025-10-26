@@ -1124,29 +1124,134 @@ export const ndaAgreements = pgTable('nda_agreements', {
   userId: integer('user_id').references(() => users.id).notNull(),
   projectId: integer('project_id').references(() => projects.id),
   
+  // User Information (captured at signing time)
+  fullName: varchar('full_name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  phone: varchar('phone', { length: 50 }).notNull(),
+  
   // Agreement details
   agreementType: varchar('agreement_type', { length: 50 }).default('platform'), // platform, project
   agreementVersion: varchar('agreement_version', { length: 20 }).notNull(),
   agreementText: text('agreement_text').notNull(),
   
-  // Signature
+  // Signature Information
+  signatureType: varchar('signature_type', { length: 50 }).notNull(),
+  signatureData: text('signature_data'),
   signedAt: timestamp('signed_at').defaultNow().notNull(),
+  
+  // Verification Information
+  otpVerified: boolean('otp_verified').default(false).notNull(),
+  otpMethod: varchar('otp_method', { length: 20 }),
+  otpVerifiedAt: timestamp('otp_verified_at'),
+  
+  // Technical Details
   ipAddress: varchar('ip_address', { length: 50 }),
   userAgent: text('user_agent'),
-  signatureData: jsonb('signature_data'),
+  deviceType: varchar('device_type', { length: 50 }),
+  browser: varchar('browser', { length: 100 }),
+  os: varchar('os', { length: 100 }),
+  location: jsonb('location'),
   
-  // Status
+  // PDF Information
+  pdfGenerated: boolean('pdf_generated').default(false),
+  pdfUrl: varchar('pdf_url', { length: 500 }),
+  pdfStoragePath: varchar('pdf_storage_path', { length: 500 }),
+  pdfGeneratedAt: timestamp('pdf_generated_at'),
+  
+  // Email Delivery
+  emailSent: boolean('email_sent').default(false),
+  emailSentAt: timestamp('email_sent_at'),
+  emailSentTo: jsonb('email_sent_to'),
+  
+  // Status & Validity
   status: varchar('status', { length: 50 }).default('active'), // active, revoked, expired
+  isValid: boolean('is_valid').default(true).notNull(),
   revokedAt: timestamp('revoked_at'),
+  revokedBy: integer('revoked_by').references(() => users.id),
   revokedReason: text('revoked_reason'),
+  expiresAt: timestamp('expires_at'),
   
   // Metadata
   metadata: jsonb('metadata'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
   userIdx: index('nda_agreements_user_idx').on(table.userId),
   projectIdx: index('nda_agreements_project_idx').on(table.projectId),
+  emailIdx: index('nda_agreements_email_idx').on(table.email),
   statusIdx: index('nda_agreements_status_idx').on(table.status),
+  signedAtIdx: index('nda_agreements_signed_at_idx').on(table.signedAt),
+}));
+
+// OTP Verifications for NDA
+export const ndaOtpVerifications = pgTable('nda_otp_verifications', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  
+  // Reference
+  ndaAgreementId: integer('nda_agreement_id').references(() => ndaAgreements.id),
+  userId: integer('user_id').references(() => users.id),
+  
+  // Contact Information
+  email: varchar('email', { length: 255 }),
+  phone: varchar('phone', { length: 50 }),
+  
+  // OTP Details
+  otpCode: varchar('otp_code', { length: 10 }).notNull(),
+  otpMethod: varchar('otp_method', { length: 20 }).notNull(),
+  otpPurpose: varchar('otp_purpose', { length: 50 }).notNull(),
+  
+  // Status
+  status: varchar('status', { length: 50 }).default('pending').notNull(),
+  verifiedAt: timestamp('verified_at'),
+  expiresAt: timestamp('expires_at').notNull(),
+  
+  // Attempts
+  attempts: integer('attempts').default(0).notNull(),
+  maxAttempts: integer('max_attempts').default(3).notNull(),
+  
+  // Technical Details
+  ipAddress: varchar('ip_address', { length: 50 }),
+  userAgent: text('user_agent'),
+  
+  // Metadata
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  ndaAgreementIdIdx: index('nda_otp_nda_agreement_id_idx').on(table.ndaAgreementId),
+  emailIdx: index('nda_otp_email_idx').on(table.email),
+  phoneIdx: index('nda_otp_phone_idx').on(table.phone),
+  statusIdx: index('nda_otp_status_idx').on(table.status),
+}));
+
+// NDA Templates
+export const ndaTemplates = pgTable('nda_templates', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  
+  // Version Information
+  version: varchar('version', { length: 50 }).notNull().unique(),
+  title: varchar('title', { length: 255 }).notNull(),
+  
+  // Content
+  contentArabic: text('content_arabic').notNull(),
+  contentEnglish: text('content_english'),
+  
+  // Status
+  isActive: boolean('is_active').default(false).notNull(),
+  isDefault: boolean('is_default').default(false).notNull(),
+  
+  // Metadata
+  createdBy: integer('created_by').references(() => users.id),
+  notes: text('notes'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  activatedAt: timestamp('activated_at'),
+}, (table) => ({
+  versionIdx: index('nda_templates_version_idx').on(table.version),
+  isActiveIdx: index('nda_templates_is_active_idx').on(table.isActive),
 }));
 
 export const projectAccessLogs = pgTable('project_access_logs', {
@@ -1319,5 +1424,8 @@ export const supportPackages = pgTable('support_packages', {
   projectIdx: index('support_packages_project_idx').on(table.projectId),
   tierIdx: index('support_packages_tier_idx').on(table.tier),
 }));
+
+
+
 
 

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
+import { db } from '@/lib/db';
+import { ndaAgreements } from '@/lib/db/schema';
+import { eq, and } from 'drizzle-orm';
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.NEXTAUTH_SECRET || 'bithrah-super-secret-key-2025-production-v1'
@@ -36,6 +39,13 @@ const publicViewRoutes = [
 const guestOnlyRoutes = [
   '/auth/signin',
   '/auth/register',
+];
+
+// Routes that don't require NDA
+const ndaExemptRoutes = [
+  '/nda-agreement',
+  '/auth',
+  '/api/auth',
 ];
 
 export async function middleware(request: NextRequest) {
@@ -96,6 +106,43 @@ export async function middleware(request: NextRequest) {
   // Redirect to home if trying to access guest-only route while authenticated
   if (isGuestOnlyRoute && isAuthenticated) {
     return NextResponse.redirect(new URL('/home', request.url));
+  }
+
+  // Check NDA status for authenticated users on protected routes
+  if (isAuthenticated && isProtectedRoute) {
+    // Check if route is exempt from NDA
+    const isNDAExempt = ndaExemptRoutes.some((route) => pathname.startsWith(route));
+    
+    if (!isNDAExempt) {
+      try {
+        // Decode token to get user ID
+        const { payload } = await jwtVerify(token!, JWT_SECRET);
+        const userId = payload.sub ? parseInt(payload.sub as string) : null;
+        
+        if (userId) {
+          // Check if user has signed NDA
+          const agreement = await db
+            .select()
+            .from(ndaAgreements)
+            .where(
+              and(
+                eq(ndaAgreements.userId, userId),
+                eq(ndaAgreements.status, 'active'),
+                eq(ndaAgreements.isValid, true),
+                eq(ndaAgreements.otpVerified, true)
+              )
+            )
+            .limit(1);
+          
+          // Redirect to NDA agreement if not signed
+          if (agreement.length === 0) {
+            return NextResponse.redirect(new URL('/nda-agreement', request.url));
+          }
+        }
+      } catch (error) {
+        console.error('Error checking NDA status:', error);
+      }
+    }
   }
 
   return NextResponse.next();
