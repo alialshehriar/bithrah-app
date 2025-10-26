@@ -47,7 +47,7 @@ export async function middleware(request: NextRequest) {
   // Check if route is exempt from NDA
   const isNDAExempt = ndaExemptRoutes.some((route) => pathname.startsWith(route));
   
-  // Check NDA cookie for all non-exempt routes
+  // Check NDA cookie for all non-exempt routes (including homepage)
   if (!isNDAExempt) {
     const ndaCookie = request.cookies.get('nda-accepted')?.value;
     
@@ -55,11 +55,6 @@ export async function middleware(request: NextRequest) {
     if (!ndaCookie || ndaCookie !== 'true') {
       return NextResponse.redirect(new URL('/nda-agreement', request.url));
     }
-  }
-
-  // Allow access to homepage with NDA
-  if (pathname === '/') {
-    return NextResponse.next();
   }
 
   // Allow viewing projects list and details with NDA
