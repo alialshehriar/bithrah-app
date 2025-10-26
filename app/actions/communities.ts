@@ -107,7 +107,7 @@ export async function createCommunityPost(communityId: number, content: string, 
       userId: userId,
       content,
       createdAt: new Date(),
-    });
+    } as any);
 
     return { success: true };
   } catch (error) {

@@ -167,12 +167,12 @@ export async function revokeNDAgreement(id: number, adminId: number, reason: str
       .update(ndaAgreements)
       .set({
         isValid: false,
-        status: 'revoked',
+        status: 'revoked' as any,
         revokedBy: adminId,
         revokedAt: new Date(),
         revokedReason: reason,
         updatedAt: new Date(),
-      })
+      } as any)
       .where(eq(ndaAgreements.id, id));
 
     return { success: true };
@@ -213,7 +213,7 @@ export async function createNDATemplate(data: {
     if (data.isDefault) {
       await db
         .update(ndaTemplates)
-        .set({ isDefault: false })
+        .set({ isDefault: false } as any)
         .where(eq(ndaTemplates.isDefault, true));
     }
 
@@ -221,7 +221,7 @@ export async function createNDATemplate(data: {
     if (data.isActive) {
       await db
         .update(ndaTemplates)
-        .set({ isActive: false })
+        .set({ isActive: false } as any)
         .where(eq(ndaTemplates.isActive, true));
     }
 
@@ -230,7 +230,7 @@ export async function createNDATemplate(data: {
       .values({
         ...data,
         activatedAt: data.isActive ? new Date() : null,
-      })
+      } as any)
       .returning();
 
     return { success: true, template };
@@ -257,7 +257,7 @@ export async function updateNDATemplate(
     if (data.isDefault) {
       await db
         .update(ndaTemplates)
-        .set({ isDefault: false })
+        .set({ isDefault: false } as any)
         .where(eq(ndaTemplates.isDefault, true));
     }
 
@@ -265,7 +265,7 @@ export async function updateNDATemplate(
     if (data.isActive) {
       await db
         .update(ndaTemplates)
-        .set({ isActive: false })
+        .set({ isActive: false } as any)
         .where(eq(ndaTemplates.isActive, true));
     }
 
@@ -275,7 +275,7 @@ export async function updateNDATemplate(
         ...data,
         activatedAt: data.isActive ? new Date() : undefined,
         updatedAt: new Date(),
-      })
+      } as any)
       .where(eq(ndaTemplates.id, id));
 
     return { success: true };

@@ -119,7 +119,7 @@ export async function createNDAAgreement(data: {
         ...clientInfo,
         status: 'active',
         isValid: false, // Will be set to true after OTP verification
-      })
+      } as any)
       .returning();
 
     return { success: true, agreementId: agreement.id };
@@ -157,7 +157,7 @@ export async function sendNDAOTP(data: {
       expiresAt,
       ipAddress: clientInfo.ipAddress,
       userAgent: clientInfo.userAgent,
-    });
+    } as any);
 
     // Send OTP via email
     if (data.method === 'email' || data.method === 'both') {
@@ -210,7 +210,7 @@ export async function verifyNDAOTP(data: {
     if (new Date() > verification.expiresAt) {
       await db
         .update(ndaOtpVerifications)
-        .set({ status: 'expired' })
+        .set({ status: 'expired' } as any)
         .where(eq(ndaOtpVerifications.id, verification.id));
       return { success: false, error: 'انتهت صلاحية رمز التحقق' };
     }
@@ -219,7 +219,7 @@ export async function verifyNDAOTP(data: {
     if (verification.attempts >= verification.maxAttempts) {
       await db
         .update(ndaOtpVerifications)
-        .set({ status: 'failed' })
+        .set({ status: 'failed' } as any)
         .where(eq(ndaOtpVerifications.id, verification.id));
       return { success: false, error: 'تم تجاوز الحد الأقصى لمحاولات التحقق' };
     }
@@ -228,7 +228,7 @@ export async function verifyNDAOTP(data: {
     if (verification.otpCode !== hashedOTP) {
       await db
         .update(ndaOtpVerifications)
-        .set({ attempts: verification.attempts + 1 })
+        .set({ attempts: verification.attempts + 1 } as any)
         .where(eq(ndaOtpVerifications.id, verification.id));
       return { success: false, error: 'رمز التحقق غير صحيح' };
     }
@@ -239,7 +239,7 @@ export async function verifyNDAOTP(data: {
       .set({
         status: 'verified',
         verifiedAt: new Date(),
-      })
+      } as any)
       .where(eq(ndaOtpVerifications.id, verification.id));
 
     // Get agreement details
@@ -317,7 +317,7 @@ export async function verifyNDAOTP(data: {
           emailSentAt: new Date(),
           emailSentTo: emailRecipients,
           updatedAt: new Date(),
-        })
+        } as any)
         .where(eq(ndaAgreements.id, data.agreementId));
     } catch (pdfError) {
       console.error('Error generating PDF:', pdfError);
@@ -330,7 +330,7 @@ export async function verifyNDAOTP(data: {
           otpVerifiedAt: new Date(),
           isValid: true,
           updatedAt: new Date(),
-        })
+        } as any)
         .where(eq(ndaAgreements.id, data.agreementId));
     }
 
