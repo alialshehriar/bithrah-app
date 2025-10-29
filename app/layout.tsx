@@ -4,6 +4,7 @@ import Footer from "@/components/layout/Footer";
 import { WalkthroughProvider } from "@/components/walkthrough/WalkthroughProvider";
 import { ToastProvider } from "@/components/ui/Toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import NDAProtection from "@/components/NDAProtection";
 
 export const metadata: Metadata = {
   title: "بذرة - بيئة الوساطة الذكية الأولى في السعودية",
@@ -61,8 +62,10 @@ export default function RootLayout({
         <ErrorBoundary>
           <ToastProvider>
             <WalkthroughProvider>
-              {children}
-              <Footer />
+              <NDAProtection>
+                {children}
+                <Footer />
+              </NDAProtection>
             </WalkthroughProvider>
           </ToastProvider>
         </ErrorBoundary>
