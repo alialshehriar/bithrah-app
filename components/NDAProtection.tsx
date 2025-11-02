@@ -8,6 +8,7 @@ export default function NDAProtection({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const [isChecking, setIsChecking] = useState(true);
   const [hasAccepted, setHasAccepted] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
     // Routes that don't require NDA
@@ -26,22 +27,25 @@ export default function NDAProtection({ children }: { children: React.ReactNode 
     const hasNDA = ndaCookie?.includes('true');
 
     if (!hasNDA) {
-      // Redirect to NDA page
-      router.push('/nda-agreement');
+      // Set redirect flag and redirect to NDA page
+      setShouldRedirect(true);
+      router.replace('/nda-agreement');
+      return;
     } else {
       setHasAccepted(true);
+      setIsChecking(false);
     }
-    
-    setIsChecking(false);
   }, [pathname, router]);
 
-  // Show loading while checking
-  if (isChecking) {
+  // Show loading while checking or redirecting
+  if (isChecking || shouldRedirect) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">جاري التحميل...</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            {shouldRedirect ? 'جاري التوجيه...' : 'جاري التحميل...'}
+          </p>
         </div>
       </div>
     );
