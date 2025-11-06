@@ -11,18 +11,31 @@ interface NegotiationDataResult {
   messages?: any[];
 }
 
-export async function getNegotiationData(projectSlug: string): Promise<NegotiationDataResult> {
+export async function getNegotiationData(projectSlugOrId: string): Promise<NegotiationDataResult> {
   try {
+    // Check if projectSlugOrId is a number (ID) or string (slug)
+    const isNumeric = /^\d+$/.test(projectSlugOrId);
+    
     // Get project with raw SQL
-    const projectResult = await db.execute(sql`
-      SELECT 
-        p.id, p.title, p.slug, p.funding_goal, p.current_funding, p.creator_id,
-        u.name as owner_name, u.avatar as owner_avatar
-      FROM projects p
-      LEFT JOIN users u ON p.creator_id = u.id
-      WHERE p.slug = ${projectSlug}
-      LIMIT 1
-    `);
+    const projectResult = isNumeric
+      ? await db.execute(sql`
+          SELECT 
+            p.id, p.title, p.slug, p.funding_goal, p.current_funding, p.creator_id,
+            u.name as owner_name, u.avatar as owner_avatar
+          FROM projects p
+          LEFT JOIN users u ON p.creator_id = u.id
+          WHERE p.id = ${parseInt(projectSlugOrId)}
+          LIMIT 1
+        `)
+      : await db.execute(sql`
+          SELECT 
+            p.id, p.title, p.slug, p.funding_goal, p.current_funding, p.creator_id,
+            u.name as owner_name, u.avatar as owner_avatar
+          FROM projects p
+          LEFT JOIN users u ON p.creator_id = u.id
+          WHERE p.slug = ${projectSlugOrId}
+          LIMIT 1
+        `);
 
     if (projectResult.rows.length === 0) {
       return {
