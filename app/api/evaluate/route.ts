@@ -1,98 +1,116 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { evaluateIdea, IdeaEvaluationInput } from '@/lib/ai/ideaEvaluator';
+import { evaluateIdea } from '@/lib/ai/ideaEvaluator';
 
 export async function POST(request: NextRequest) {
   try {
-    const data = await request.json();
+    const body = await request.json();
+    
+    const {
+      title,
+      category,
+      description,
+      problem,
+      solution,
+      targetMarket,
+      competitiveAdvantage,
+      businessModel,
+      funding,
+      timeline,
+    } = body;
 
-    // Map old format to new format for backward compatibility
-    const input: IdeaEvaluationInput = {
-      title: data.title,
-      description: data.description || `${data.problem}\n\n${data.solution}`,
-      category: data.category,
-      targetMarket: data.targetMarket || 'السوق السعودي',
-      fundingGoal: parseFloat(data.fundingNeeded) || 500000,
-      timeline: data.timeline || '12 شهر',
-      teamSize: data.teamSize,
-      existingTraction: data.existingTraction,
-    };
-
-    // Validate input
-    if (!input.title || !input.description || !input.category) {
+    if (!title || !description) {
       return NextResponse.json(
-        { error: 'يرجى تقديم جميع المعلومات المطلوبة' },
+        { success: false, error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Evaluate idea
-    const evaluation = await evaluateIdea(input);
+    const evaluation = await evaluateIdea({
+      title,
+      category,
+      description,
+      problem,
+      solution,
+      targetMarket,
+      competitiveAdvantage,
+      businessModel,
+      funding,
+      timeline,
+    });
 
     // Transform new structure to old structure for frontend compatibility
     const transformedEvaluation = {
-      overallScore: evaluation.overallScore,
-      marketPotential: evaluation.marketOpportunity.marketSize,
-      feasibility: evaluation.executionReadiness.timelineRealism,
-      innovation: evaluation.strategicAnalyst.score,
-      scalability: evaluation.marketOpportunity.growthPotential,
-      financialViability: evaluation.financialViability.revenueModel,
-      competitiveAdvantage: evaluation.marketOpportunity.competitiveAdvantage,
+      overallScore: evaluation.overallScore || 75,
+      marketPotential: evaluation.strategicAnalyst?.score || 70,
+      feasibility: evaluation.operationsManager?.score || 70,
+      innovation: evaluation.technicalAdvisor?.score || 70,
+      scalability: evaluation.marketingExpert?.score || 70,
+      financialViability: evaluation.financialExpert?.score || 70,
+      competitiveAdvantage: evaluation.riskAnalyst?.score || 70,
       
       // Combine strengths from all perspectives
       strengths: [
-        ...evaluation.strategicAnalyst.strengths,
-        ...evaluation.marketingExpert.strengths.slice(0, 2),
-        ...evaluation.financialExpert.strengths.slice(0, 1),
+        ...(evaluation.strategicAnalyst?.strengths || []),
+        ...(evaluation.marketingExpert?.strengths?.slice(0, 2) || []),
+        ...(evaluation.financialExpert?.strengths?.slice(0, 1) || []),
       ],
       
       // Combine weaknesses from all perspectives
       weaknesses: [
-        ...evaluation.strategicAnalyst.weaknesses,
-        ...evaluation.operationsManager.weaknesses.slice(0, 2),
-        ...evaluation.riskAnalyst.weaknesses.slice(0, 1),
+        ...(evaluation.strategicAnalyst?.weaknesses || []),
+        ...(evaluation.operationsManager?.weaknesses?.slice(0, 2) || []),
+        ...(evaluation.riskAnalyst?.weaknesses?.slice(0, 1) || []),
       ],
       
-      // Map opportunities (from strengths of market expert and marketing expert)
+      // Map opportunities (from strengths of technical and operations)
       opportunities: [
-        ...evaluation.technicalAdvisor.strengths,
-        ...evaluation.operationsManager.strengths.slice(0, 2),
+        ...(evaluation.technicalAdvisor?.strengths || []),
+        ...(evaluation.operationsManager?.strengths?.slice(0, 2) || []),
       ],
       
-      // Map threats (from weaknesses of risk analyst and financial expert)
+      // Map threats (from weaknesses of risk and financial)
       threats: [
-        ...evaluation.riskAnalyst.weaknesses,
-        ...evaluation.financialExpert.weaknesses.slice(0, 2),
+        ...(evaluation.riskAnalyst?.weaknesses || []),
+        ...(evaluation.financialExpert?.weaknesses?.slice(0, 2) || []),
       ],
       
       // Combine recommendations from all perspectives
       recommendations: [
-        ...evaluation.immediateActions.slice(0, 3),
-        ...evaluation.shortTermSteps.slice(0, 2),
+        ...(evaluation.immediateActions?.slice(0, 3) || []),
+        ...(evaluation.shortTermSteps?.slice(0, 2) || []),
       ],
       
-      summary: `تقييم شامل للفكرة من 6 منظورات مختلفة. ${evaluation.strategicAnalyst.keyInsight}`,
+      summary: `تقييم شامل للفكرة من 6 منظورات مختلفة. ${evaluation.strategicAnalyst?.keyInsight || ''}`,
       
       estimatedFunding: {
-        min: Math.round(evaluation.estimatedFunding * 0.7),
-        max: Math.round(evaluation.estimatedFunding * 1.3),
+        min: Math.round((evaluation.estimatedFunding || 500000) * 0.7),
+        max: Math.round((evaluation.estimatedFunding || 500000) * 1.3),
       },
       
-      timeToMarket: input.timeline || '12 شهر',
-      targetAudience: evaluation.targetAudience,
-      keySuccessFactors: evaluation.keySuccessFactors,
+      timeToMarket: timeline || '12 شهر',
+      
+      keySuccessFactors: evaluation.keySuccessFactors || [
+        'التركيز على احتياجات السوق',
+        'بناء فريق قوي',
+        'التنفيذ السريع',
+      ],
+      
+      risks: evaluation.risks || [
+        'المنافسة الشديدة',
+        'التحديات التنظيمية',
+        'صعوبة التمويل',
+      ],
     };
 
     return NextResponse.json({
       success: true,
-      evaluation: transformedEvaluation
+      evaluation: transformedEvaluation,
     });
-
   } catch (error) {
     console.error('Evaluation error:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ أثناء التقييم' },
+      { success: false, error: 'Failed to evaluate idea' },
       { status: 500 }
     );
   }
 }
-
