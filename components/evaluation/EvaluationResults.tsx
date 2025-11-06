@@ -120,17 +120,21 @@ export default function EvaluationResults({ evaluation, ideaTitle, onBack }: Pro
                 </div>
               </div>
             </div>
-            <p className="text-lg text-gray-700 mb-4">
-              <span className="font-bold">احتمالية النجاح:</span> {evaluation.successProbability}%
-            </p>
-            <div className={`inline-block px-6 py-3 rounded-full font-bold ${
-              evaluation.investmentRecommendation.includes('موصى به') ? 'bg-green-100 text-green-800' :
-              evaluation.investmentRecommendation.includes('محتمل') ? 'bg-blue-100 text-blue-800' :
-              evaluation.investmentRecommendation.includes('تطوير') ? 'bg-yellow-100 text-yellow-800' :
-              'bg-red-100 text-red-800'
-            }`}>
-              {evaluation.investmentRecommendation}
-            </div>
+            {evaluation.successProbability && (
+              <p className="text-lg text-gray-700 mb-4">
+                <span className="font-bold">احتمالية النجاح:</span> {evaluation.successProbability}%
+              </p>
+            )}
+            {evaluation.investmentRecommendation && (
+              <div className={`inline-block px-6 py-3 rounded-full font-bold ${
+                evaluation.investmentRecommendation.includes('موصى به') ? 'bg-green-100 text-green-800' :
+                evaluation.investmentRecommendation.includes('محتمل') ? 'bg-blue-100 text-blue-800' :
+                evaluation.investmentRecommendation.includes('تطوير') ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {evaluation.investmentRecommendation}
+              </div>
+            )}
           </div>
         </motion.div>
 
