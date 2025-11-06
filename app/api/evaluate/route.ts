@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       // Combine strengths from all perspectives
       strengths: [
         ...evaluation.strategicAnalyst.strengths,
-        ...evaluation.saudiMarketExpert.strengths.slice(0, 2),
+        ...evaluation.marketingExpert.strengths.slice(0, 2),
         ...evaluation.financialExpert.strengths.slice(0, 1),
       ],
       
@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
       
       // Map opportunities (from strengths of market expert and marketing expert)
       opportunities: [
-        ...evaluation.saudiMarketExpert.strengths,
-        ...evaluation.marketingExpert.strengths.slice(0, 2),
+        ...evaluation.technicalAdvisor.strengths,
+        ...evaluation.operationsManager.strengths.slice(0, 2),
       ],
       
       // Map threats (from weaknesses of risk analyst and financial expert)
