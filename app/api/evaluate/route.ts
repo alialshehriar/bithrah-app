@@ -3,7 +3,9 @@ import { evaluateIdea } from '@/lib/ai/ideaEvaluator';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== AI Evaluation API Called ===');
     const body = await request.json();
+    console.log('Request body received:', JSON.stringify(body).substring(0, 200));
     
     const {
       title,
@@ -25,6 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('Calling evaluateIdea with params...');
     const evaluation = await evaluateIdea({
       title,
       category,
@@ -38,6 +41,9 @@ export async function POST(request: NextRequest) {
       timeline,
     });
 
+    console.log('Evaluation completed, transforming data...');
+    console.log('Evaluation keys:', Object.keys(evaluation || {}));
+    
     // Transform new structure to old structure for frontend compatibility
     const transformedEvaluation = {
       overallScore: evaluation.overallScore || 75,
@@ -106,10 +112,20 @@ export async function POST(request: NextRequest) {
       success: true,
       evaluation: transformedEvaluation,
     });
-  } catch (error) {
-    console.error('Evaluation error:', error);
+  } catch (error: any) {
+    console.error('=== AI Evaluation API Error ===');
+    console.error('Error type:', error?.constructor?.name);
+    console.error('Error message:', error?.message);
+    console.error('Error stack:', error?.stack);
+    console.error('Full error:', error);
+    
     return NextResponse.json(
-      { success: false, error: 'Failed to evaluate idea' },
+      { 
+        success: false, 
+        error: 'Failed to evaluate idea',
+        details: error?.message || 'Unknown error',
+        errorType: error?.constructor?.name || 'Unknown'
+      },
       { status: 500 }
     );
   }
