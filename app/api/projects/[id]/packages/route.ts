@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { supportPackages } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
@@ -14,7 +14,7 @@ export async function GET(
       .select()
       .from(supportPackages)
       .where(eq(supportPackages.projectId, projectId))
-      .orderBy(supportPackages.amount);
+      .orderBy(asc(supportPackages.amount));
 
     return NextResponse.json({
       success: true,
