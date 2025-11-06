@@ -57,7 +57,7 @@ export default function DetailedEvaluationForm({ onBack, onSubmit }: Props) {
 
   const handleNext = () => {
     if (!isStepComplete()) {
-      showToast('الرجاء إكمال جميع الحقول المطلوبة', 'error');
+      showToast({ type: 'error', title: 'الرجاء إكمال جميع الحقول المطلوبة' });
       return;
     }
     setStep(2);
@@ -65,7 +65,7 @@ export default function DetailedEvaluationForm({ onBack, onSubmit }: Props) {
 
   const handleSubmit = async () => {
     if (!isStepComplete()) {
-      showToast('الرجاء إكمال جميع الحقول المطلوبة', 'error');
+      showToast({ type: 'error', title: 'الرجاء إكمال جميع الحقول المطلوبة' });
       return;
     }
 
@@ -73,7 +73,7 @@ export default function DetailedEvaluationForm({ onBack, onSubmit }: Props) {
     try {
       await onSubmit(formData);
     } catch (error) {
-      showToast('حدث خطأ أثناء التقييم', 'error');
+      showToast({ type: 'error', title: 'حدث خطأ أثناء التقييم' });
       setLoading(false);
     }
   };

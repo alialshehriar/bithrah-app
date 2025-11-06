@@ -45,15 +45,15 @@ export default function QuickEvaluationForm({ onBack, onSubmit }: Props) {
 
     // Validation
     if (!formData.idea.trim()) {
-      showToast('الرجاء إدخال فكرتك', 'error');
+      showToast({ type: 'error', title: 'الرجاء إدخال فكرتك' });
       return;
     }
     if (!formData.problem.trim()) {
-      showToast('الرجاء إدخال المشكلة التي تحلها', 'error');
+      showToast({ type: 'error', title: 'الرجاء إدخال المشكلة التي تحلها' });
       return;
     }
     if (!formData.targetAudience.trim()) {
-      showToast('الرجاء إدخال الجمهور المستهدف', 'error');
+      showToast({ type: 'error', title: 'الرجاء إدخال الجمهور المستهدف' });
       return;
     }
 
@@ -61,7 +61,7 @@ export default function QuickEvaluationForm({ onBack, onSubmit }: Props) {
     try {
       await onSubmit(formData);
     } catch (error) {
-      showToast('حدث خطأ أثناء إرسال النموذج', 'error');
+      showToast({ type: 'error', title: 'حدث خطأ أثناء إرسال النموذج' });
       setLoading(false);
     }
   };
