@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       overallScore: evaluation.overallScore || 75,
       marketPotential: evaluation.strategicAnalyst?.score || 70,
       feasibility: evaluation.operationsManager?.score || 70,
-      innovation: evaluation.technicalAdvisor?.score || 70,
+      innovation: evaluation.saudiMarketExpert?.score || 70,
       scalability: evaluation.marketingExpert?.score || 70,
       financialViability: evaluation.financialExpert?.score || 70,
       competitiveAdvantage: evaluation.riskAnalyst?.score || 70,
@@ -67,9 +67,9 @@ export async function POST(request: NextRequest) {
         ...(evaluation.riskAnalyst?.weaknesses?.slice(0, 1) || []),
       ],
       
-      // Map opportunities (from strengths of technical and operations)
+      // Map opportunities (from strengths of saudi market and operations)
       opportunities: [
-        ...(evaluation.technicalAdvisor?.strengths || []),
+        ...(evaluation.saudiMarketExpert?.strengths || []),
         ...(evaluation.operationsManager?.strengths?.slice(0, 2) || []),
       ],
       
