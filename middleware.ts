@@ -33,29 +33,8 @@ const guestOnlyRoutes = [
   '/auth/register',
 ];
 
-// Routes that don't require NDA (only NDA page itself and auth routes)
-const ndaExemptRoutes = [
-  '/nda-agreement',
-  '/auth',
-  '/api/auth',
-  '/api/nda',
-];
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Check if route is exempt from NDA
-  const isNDAExempt = ndaExemptRoutes.some((route) => pathname.startsWith(route));
-  
-  // Check NDA cookie for all non-exempt routes (including homepage)
-  if (!isNDAExempt) {
-    const ndaCookie = request.cookies.get('nda-accepted')?.value;
-    
-    // Redirect to NDA agreement if cookie not present
-    if (!ndaCookie || ndaCookie !== 'true') {
-      return NextResponse.redirect(new URL('/nda-agreement', request.url));
-    }
-  }
 
   // Allow viewing projects list and details with NDA
   if (pathname.startsWith('/projects')) {
