@@ -45,6 +45,20 @@ export interface ExecutionReadiness {
   criticalRisks: number;
 }
 
+export interface ImplementationPhase {
+  phase: string;
+  duration: string;
+  objectives: string[];
+  deliverables: string[];
+  resources: string[];
+}
+
+export interface SuccessExample {
+  name: string;
+  description: string;
+  relevance: string;
+}
+
 export interface IdeaEvaluation {
   // Overall
   overallScore: number;
@@ -73,6 +87,11 @@ export interface IdeaEvaluation {
   estimatedFunding: number;
   targetAudience: string;
   keySuccessFactors: string[];
+  
+  // New Enhanced Fields
+  practicalSolutions: string[];
+  implementationPlan: ImplementationPhase[];
+  successfulExamples: SuccessExample[];
 }
 
 export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEvaluation> {
@@ -118,9 +137,20 @@ ${input.existingTraction ? `- الإنجازات الحالية: ${input.existin
 3. **جاهزية التنفيذ**: (قوة الفريق، واقعية الجدول الزمني، المتطلبات، المخاطر الحرجة) - كل عنصر من 100
 
 **توصيات مرحلية:**
-- **فورية** (3-5 إجراءات يجب اتخاذها الآن)
-- **قصيرة المدى** (3-5 خطوات للأشهر القادمة)
-- **طويلة المدى** (3-5 رؤية استراتيجية)
+- **فورية** (3-5 إجراءات يجب اتخاذها الآن - كن محدداً وعملياً)
+- **قصيرة المدى** (3-5 خطوات للأشهر القادمة - مع timeline تقريبي)
+- **طويلة المدى** (3-5 رؤية استراتيجية - مع أهداف قابلة للقياس)
+
+**حلول عملية لتطوير الفكرة:**
+- قدم 5-7 حلول عملية محددة لتحسين الفكرة
+- كل حل يجب أن يكون قابل للتنفيذ ومحدد
+- ركز على الحلول التي تعالج نقاط الضعف المحددة
+- اقترح أدوات أو منصات محددة يمكن استخدامها
+
+**خطة تنفيذية مقترحة:**
+- قسم الخطة إلى 3 مراحل رئيسية
+- لكل مرحلة: الهدف، المدة الزمنية، المخرجات المتوقعة
+- حدد الموارد المطلوبة لكل مرحلة
 
 **معلومات إضافية:**
 - التقييم الإجمالي من 100
@@ -129,6 +159,9 @@ ${input.existingTraction ? `- الإنجازات الحالية: ${input.existin
 - التمويل المقدر المناسب
 - الجمهور المستهدف
 - عوامل النجاح الرئيسية (3-5 عوامل)
+- حلول عملية لتطوير الفكرة (5-7 حلول محددة)
+- خطة تنفيذية مقترحة (3 مراحل مع timeline)
+- أمثلة لمشاريع ناجحة مشابهة في السعودية أو الخليج (2-3 أمثلة)
 
 **ملاحظات مهمة:**
 - كن صادقاً وواقعياً في التقييمات (لا مبالغة)
@@ -207,7 +240,24 @@ ${input.existingTraction ? `- الإنجازات الحالية: ${input.existin
   "longTermVision": string[],
   "estimatedFunding": number,
   "targetAudience": string,
-  "keySuccessFactors": string[]
+  "keySuccessFactors": string[],
+  "practicalSolutions": string[],
+  "implementationPlan": [
+    {
+      "phase": string,
+      "duration": string,
+      "objectives": string[],
+      "deliverables": string[],
+      "resources": string[]
+    }
+  ],
+  "successfulExamples": [
+    {
+      "name": string,
+      "description": string,
+      "relevance": string
+    }
+  ]
 }`;
 
     const response = await openai.chat.completions.create({
