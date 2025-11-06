@@ -40,76 +40,13 @@ export async function POST(request: NextRequest) {
       timeline,
     });
 
-    console.log('Evaluation completed, transforming data...');
+    console.log('Evaluation completed!');
     console.log('Evaluation keys:', Object.keys(evaluation || {}));
     
-    // Transform new structure to old structure for frontend compatibility
-    const transformedEvaluation = {
-      overallScore: evaluation.overallScore || 75,
-      marketPotential: evaluation.strategicAnalyst?.score || 70,
-      feasibility: evaluation.operationsManager?.score || 70,
-      innovation: evaluation.saudiMarketExpert?.score || 70,
-      scalability: evaluation.marketingExpert?.score || 70,
-      financialViability: evaluation.financialExpert?.score || 70,
-      competitiveAdvantage: evaluation.riskAnalyst?.score || 70,
-      
-      // Combine strengths from all perspectives
-      strengths: [
-        ...(evaluation.strategicAnalyst?.strengths || []),
-        ...(evaluation.marketingExpert?.strengths?.slice(0, 2) || []),
-        ...(evaluation.financialExpert?.strengths?.slice(0, 1) || []),
-      ],
-      
-      // Combine weaknesses from all perspectives
-      weaknesses: [
-        ...(evaluation.strategicAnalyst?.weaknesses || []),
-        ...(evaluation.operationsManager?.weaknesses?.slice(0, 2) || []),
-        ...(evaluation.riskAnalyst?.weaknesses?.slice(0, 1) || []),
-      ],
-      
-      // Map opportunities (from strengths of saudi market and operations)
-      opportunities: [
-        ...(evaluation.saudiMarketExpert?.strengths || []),
-        ...(evaluation.operationsManager?.strengths?.slice(0, 2) || []),
-      ],
-      
-      // Map threats (from weaknesses of risk and financial)
-      threats: [
-        ...(evaluation.riskAnalyst?.weaknesses || []),
-        ...(evaluation.financialExpert?.weaknesses?.slice(0, 2) || []),
-      ],
-      
-      // Combine recommendations from all perspectives
-      recommendations: [
-        ...(evaluation.immediateActions?.slice(0, 3) || []),
-        ...(evaluation.shortTermSteps?.slice(0, 2) || []),
-      ],
-      
-      summary: `تقييم شامل للفكرة من 6 منظورات مختلفة. ${evaluation.strategicAnalyst?.keyInsight || ''}`,
-      
-      estimatedFunding: {
-        min: Math.round((evaluation.estimatedFunding || 500000) * 0.7),
-        max: Math.round((evaluation.estimatedFunding || 500000) * 1.3),
-      },
-      
-      timeToMarket: timeline || '12 شهر',
-      
-      keySuccessFactors: evaluation.keySuccessFactors || [
-        'التركيز على احتياجات السوق',
-        'بناء فريق قوي',
-        'التنفيذ السريع',
-      ],
-      
-      risks: evaluation.riskAnalyst?.weaknesses || [
-        'المنافسة الشديدة',
-        'التحديات التنظيمية',
-        'صعوبة التمويل',
-      ],
-    };
-
+    // Return full evaluation data with all expert perspectives
     return NextResponse.json({
       success: true,
-      evaluation: transformedEvaluation,
+      evaluation,
     });
   } catch (error: any) {
     console.error('=== AI Evaluation API Error ===');

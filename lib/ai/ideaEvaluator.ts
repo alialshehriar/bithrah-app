@@ -169,7 +169,9 @@ ${input.existingTraction ? `- الإنجازات الحالية: ${input.existin
 - قدم بيانات وأرقام حقيقية عند الإمكان
 - كن صريحاً في نقاط الضعف والمخاطر
 
-أعطني الرد بصيغة JSON فقط بدون أي نص إضافي، باستخدام البنية التالية:
+**مهم جداً:** يجب أن يحتوي الرد على **جميع** الحقول المطلوبة أدناه بدون استثناء. لا تترك أي حقل فارغاً.
+
+أعطني الرد بصيغة JSON فقط بدون أي نص إضافي، باستخدام البنية التالية **بالضبط**:
 
 {
   "overallScore": number,
@@ -261,7 +263,7 @@ ${input.existingTraction ? `- الإنجازات الحالية: ${input.existin
 }`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-4o-2024-08-06',
       messages: [
         {
           role: 'system',
