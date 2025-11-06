@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
         'التنفيذ السريع',
       ],
       
-      risks: evaluation.risks || [
+      risks: evaluation.riskAnalyst?.weaknesses || [
         'المنافسة الشديدة',
         'التحديات التنظيمية',
         'صعوبة التمويل',
