@@ -275,7 +275,7 @@ ${input.existingTraction ? `- الإنجازات الحالية: ${input.existin
         }
       ],
       temperature: 0.7,
-      max_tokens: 12000,
+      max_tokens: 8000,
       response_format: { type: 'json_object' }
     });
 
