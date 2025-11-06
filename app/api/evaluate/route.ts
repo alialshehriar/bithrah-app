@@ -28,9 +28,63 @@ export async function POST(request: NextRequest) {
     // Evaluate idea
     const evaluation = await evaluateIdea(input);
 
+    // Transform new structure to old structure for frontend compatibility
+    const transformedEvaluation = {
+      overallScore: evaluation.overallScore,
+      marketPotential: evaluation.marketOpportunity.marketSize,
+      feasibility: evaluation.executionReadiness.timelineRealism,
+      innovation: evaluation.strategicAnalyst.score,
+      scalability: evaluation.marketOpportunity.growthPotential,
+      financialViability: evaluation.financialViability.revenueModel,
+      competitiveAdvantage: evaluation.marketOpportunity.competitiveAdvantage,
+      
+      // Combine strengths from all perspectives
+      strengths: [
+        ...evaluation.strategicAnalyst.strengths,
+        ...evaluation.saudiMarketExpert.strengths.slice(0, 2),
+        ...evaluation.financialExpert.strengths.slice(0, 1),
+      ],
+      
+      // Combine weaknesses from all perspectives
+      weaknesses: [
+        ...evaluation.strategicAnalyst.weaknesses,
+        ...evaluation.operationsManager.weaknesses.slice(0, 2),
+        ...evaluation.riskAnalyst.weaknesses.slice(0, 1),
+      ],
+      
+      // Map opportunities (from strengths of market expert and marketing expert)
+      opportunities: [
+        ...evaluation.saudiMarketExpert.strengths,
+        ...evaluation.marketingExpert.strengths.slice(0, 2),
+      ],
+      
+      // Map threats (from weaknesses of risk analyst and financial expert)
+      threats: [
+        ...evaluation.riskAnalyst.weaknesses,
+        ...evaluation.financialExpert.weaknesses.slice(0, 2),
+      ],
+      
+      // Combine recommendations from all perspectives
+      recommendations: [
+        ...evaluation.immediateActions.slice(0, 3),
+        ...evaluation.shortTermSteps.slice(0, 2),
+      ],
+      
+      summary: `تقييم شامل للفكرة من 6 منظورات مختلفة. ${evaluation.strategicAnalyst.keyInsight}`,
+      
+      estimatedFunding: {
+        min: Math.round(evaluation.estimatedFunding * 0.7),
+        max: Math.round(evaluation.estimatedFunding * 1.3),
+      },
+      
+      timeToMarket: input.timeline || '12 شهر',
+      targetAudience: evaluation.targetAudience,
+      keySuccessFactors: evaluation.keySuccessFactors,
+    };
+
     return NextResponse.json({
       success: true,
-      evaluation
+      evaluation: transformedEvaluation
     });
 
   } catch (error) {
