@@ -66,32 +66,32 @@ export interface IdeaEvaluation {
   investmentRecommendation: string;
   
   // Six Perspectives
-  strategicAnalyst: PerspectiveEvaluation;
-  financialExpert: PerspectiveEvaluation;
-  saudiMarketExpert: PerspectiveEvaluation;
-  operationsManager: PerspectiveEvaluation;
-  marketingExpert: PerspectiveEvaluation;
-  riskAnalyst: PerspectiveEvaluation;
+  strategicAnalyst?: PerspectiveEvaluation;
+  financialExpert?: PerspectiveEvaluation;
+  saudiMarketExpert?: PerspectiveEvaluation;
+  operationsManager?: PerspectiveEvaluation;
+  marketingExpert?: PerspectiveEvaluation;
+  riskAnalyst?: PerspectiveEvaluation;
   
   // Specialized Assessments
-  marketOpportunity: MarketOpportunity;
-  financialViability: FinancialViability;
-  executionReadiness: ExecutionReadiness;
+  marketOpportunity?: MarketOpportunity;
+  financialViability?: FinancialViability;
+  executionReadiness?: ExecutionReadiness;
   
   // Recommendations by Phase
-  immediateActions: string[];
-  shortTermSteps: string[];
-  longTermVision: string[];
+  immediateActions?: string[];
+  shortTermSteps?: string[];
+  longTermVision?: string[];
   
   // Additional Info
-  estimatedFunding: number;
-  targetAudience: string;
-  keySuccessFactors: string[];
+  estimatedFunding?: number;
+  targetAudience?: string;
+  keySuccessFactors?: string[];
   
   // New Enhanced Fields
-  practicalSolutions: string[];
-  implementationPlan: ImplementationPhase[];
-  successfulExamples: SuccessExample[];
+  practicalSolutions?: string[];
+  implementationPlan?: ImplementationPhase[];
+  successfulExamples?: SuccessExample[];
 }
 
 export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEvaluation> {
