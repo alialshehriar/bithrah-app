@@ -11,6 +11,9 @@ export async function GET(
   try {
     const { slug } = await context.params;
 
+    // Check if slug is a number (ID) or actual slug
+    const isNumeric = /^\d+$/.test(slug);
+    
     const result = await db.execute(sql`
       SELECT 
         p.id, p.title, p.slug, p.description, p.short_description,
@@ -19,7 +22,7 @@ export async function GET(
         p.creator_id, u.name as creator_name, u.avatar as creator_avatar
       FROM projects p
       LEFT JOIN users u ON p.creator_id = u.id
-      WHERE p.slug = ${slug}
+      WHERE ${isNumeric ? sql`p.id = ${parseInt(slug)}` : sql`p.slug = ${slug}`}
       LIMIT 1
     `);
 
