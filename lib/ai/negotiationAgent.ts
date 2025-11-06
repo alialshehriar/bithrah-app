@@ -13,7 +13,7 @@ export interface NegotiationContext {
   fundingGoal: number;
   currentFunding: number;
   ownerName: string;
-  timeline: string;
+  timeline?: string;
   teamSize?: number;
   existingTraction?: string;
 }

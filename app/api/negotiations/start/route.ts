@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const project = await db.query.projects.findFirst({
       where: eq(projects.id, projectId),
       with: {
-        owner: true
+        creator: true
       }
     });
 
@@ -50,11 +50,12 @@ export async function POST(request: NextRequest) {
     const [negotiation] = await db.insert(negotiations).values({
       projectId,
       investorId,
-      ownerId: project.ownerId,
+      ownerId: project.creatorId,
       status: 'active',
       startedAt: new Date(),
       expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days
-    }).returning();
+    } as any)
+    .returning();
 
     // Generate initial greeting
     const context = {
@@ -62,12 +63,9 @@ export async function POST(request: NextRequest) {
       projectTitle: project.title,
       projectDescription: project.description,
       category: project.category,
-      fundingGoal: project.fundingGoal,
-      currentFunding: project.currentFunding,
-      ownerName: project.owner?.name || 'صاحب المشروع',
-      timeline: project.timeline || '12 شهر',
-      teamSize: project.teamSize,
-      existingTraction: project.existingTraction
+      fundingGoal: Number(project.fundingGoal),
+      currentFunding: Number(project.currentFunding),
+      ownerName: project.creator?.name || 'صاحب المشروع',
     };
 
     const greeting = generateInitialGreeting(context);
@@ -75,10 +73,10 @@ export async function POST(request: NextRequest) {
     // Save initial message
     await db.insert(negotiationMessages).values({
       negotiationId: negotiation.id,
-      senderId: project.ownerId,
+      senderId: project.creatorId,
       message: greeting,
       isAiGenerated: true
-    });
+    } as any);
 
     return NextResponse.json({
       negotiationId: negotiation.id,

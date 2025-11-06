@@ -63,7 +63,7 @@ export async function POST(
       with: {
         project: {
           with: {
-            owner: true
+            creator: true
           }
         }
       }
@@ -89,7 +89,10 @@ export async function POST(
       // Update status to expired
       await db
         .update(negotiations)
-        .set({ status: 'expired' })
+        .set({ 
+          status: 'expired',
+          updatedAt: new Date()
+        } as any)
         .where(eq(negotiations.id, negotiationId));
 
       return NextResponse.json(
@@ -104,7 +107,7 @@ export async function POST(
       senderId: userId,
       message,
       isAiGenerated: false
-    });
+    } as any);
 
     // Get conversation history
     const conversationHistory = await db
@@ -116,15 +119,12 @@ export async function POST(
     // Prepare project context for AI
     const projectContext = {
       projectId: negotiation.project.id,
-      projectTitle: negotiation.project.name,
+      projectTitle: negotiation.project.title,
       projectDescription: negotiation.project.description,
       category: negotiation.project.category,
-      fundingGoal: negotiation.project.fundingGoal,
-      currentFunding: negotiation.project.currentAmount,
-      ownerName: negotiation.project.owner?.name || 'صاحب المشروع',
-      timeline: negotiation.project.timeline || '12 شهر',
-      teamSize: negotiation.project.teamSize,
-      existingTraction: negotiation.project.traction
+      fundingGoal: Number(negotiation.project.fundingGoal),
+      currentFunding: Number(negotiation.project.currentFunding),
+      ownerName: negotiation.project.creator?.name || 'صاحب المشروع',
     };
 
     // Generate AI response
@@ -143,7 +143,7 @@ export async function POST(
       senderId: negotiation.ownerId,
       message: aiResponse.message,
       isAiGenerated: true
-    });
+    } as any);
 
     // Check if agreement was reached
     if (aiResponse.agreementReached) {
@@ -153,8 +153,9 @@ export async function POST(
           status: 'completed',
           agreementReached: true,
           suggestedTerms: aiResponse.suggestedTerms || null,
-          completedAt: new Date()
-        })
+          completedAt: new Date(),
+          updatedAt: new Date()
+        } as any)
         .where(eq(negotiations.id, negotiationId));
     }
 

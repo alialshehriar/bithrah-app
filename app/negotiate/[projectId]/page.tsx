@@ -63,7 +63,7 @@ export default function NegotiatePage() {
       setProject(projectData.project);
 
       // Check for existing negotiation
-      const negRes = await fetch(`/api/negotiations/${projectId}/active`);
+      const negRes = await fetch(`/api/negotiations/active?projectId=${projectId}`);
       if (negRes.ok) {
         const negData = await negRes.json();
         if (negData.negotiation) {

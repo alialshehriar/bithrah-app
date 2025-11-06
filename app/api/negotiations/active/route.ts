@@ -3,17 +3,23 @@ import { db } from '@/lib/db';
 import { negotiations } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { projectId: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
-    const projectId = parseInt(params.projectId);
+    const searchParams = request.nextUrl.searchParams;
+    const projectId = searchParams.get('projectId');
     
     // TODO: Get current user ID from session
     const currentUserId = 1;
 
-    if (isNaN(projectId)) {
+    if (!projectId) {
+      return NextResponse.json(
+        { error: 'معرف المشروع مطلوب' },
+        { status: 400 }
+      );
+    }
+
+    const projectIdNum = parseInt(projectId);
+    if (isNaN(projectIdNum)) {
       return NextResponse.json(
         { error: 'معرف المشروع غير صحيح' },
         { status: 400 }
@@ -23,7 +29,7 @@ export async function GET(
     // Find active negotiation for this project and user
     const activeNegotiation = await db.query.negotiations.findFirst({
       where: and(
-        eq(negotiations.projectId, projectId),
+        eq(negotiations.projectId, projectIdNum),
         eq(negotiations.investorId, currentUserId),
         eq(negotiations.status, 'active')
       )
