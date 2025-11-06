@@ -22,9 +22,11 @@ export default function EvaluatePage() {
   const [detailedStep, setDetailedStep] = useState<DetailedStep>('form');
   const [expandedDetails, setExpandedDetails] = useState<ExpandedIdeaDetails | null>(null);
   const [evaluation, setEvaluation] = useState<IdeaEvaluation | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Quick Evaluation Handlers
   const handleQuickSubmit = async (formData: any) => {
+    setIsLoading(true);
     try {
       // Call API to expand idea
       const response = await fetch('/api/evaluate/quick', {
@@ -44,10 +46,13 @@ export default function EvaluatePage() {
     } catch (error) {
       console.error('Quick evaluation error:', error);
       alert('حدث خطأ أثناء تحليل الفكرة. يرجى المحاولة مرة أخرى.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleExpandedDetailsConfirm = async (details: ExpandedIdeaDetails) => {
+    setIsLoading(true);
     try {
       // Call regular evaluation API with expanded details
       const response = await fetch('/api/evaluate', {
@@ -78,6 +83,8 @@ export default function EvaluatePage() {
     } catch (error) {
       console.error('Evaluation error:', error);
       alert('حدث خطأ أثناء التقييم. يرجى المحاولة مرة أخرى.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -135,6 +142,7 @@ export default function EvaluatePage() {
           expandedDetails={expandedDetails}
           onBack={handleBackToQuickForm}
           onConfirm={handleExpandedDetailsConfirm}
+          loading={isLoading}
         />
       );
     }
