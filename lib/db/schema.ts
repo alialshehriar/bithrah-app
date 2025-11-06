@@ -1407,22 +1407,17 @@ export const ideaEvaluations = pgTable('idea_evaluations', {
 
 export const supportPackages = pgTable('support_packages', {
   id: serial('id').primaryKey(),
-  uuid: uuid('uuid').defaultRandom().unique().notNull(),
   projectId: integer('project_id').references(() => projects.id).notNull(),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
   amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
-  currency: varchar('currency', { length: 10 }).default('SAR'),
-  tier: varchar('tier', { length: 50 }).default('basic'), // basic, standard, premium
   features: jsonb('features'), // Array of features
   maxBackers: integer('max_backers'),
   currentBackers: integer('current_backers').default(0),
   isActive: boolean('is_active').default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
   projectIdx: index('support_packages_project_idx').on(table.projectId),
-  tierIdx: index('support_packages_tier_idx').on(table.tier),
 }));
 
 
