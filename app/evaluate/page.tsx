@@ -81,6 +81,10 @@ export default function EvaluatePage() {
       
       const data = await response.json();
       
+      console.log('API Response:', data);
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
       if (data.success) {
         setResult(data.evaluation);
         setStep(3);
