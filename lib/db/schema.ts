@@ -1029,28 +1029,19 @@ export const negotiations = pgTable('negotiations', {
   uuid: uuid('uuid').defaultRandom().unique().notNull(),
   projectId: integer('project_id').references(() => projects.id).notNull(),
   investorId: integer('investor_id').references(() => users.id).notNull(),
+  ownerId: integer('owner_id').references(() => users.id).notNull(),
   
   // Negotiation details
-  status: varchar('status', { length: 50 }).default('active').notNull(), // active, accepted, rejected, cancelled, expired
-  startDate: timestamp('start_date').notNull(),
-  endDate: timestamp('end_date').notNull(), // 3 days from start
-  
-  // Deposit (refundable)
-  depositAmount: numeric('deposit_amount', { precision: 12, scale: 2 }).notNull(), // Refundable deposit
-  depositStatus: varchar('deposit_status', { length: 50 }).default('held'), // held, refunded, forfeited
-  depositRefundedAt: timestamp('deposit_refunded_at'),
-  
-  // Access level
-  hasFullAccess: boolean('has_full_access').default(false), // Access to confidential details
+  status: varchar('status', { length: 50 }).default('active').notNull(), // active, completed, expired, cancelled
+  startedAt: timestamp('started_at').defaultNow(),
+  expiresAt: timestamp('expires_at'),
+  completedAt: timestamp('completed_at'),
   
   // Agreement
-  agreedAmount: numeric('agreed_amount', { precision: 12, scale: 2 }),
-  agreementTerms: text('agreement_terms'),
   agreementReached: boolean('agreement_reached').default(false),
-  agreementDate: timestamp('agreement_date'),
+  suggestedTerms: jsonb('suggested_terms'), // {investmentAmount, equity, expectedReturn, timeline}
   
   // Metadata
-  metadata: jsonb('metadata'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
@@ -1066,19 +1057,14 @@ export const negotiationMessages = pgTable('negotiation_messages', {
   senderId: integer('sender_id').references(() => users.id).notNull(),
   
   // Message content
-  content: text('content').notNull(),
-  messageType: varchar('message_type', { length: 50 }).default('text'), // text, image, file
-  attachments: jsonb('attachments'),
+  message: text('message').notNull(),
+  isAiGenerated: boolean('is_ai_generated').default(false),
   
-  // Status
-  status: varchar('status', { length: 50 }).default('sent'), // sent, delivered, read
-  flagged: boolean('flagged').default(false), // Flagged by AI for review
-  flagReason: text('flag_reason'),
+  // Moderation
+  flagged: boolean('flagged').default(false), // if contains contact info
   
   // Metadata
-  metadata: jsonb('metadata'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  readAt: timestamp('read_at'),
 }, (table) => ({
   negotiationIdx: index('negotiation_messages_negotiation_idx').on(table.negotiationId),
   senderIdx: index('negotiation_messages_sender_idx').on(table.senderId),
@@ -1091,6 +1077,10 @@ export const negotiationsRelations = relations(negotiations, ({ one, many }) => 
   }),
   investor: one(users, {
     fields: [negotiations.investorId],
+    references: [users.id],
+  }),
+  owner: one(users, {
+    fields: [negotiations.ownerId],
     references: [users.id],
   }),
   messages: many(negotiationMessages),
@@ -1419,6 +1409,7 @@ export const supportPackages = pgTable('support_packages', {
 }, (table) => ({
   projectIdx: index('support_packages_project_idx').on(table.projectId),
 }));
+
 
 
 
