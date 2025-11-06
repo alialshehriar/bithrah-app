@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { users, projects, transactions } from '@/lib/db/schema';
+import { users, projects, transactions, communities } from '@/lib/db/schema';
 import { eq, sql, and, gte } from 'drizzle-orm';
 import { cookies } from 'next/headers';
 
@@ -74,6 +74,13 @@ export async function GET(request: NextRequest) {
     const completedProjects = Number(completedProjectsResult[0]?.count || 0);
     const successRate = totalProjects > 0 ? Math.round((completedProjects / totalProjects) * 100) : 0;
 
+    // Count total communities
+    const totalCommunitiesResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(communities);
+    
+    const totalCommunities = Number(totalCommunitiesResult[0]?.count || 0);
+
     return NextResponse.json({
       success: true,
       stats: {
@@ -83,6 +90,7 @@ export async function GET(request: NextRequest) {
         newAchievements,
         totalProjects,
         totalFunding,
+        totalCommunities,
         successRate,
       },
       sandbox: false

@@ -11,10 +11,10 @@ import Navbar from '@/components/layout/Navbar';
 
 export default function HomePage() {
   const [stats, setStats] = useState({
-    projects: 1,
-    funding: 125000,
-    users: 4,
-    communities: 3
+    projects: 0,
+    funding: 0,
+    users: 0,
+    communities: 0
   });
 
   useEffect(() => {
@@ -26,10 +26,10 @@ export default function HomePage() {
           const data = await res.json();
           if (data.success) {
             setStats({
-              projects: data.stats.totalProjects || 1,
-              funding: data.stats.totalFunding || 125000,
-              users: data.stats.activeUsers || 4,
-              communities: data.stats.totalCommunities || 3
+              projects: data.stats.totalProjects || 0,
+              funding: data.stats.totalFunding || 0,
+              users: data.stats.activeUsers || 0,
+              communities: data.stats.totalCommunities || 0
             });
           }
         }
