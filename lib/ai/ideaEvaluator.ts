@@ -59,6 +59,47 @@ export interface SuccessExample {
   relevance: string;
 }
 
+export interface SWOTAnalysis {
+  strengths: string[];
+  weaknesses: string[];
+  opportunities: string[];
+  threats: string[];
+}
+
+export interface Risk {
+  name: string;
+  probability: 'low' | 'medium' | 'high';
+  impact: 'low' | 'medium' | 'high' | 'critical';
+  mitigation: string;
+  priority: number;
+}
+
+export interface FinancialMetrics {
+  roi: number;
+  breakEvenMonths: number;
+  monthlyBurnRate: number;
+  runway: number;
+  projectedRevenue: {
+    year1: number;
+    year2: number;
+    year3: number;
+  };
+}
+
+export interface MarketAnalysis {
+  tam: number;
+  sam: number;
+  som: number;
+  marketGrowthRate: number;
+}
+
+export interface CompetitiveAnalysis {
+  competitors: string[];
+  competitiveAdvantage: string;
+  marketShareProjection: number;
+  barriersToEntry: string[];
+}
+
 export interface IdeaEvaluation {
   // Overall
   overallScore: number;
@@ -92,6 +133,13 @@ export interface IdeaEvaluation {
   practicalSolutions?: string[];
   implementationPlan?: ImplementationPhase[];
   successfulExamples?: SuccessExample[];
+  
+  // Global Standards Analysis
+  swotAnalysis?: SWOTAnalysis;
+  riskMatrix?: Risk[];
+  financialMetrics?: FinancialMetrics;
+  marketAnalysis?: MarketAnalysis;
+  competitiveAnalysis?: CompetitiveAnalysis;
 }
 
 export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEvaluation> {
@@ -102,7 +150,7 @@ export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEval
       return getFallbackEvaluation(input);
     }
 
-    const prompt = `أنت نظام تقييم متطور لأفكار المشاريع في منصة بذره السعودية. قيّم الفكرة التالية بشكل احترافي ودقيق:
+    const prompt = `أنت نظام تقييم متطور لأفكار المشاريع يستخدم معايير عالمية معترف بها (SWOT, Risk Matrix, Financial Metrics, Market Analysis). قيّم الفكرة التالية بشكل احترافي ودقيق ومعمق:
 
 **معلومات المشروع:**
 - العنوان: ${input.title}
@@ -163,11 +211,44 @@ ${input.existingTraction ? `- الإنجازات الحالية: ${input.existin
 - خطة تنفيذية مقترحة (3 مراحل مع timeline)
 - أمثلة لمشاريع ناجحة مشابهة في السعودية أو الخليج (2-3 أمثلة)
 
+**تحليلات متقدمة بمعايير عالمية:**
+
+1. **SWOT Analysis المتعمق:**
+   - Strengths (نقاط القوة): 4-6 نقاط محددة وقابلة للقياس
+   - Weaknesses (نقاط الضعف): 4-6 نقاط بصراحة ووضوح
+   - Opportunities (الفرص): 4-6 فرص في السوق السعودي
+   - Threats (التهديدات): 4-6 تهديدات محتملة
+
+2. **Risk Matrix (مصفوفة المخاطر):**
+   - حدد 5-7 مخاطر رئيسية
+   - لكل خطر: الاسم، الاحتمالية (low/medium/high)، التأثير (low/medium/high/critical)، خطة التخفيف
+   - رتب المخاطر حسب الأولوية
+
+3. **Financial Metrics (المؤشرات المالية):**
+   - ROI المتوقع (نسبة مئوية)
+   - Break-even Point (بالأشهر)
+   - Monthly Burn Rate (معدل الحرق الشهري)
+   - Runway (المدة المتبقية بالأشهر)
+   - الإيرادات المتوقعة (سنة 1، 2، 3)
+
+4. **Market Analysis (تحليل السوق):**
+   - TAM (Total Addressable Market) - السوق الكلي
+   - SAM (Serviceable Addressable Market) - السوق القابل للخدمة
+   - SOM (Serviceable Obtainable Market) - السوق المستهدف
+   - معدل نمو السوق (نسبة مئوية)
+
+5. **Competitive Analysis (التحليل التنافسي):**
+   - المنافسون الرئيسيون (3-5)
+   - الميزة التنافسية الفريدة
+   - الحصة السوقية المتوقعة (نسبة مئوية)
+   - حواجز الدخول (3-4 حواجز)
+
 **ملاحظات مهمة:**
 - كن صادقاً وواقعياً في التقييمات (لا مبالغة)
 - ركز على السوق السعودي والثقافة المحلية
 - قدم بيانات وأرقام حقيقية عند الإمكان
 - كن صريحاً في نقاط الضعف والمخاطر
+- استخدم أرقام واقعية للسوق السعودي
 
 **مهم جداً:** يجب أن يحتوي الرد على **جميع** الحقول المطلوبة أدناه بدون استثناء. لا تترك أي حقل فارغاً.
 
@@ -259,7 +340,45 @@ ${input.existingTraction ? `- الإنجازات الحالية: ${input.existin
       "description": string,
       "relevance": string
     }
-  ]
+  ],
+  "swotAnalysis": {
+    "strengths": string[],
+    "weaknesses": string[],
+    "opportunities": string[],
+    "threats": string[]
+  },
+  "riskMatrix": [
+    {
+      "name": string,
+      "probability": "low" | "medium" | "high",
+      "impact": "low" | "medium" | "high" | "critical",
+      "mitigation": string,
+      "priority": number
+    }
+  ],
+  "financialMetrics": {
+    "roi": number,
+    "breakEvenMonths": number,
+    "monthlyBurnRate": number,
+    "runway": number,
+    "projectedRevenue": {
+      "year1": number,
+      "year2": number,
+      "year3": number
+    }
+  },
+  "marketAnalysis": {
+    "tam": number,
+    "sam": number,
+    "som": number,
+    "marketGrowthRate": number
+  },
+  "competitiveAnalysis": {
+    "competitors": string[],
+    "competitiveAdvantage": string,
+    "marketShareProjection": number,
+    "barriersToEntry": string[]
+  }
 }`;
 
     const response = await openai.chat.completions.create({
