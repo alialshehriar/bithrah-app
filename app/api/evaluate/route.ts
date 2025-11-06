@@ -28,16 +28,15 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Calling evaluateIdea with params...');
+    // Combine all details into description for IdeaEvaluationInput
+    const fullDescription = `${description}\n\nالمشكلة: ${problem || ''}\nالحل: ${solution || ''}\nالسوق المستهدف: ${targetMarket || ''}\nالميزة التنافسية: ${competitiveAdvantage || ''}\nنموذج العمل: ${businessModel || ''}`;
+    
     const evaluation = await evaluateIdea({
       title,
       category,
-      description,
-      problem,
-      solution,
+      description: fullDescription,
       targetMarket,
-      competitiveAdvantage,
-      businessModel,
-      funding,
+      fundingGoal: funding ? parseInt(funding.replace(/[^0-9]/g, '')) : undefined,
       timeline,
     });
 
