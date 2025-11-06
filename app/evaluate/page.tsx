@@ -29,11 +29,18 @@ export default function EvaluatePage() {
     setIsLoading(true);
     try {
       // Call API to expand idea
+      // Use AbortController with 90s timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
+      
       const response = await fetch('/api/evaluate/quick', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       const data = await response.json();
       
@@ -43,9 +50,13 @@ export default function EvaluatePage() {
       } else {
         throw new Error(data.error || 'Failed to expand idea');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Quick evaluation error:', error);
-      alert('حدث خطأ أثناء تحليل الفكرة. يرجى المحاولة مرة أخرى.');
+      if (error.name === 'AbortError') {
+        alert('انتهت مهلة التحليل. يرجى المحاولة مرة أخرى.');
+      } else {
+        alert('حدث خطأ أثناء تحليل الفكرة. يرجى المحاولة مرة أخرى.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -55,6 +66,10 @@ export default function EvaluatePage() {
     setIsLoading(true);
     try {
       // Call regular evaluation API with expanded details
+      // Use AbortController with 90s timeout (longer than server timeout)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
+      
       const response = await fetch('/api/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,19 +85,28 @@ export default function EvaluatePage() {
           fundingNeeded: details.estimatedFunding,
           timeline: details.timeframe,
         }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       const data = await response.json();
       
       if (data.success) {
+        console.log('[EVAL] Setting evaluation:', data.evaluation);
         setEvaluation(data.evaluation);
+        console.log('[EVAL] Setting quickStep to results');
         setQuickStep('results');
       } else {
         throw new Error(data.error || 'Failed to evaluate idea');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Evaluation error:', error);
-      alert('حدث خطأ أثناء التقييم. يرجى المحاولة مرة أخرى.');
+      if (error.name === 'AbortError') {
+        alert('انتهت مهلة التقييم. يرجى المحاولة مرة أخرى.');
+      } else {
+        alert('حدث خطأ أثناء التقييم. يرجى المحاولة مرة أخرى.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -126,6 +150,8 @@ export default function EvaluatePage() {
   };
 
   // Render based on mode and step
+  console.log('[RENDER] mode:', mode, 'quickStep:', quickStep, 'hasEvaluation:', !!evaluation);
+  
   if (mode === 'quick') {
     if (quickStep === 'form') {
       return (
