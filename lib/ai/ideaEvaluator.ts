@@ -72,15 +72,14 @@ export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEval
 - successProbability: نسبة النجاح %
 - investmentRecommendation: ("استثمار موصى به" أو "استثمار محتمل" أو "يحتاج تطوير" أو "غير موصى به")
 
-2. **ثلاثة منظورات** (كل منظور يحتوي):
+2. **منظورين فقط** (كل منظور يحتوي):
 - score: من 100
 - strengths: 3 نقاط قوة (جملة واحدة لكل نقطة)
 - weaknesses: 3 نقاط ضعف (جملة واحدة لكل نقطة)
 - recommendations: 3 توصيات (جملة واحدة لكل توصية)
 - keyInsight: رؤية رئيسية (جملة واحدة)
 
-**strategicAnalyst**: التحليل الاستراتيجي
-**financialExpert**: التحليل المالي (نموذج الإيرادات، التكاليف، ROI)
+**strategicAnalyst**: التحليل الاستراتيجي والمالي
 **saudiMarketExpert**: السوق السعودي (المنافسة، سلوك المستهلك)
 
 3. **توصيات مرحلية** (3 توصيات لكل مرحلة، جملة واحدة لكل توصية):
@@ -94,7 +93,6 @@ export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEval
   "successProbability": 45,
   "investmentRecommendation": "استثمار محتمل",
   "strategicAnalyst": {...},
-  "financialExpert": {...},
   "saudiMarketExpert": {...},
   "immediateActions": ["...", "...", "..."],
   "shortTermSteps": ["...", "...", "..."],
@@ -108,7 +106,7 @@ export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEval
         { role: 'user', content: userPrompt }
       ],
       temperature: 0.7,
-      max_tokens: 2000,
+      max_tokens: 1500,
       response_format: { type: 'json_object' },
       timeout: 50000 // 50 seconds timeout
     });
