@@ -36,6 +36,59 @@ export interface IdeaEvaluation {
   longTermVision?: string[];
 }
 
+// Configuration: Enable/disable perspectives for scalability
+const PERSPECTIVES_CONFIG = {
+  strategicAnalyst: true,  // Always enabled
+  financialExpert: false,  // Disabled for performance (can be enabled later)
+  saudiMarketExpert: true, // Always enabled
+};
+
+// Generate perspective prompts dynamically
+function generatePerspectivePrompts(): string {
+  const perspectives: string[] = [];
+  
+  if (PERSPECTIVES_CONFIG.strategicAnalyst) {
+    perspectives.push(`**strategicAnalyst**: التحليل الاستراتيجي والمالي (نموذج العمل، الجدوى، التوسع)`);
+  }
+  
+  if (PERSPECTIVES_CONFIG.financialExpert) {
+    perspectives.push(`**financialExpert**: التحليل المالي (نموذج الإيرادات، التكاليف، ROI، التمويل)`);
+  }
+  
+  if (PERSPECTIVES_CONFIG.saudiMarketExpert) {
+    perspectives.push(`**saudiMarketExpert**: السوق السعودي (المنافسة، سلوك المستهلك، الفرص المحلية)`);
+  }
+  
+  return perspectives.join('\n');
+}
+
+// Generate JSON structure example dynamically
+function generateJsonExample(): string {
+  const perspectives: string[] = [];
+  
+  if (PERSPECTIVES_CONFIG.strategicAnalyst) {
+    perspectives.push(`  "strategicAnalyst": {...}`);
+  }
+  
+  if (PERSPECTIVES_CONFIG.financialExpert) {
+    perspectives.push(`  "financialExpert": {...}`);
+  }
+  
+  if (PERSPECTIVES_CONFIG.saudiMarketExpert) {
+    perspectives.push(`  "saudiMarketExpert": {...}`);
+  }
+  
+  return `{
+  "overallScore": 75,
+  "successProbability": 45,
+  "investmentRecommendation": "استثمار محتمل",
+${perspectives.join(',\n')},
+  "immediateActions": ["...", "...", "..."],
+  "shortTermSteps": ["...", "...", "..."],
+  "longTermVision": ["...", "...", "..."]
+}`;
+}
+
 export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEvaluation> {
   try {
     if (!openai) {
@@ -43,6 +96,8 @@ export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEval
       return getFallbackEvaluation(input);
     }
 
+    const enabledPerspectivesCount = Object.values(PERSPECTIVES_CONFIG).filter(Boolean).length;
+    
     const systemPrompt = `أنت خبير تقييم مشاريع محترف متخصص في السوق السعودي.
 
 **أسلوبك:**
@@ -53,7 +108,7 @@ export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEval
 **تنسيق الرد:**
 - JSON فقط
 - جميع الحقول مطلوبة
-- كل نقطة = 2-3 جمل مفصلة`;
+- كل نقطة = جملة واحدة واضحة`;
 
     const userPrompt = `قيّم هذه الفكرة:
 
@@ -72,15 +127,14 @@ export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEval
 - successProbability: نسبة النجاح %
 - investmentRecommendation: ("استثمار موصى به" أو "استثمار محتمل" أو "يحتاج تطوير" أو "غير موصى به")
 
-2. **منظورين فقط** (كل منظور يحتوي):
+2. **${enabledPerspectivesCount} منظور${enabledPerspectivesCount > 2 ? 'ات' : 'ين'}** (كل منظور يحتوي):
 - score: من 100
 - strengths: 3 نقاط قوة (جملة واحدة لكل نقطة)
 - weaknesses: 3 نقاط ضعف (جملة واحدة لكل نقطة)
 - recommendations: 3 توصيات (جملة واحدة لكل توصية)
 - keyInsight: رؤية رئيسية (جملة واحدة)
 
-**strategicAnalyst**: التحليل الاستراتيجي والمالي
-**saudiMarketExpert**: السوق السعودي (المنافسة، سلوك المستهلك)
+${generatePerspectivePrompts()}
 
 3. **توصيات مرحلية** (3 توصيات لكل مرحلة، جملة واحدة لكل توصية):
 - immediateActions: إجراءات فورية
@@ -88,16 +142,7 @@ export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEval
 - longTermVision: رؤية طويلة المدى
 
 أرجع JSON فقط بهذا الشكل:
-{
-  "overallScore": 75,
-  "successProbability": 45,
-  "investmentRecommendation": "استثمار محتمل",
-  "strategicAnalyst": {...},
-  "saudiMarketExpert": {...},
-  "immediateActions": ["...", "...", "..."],
-  "shortTermSteps": ["...", "...", "..."],
-  "longTermVision": ["...", "...", "..."]
-}`;
+${generateJsonExample()}`;
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-2024-08-06',
@@ -126,11 +171,15 @@ export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEval
 }
 
 function getFallbackEvaluation(input: IdeaEvaluationInput): IdeaEvaluation {
-  return {
+  const fallback: IdeaEvaluation = {
     overallScore: 70,
     successProbability: 40,
     investmentRecommendation: "يحتاج تطوير",
-    strategicAnalyst: {
+  };
+  
+  // Add enabled perspectives to fallback
+  if (PERSPECTIVES_CONFIG.strategicAnalyst) {
+    fallback.strategicAnalyst = {
       score: 70,
       strengths: [
         "الفكرة تعالج مشكلة حقيقية في السوق السعودي",
@@ -138,69 +187,80 @@ function getFallbackEvaluation(input: IdeaEvaluationInput): IdeaEvaluation {
         "التوقيت مناسب للدخول في هذا المجال"
       ],
       weaknesses: [
-        "المنافسة قوية في هذا المجال",
-        "الميزة التنافسية غير واضحة بشكل كافٍ",
-        "يحتاج المزيد من التفاصيل حول نموذج العمل"
+        "يحتاج المزيد من التفاصيل حول نموذج العمل",
+        "المنافسة في هذا المجال قوية",
+        "يحتاج خطة تسويقية واضحة"
       ],
       recommendations: [
-        "إجراء دراسة سوق مع 50+ عميل محتمل خلال شهرين",
-        "تحديد الميزة التنافسية الرئيسية بوضوح",
-        "بناء MVP بسيط واختباره مع مستخدمين حقيقيين"
+        "إجراء دراسة سوق تفصيلية",
+        "تطوير نموذج أولي (MVP)",
+        "بناء فريق عمل متكامل"
       ],
-      keyInsight: "الفكرة واعدة لكنها تحتاج المزيد من التطوير والتحقق من السوق قبل البدء في التنفيذ الكامل."
-    },
-    financialExpert: {
+      keyInsight: "الفكرة واعدة لكن تحتاج تطوير استراتيجية واضحة"
+    };
+  }
+  
+  if (PERSPECTIVES_CONFIG.financialExpert) {
+    fallback.financialExpert = {
       score: 65,
       strengths: [
-        "التمويل المطلوب واقعي ومناسب لحجم المشروع",
-        "نموذج الإيرادات واضح ومباشر",
-        "التكاليف التشغيلية معقولة"
+        "نموذج الإيرادات قابل للتطبيق",
+        "التكاليف التشغيلية معقولة",
+        "إمكانية تحقيق أرباح خلال سنتين"
       ],
       weaknesses: [
-        "نقطة التعادل قد تأخذ وقت أطول من المتوقع",
-        "هامش الربح قد يكون منخفض في البداية",
-        "المخاطر المالية تحتاج إدارة أفضل"
+        "يحتاج رأس مال كبير للبدء",
+        "فترة استرداد الاستثمار طويلة",
+        "المخاطر المالية مرتفعة"
       ],
       recommendations: [
-        "إعداد نموذج مالي مفصل لأول 24 شهر",
-        "تحديد مصادر دخل بديلة لتسريع الوصول للتعادل",
-        "وضع خطة طوارئ للتعامل مع تأخر الإيرادات"
+        "البحث عن مستثمرين استراتيجيين",
+        "تقليل التكاليف الثابتة",
+        "تنويع مصادر الدخل"
       ],
-      keyInsight: "المشروع قابل للربحية لكنه يحتاج إدارة مالية دقيقة وتخطيط جيد للتدفق النقدي."
-    },
-    saudiMarketExpert: {
+      keyInsight: "الجدوى المالية متوسطة وتحتاج تحسين"
+    };
+  }
+  
+  if (PERSPECTIVES_CONFIG.saudiMarketExpert) {
+    fallback.saudiMarketExpert = {
       score: 75,
       strengths: [
-        "السوق السعودي يشهد نمو في هذا المجال",
-        "سلوك المستهلك السعودي يتماشى مع الفكرة",
-        "الدعم الحكومي متوفر لهذا القطاع"
+        "السوق السعودي جاهز لهذا النوع من الحلول",
+        "الدعم الحكومي متوفر للمشاريع التقنية",
+        "سلوك المستهلك السعودي يتماشى مع الفكرة"
       ],
       weaknesses: [
-        "المنافسة المحلية قوية ومتقدمة",
-        "التحديات التنظيمية قد تكون معقدة",
-        "الثقافة المحلية قد تتطلب تعديلات على الفكرة"
+        "المنافسة المحلية قوية",
+        "يحتاج توطين الحل للسوق السعودي",
+        "التحديات التنظيمية قد تكون معقدة"
       ],
       recommendations: [
-        "دراسة المنافسين المحليين بعمق وتحديد الفجوات",
-        "التواصل مع الجهات التنظيمية مبكراً",
-        "تخصيص الحل للسوق السعودي بشكل أكبر"
+        "دراسة المنافسين المحليين بعمق",
+        "بناء شراكات مع جهات محلية",
+        "الحصول على التراخيص المطلوبة مبكراً"
       ],
-      keyInsight: "السوق السعودي واعد لكنه يتطلب فهم عميق للثقافة المحلية والمنافسة القوية."
-    },
-    immediateActions: [
-      "إجراء 30 مقابلة مع عملاء محتملين خلال 3 أسابيع للتحقق من الحاجة الفعلية",
-      "دراسة 5 منافسين رئيسيين وتحديد نقاط القوة والضعف لكل منهم",
-      "بناء landing page بسيط واختبار الطلب من خلال حملة إعلانية صغيرة"
-    ],
-    shortTermSteps: [
-      "بناء MVP بميزانية 50,000 ريال واختباره مع 100 مستخدم مبكر",
-      "تطوير نموذج العمل بناءً على feedback المستخدمين",
-      "البحث عن شريك استراتيجي أو مستثمر ملاك"
-    ],
-    longTermVision: [
-      "التوسع لدول الخليج بعد تحقيق 10,000 مستخدم نشط في السعودية",
-      "بناء فريق قوي من 15-20 شخص",
-      "جمع جولة Series A بقيمة 5M ريال"
-    ]
-  };
+      keyInsight: "السوق السعودي واعد لكن يحتاج استراتيجية محلية قوية"
+    };
+  }
+  
+  fallback.immediateActions = [
+    "التحقق من جدوى الفكرة من خلال مقابلات مع العملاء المحتملين",
+    "إعداد خطة عمل تفصيلية",
+    "البحث عن شريك تقني أو مستثمر"
+  ];
+  
+  fallback.shortTermSteps = [
+    "تطوير نموذج أولي (MVP) خلال 3-6 أشهر",
+    "اختبار المنتج مع مجموعة صغيرة من المستخدمين",
+    "تحسين المنتج بناءً على ملاحظات المستخدمين"
+  ];
+  
+  fallback.longTermVision = [
+    "التوسع في السوق السعودي",
+    "إضافة ميزات جديدة بناءً على احتياجات السوق",
+    "استكشاف فرص التوسع الإقليمي"
+  ];
+  
+  return fallback;
 }
