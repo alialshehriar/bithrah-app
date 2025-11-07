@@ -5,6 +5,12 @@
  * all the missing details needed for a comprehensive evaluation.
  */
 
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 export interface QuickIdeaInput {
   idea: string;
   problem: string;
@@ -143,35 +149,25 @@ export async function expandQuickIdea(
 ): Promise<ExpandedIdeaDetails> {
   const prompt = buildQuickIdeaExpansionPrompt(input);
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4-turbo', // GPT-4 Turbo for high-quality analysis
-      messages: [
-        {
-          role: 'system',
-          content: 'أنت مستشار أعمال خبير متخصص في تطوير الأفكار الريادية في السوق السعودي. تقوم بتحليل الأفكار البسيطة وتطويرها إلى خطط عمل متكاملة.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 2000,
-    }),
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4-turbo',
+    messages: [
+      {
+        role: 'system',
+        content: 'أنت مستشار أعمال خبير متخصص في تطوير الأفكار الريادية في السوق السعودي. تقوم بتحليل الأفكار البسيطة وتطويرها إلى خطط عمل متكاملة.',
+      },
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+    temperature: 0.7,
+    max_tokens: 2000,
+  }, {
+    timeout: 50000, // 50 second timeout
   });
 
-  if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  const content = data.choices[0].message.content.trim();
+  const content = completion.choices[0].message.content?.trim() || '';
 
   // Extract JSON from response (remove markdown code blocks if present)
   let jsonContent = content;
