@@ -52,7 +52,7 @@ export default function NegotiatePage() {
       setLoading(true);
       
       // Fetch project data
-      const projectRes = await fetch(`/api/projects/${projectId}`);
+      const projectRes = await fetch(`/api/projects/slug/${projectId}`);
       const projectData = await projectRes.json();
       
       if (!projectData.success) {
