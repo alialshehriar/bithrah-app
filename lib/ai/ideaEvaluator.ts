@@ -38,9 +38,9 @@ export interface IdeaEvaluation {
 
 // Configuration: Enable/disable perspectives for scalability
 const PERSPECTIVES_CONFIG = {
-  strategicAnalyst: true,  // Comprehensive strategic analysis
-  financialExpert: false,  // Disabled for performance (can be enabled later)
-  saudiMarketExpert: false, // Disabled for performance (can be enabled later)
+  strategicAnalyst: true,  // Strategic and business analysis
+  financialExpert: true,   // Financial analysis and ROI
+  saudiMarketExpert: true, // Saudi market insights
 };
 
 // Generate perspective prompts dynamically
@@ -48,7 +48,7 @@ function generatePerspectivePrompts(): string {
   const perspectives: string[] = [];
   
   if (PERSPECTIVES_CONFIG.strategicAnalyst) {
-    perspectives.push(`**strategicAnalyst**: تحليل شامل (الاستراتيجية، المالية، السوق السعودي)`);
+    perspectives.push(`**strategicAnalyst**: التحليل الاستراتيجي والمالي (نموذج العمل، الجدوى، التوسع)`);
   }
   
   if (PERSPECTIVES_CONFIG.financialExpert) {
@@ -151,7 +151,7 @@ ${generateJsonExample()}`;
         { role: 'user', content: userPrompt }
       ],
       temperature: 0.7,
-      max_tokens: 1000,
+      max_tokens: 2500,
       response_format: { type: 'json_object' },
       timeout: 80000 // 80 seconds timeout (within 90s route limit)
     });
