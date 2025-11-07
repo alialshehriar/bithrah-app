@@ -153,7 +153,7 @@ ${generateJsonExample()}`;
       temperature: 0.7,
       max_tokens: 1500,
       response_format: { type: 'json_object' },
-      timeout: 50000 // 50 seconds timeout
+      timeout: 80000 // 80 seconds timeout (within 90s route limit)
     });
 
     const content = response.choices[0]?.message?.content;
