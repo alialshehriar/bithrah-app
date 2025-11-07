@@ -292,7 +292,7 @@ ${input.category ? `**التصنيف:** ${input.category}` : ''}
           },
         ],
         temperature: 0.7,
-        max_tokens: 4500,
+        max_tokens: 4000,
         response_format: { type: 'json_object' },
       },
       {
