@@ -14,7 +14,7 @@ interface Project {
   title: string;
   slug: string;
   fundingGoal: number;
-  currentAmount: number;
+  currentFunding: number;
   creator: {
     id: number;
     name: string;
@@ -194,7 +194,7 @@ export default function NegotiatePage() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
                     <TrendingUp className="w-4 h-4" />
-                    <span>المجموع: {project.currentAmount.toLocaleString()} ر.س</span>
+                    <span>المجموع: {project.currentFunding.toLocaleString()} ر.س</span>
                   </div>
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function NegotiatePage() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <TrendingUp className="w-4 h-4" />
-                    <span>المجموع: {project.currentAmount.toLocaleString()} ر.س</span>
+                    <span>المجموع: {project.currentFunding.toLocaleString()} ر.س</span>
                   </div>
                 </div>
               </div>
