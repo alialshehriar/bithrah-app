@@ -11,11 +11,11 @@ import AINegotiationChat from '@/components/negotiations/AINegotiationChat';
 
 interface Project {
   id: number;
-  name: string;
+  title: string;
   slug: string;
   fundingGoal: number;
   currentAmount: number;
-  owner: {
+  creator: {
     id: number;
     name: string;
     avatar: string | null;
@@ -166,21 +166,21 @@ export default function NegotiatePage() {
             <div className="bg-white rounded-2xl shadow-xl p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  {project.owner.avatar ? (
+                  {project.creator.avatar ? (
                     <img
-                      src={project.owner.avatar}
-                      alt={project.owner.name}
+                      src={project.creator.avatar}
+                      alt={project.creator.name}
                       className="w-16 h-16 rounded-full border-4 border-purple-100"
                     />
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center border-4 border-purple-200">
                       <span className="text-2xl font-bold text-white">
-                        {project.owner.name.charAt(0)}
+                        {project.creator.name.charAt(0)}
                       </span>
                     </div>
                   )}
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">{project.title}</h1>
                     <p className="text-gray-600 flex items-center gap-2 mt-1">
                       <Bot className="w-4 h-4" />
                       محادثة مع AI (يتقمص دور صاحب المشروع)
@@ -210,7 +210,7 @@ export default function NegotiatePage() {
             <AINegotiationChat
               negotiationId={negotiation.id}
               currentUserId={currentUserId}
-              projectTitle={project.name}
+              projectTitle={project.title}
               expiresAt={negotiation.expiresAt}
             />
           </motion.div>
@@ -276,22 +276,22 @@ export default function NegotiatePage() {
 
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="flex items-start gap-6 mb-6">
-              {project.owner.avatar ? (
+              {project.creator.avatar ? (
                 <img
-                  src={project.owner.avatar}
-                  alt={project.owner.name}
+                  src={project.creator.avatar}
+                  alt={project.creator.name}
                   className="w-20 h-20 rounded-full border-4 border-purple-100"
                 />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center border-4 border-purple-200">
                   <span className="text-2xl font-bold text-white">
-                    {project.owner.name.charAt(0)}
+                    {project.creator.name.charAt(0)}
                   </span>
                 </div>
               )}
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{project.name}</h1>
-                <p className="text-gray-600">صاحب المشروع: {project.owner.name}</p>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{project.title}</h1>
+                <p className="text-gray-600">صاحب المشروع: {project.creator.name}</p>
                 <div className="flex items-center gap-4 mt-4">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Target className="w-4 h-4" />
