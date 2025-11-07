@@ -20,7 +20,7 @@ export default function EvaluatePage() {
       {!results ? (
         <UnifiedEvaluationForm onResults={handleResults} onBack={() => window.history.back()} />
       ) : (
-        <EvaluationResults results={results} onBack={handleBack} />
+        <EvaluationResults results={results} onReset={handleBack} />
       )}
     </div>
   );
