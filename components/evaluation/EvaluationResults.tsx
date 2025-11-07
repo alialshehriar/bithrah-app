@@ -1,196 +1,148 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import {
-  Sparkles, TrendingUp, AlertTriangle, Lightbulb, Target,
-  CheckCircle, XCircle, ArrowLeft, Award, Users, DollarSign,
-  Clock, Rocket, BookOpen, Zap
-} from 'lucide-react';
-import SubmitToBithrahButton from './SubmitToBithrahButton';
-import { IdeaEvaluation } from '@/lib/ai/ideaEvaluator';
-
-interface Props {
-  evaluation: IdeaEvaluation;
-  ideaTitle: string;
-  onBack: () => void;
+interface EvaluationResultsProps {
+  results: {
+    score: number;
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    risks: string[];
+    recommendations: string[];
+    marketAnalysis: string;
+    financialProjection: string;
+  };
+  onReset: () => void;
 }
 
-export default function EvaluationResults({ evaluation, ideaTitle, onBack }: Props) {
-  const ScoreCircle = ({ score, label }: { score: number; label: string }) => (
-    <div className="flex flex-col items-center">
-      <div className="relative w-24 h-24">
-        <svg className="w-24 h-24 transform -rotate-90">
-          <circle
-            cx="48"
-            cy="48"
-            r="40"
-            stroke="currentColor"
-            strokeWidth="8"
-            fill="none"
-            className="text-gray-200"
-          />
-          <circle
-            cx="48"
-            cy="48"
-            r="40"
-            stroke="currentColor"
-            strokeWidth="8"
-            fill="none"
-            strokeDasharray={`${2 * Math.PI * 40}`}
-            strokeDashoffset={`${2 * Math.PI * 40 * (1 - score / 100)}`}
-            className={`${
-              score >= 80 ? 'text-green-500' :
-              score >= 60 ? 'text-blue-500' :
-              score >= 40 ? 'text-yellow-500' :
-              'text-red-500'
-            } transition-all duration-1000`}
-            strokeLinecap="round"
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-bold">{score}</span>
-        </div>
-      </div>
-      <p className="text-sm text-gray-600 mt-2 text-center">{label}</p>
-    </div>
-  );
+export default function EvaluationResults({ results, onReset }: EvaluationResultsProps) {
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getScoreBg = (score: number) => {
+    if (score >= 80) return 'bg-green-100';
+    if (score >= 60) return 'text-yellow-100';
+    return 'bg-red-100';
+  };
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 90) return 'ممتاز جداً';
+    if (score >= 80) return 'ممتاز';
+    if (score >= 70) return 'جيد جداً';
+    if (score >= 60) return 'جيد';
+    if (score >= 50) return 'مقبول';
+    return 'يحتاج تطوير';
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-3xl mb-6">
-            <Award className="w-10 h-10 text-white" />
+    <div className="max-w-6xl mx-auto">
+      <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">نتائج التقييم</h2>
+          <div className={`inline-flex flex-col items-center justify-center w-40 h-40 rounded-full ${getScoreBg(results.score)} mb-4`}>
+            <span className={`text-6xl font-bold ${getScoreColor(results.score)}`}>
+              {results.score}
+            </span>
+            <span className="text-sm font-semibold text-gray-700 mt-1">
+              {getScoreLabel(results.score)}
+            </span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            نتائج التقييم 🎉
-          </h1>
-          <p className="text-xl text-gray-600">
-            تحليل شامل لفكرتك من 6 خبراء افتراضيين
-          </p>
-        </motion.div>
+        </div>
 
-        {/* Overall Score */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-3xl shadow-2xl p-8 mb-8"
-        >
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">التقييم الإجمالي</h2>
-            <div className="flex justify-center mb-6">
-              <div className="relative w-40 h-40">
-                <svg className="w-40 h-40 transform -rotate-90">
-                  <circle
-                    cx="80"
-                    cy="80"
-                    r="70"
-                    stroke="currentColor"
-                    strokeWidth="12"
-                    fill="none"
-                    className="text-gray-200"
-                  />
-                  <circle
-                    cx="80"
-                    cy="80"
-                    r="70"
-                    stroke="currentColor"
-                    strokeWidth="12"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 70}`}
-                    strokeDashoffset={`${2 * Math.PI * 70 * (1 - evaluation.overallScore / 100)}`}
-                    className={`${
-                      evaluation.overallScore >= 80 ? 'text-green-500' :
-                      evaluation.overallScore >= 60 ? 'text-blue-500' :
-                      evaluation.overallScore >= 40 ? 'text-yellow-500' :
-                      'text-red-500'
-                    } transition-all duration-1000`}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-5xl font-bold">{evaluation.overallScore}</span>
-                  <span className="text-sm text-gray-600">من 100</span>
-                </div>
-              </div>
-            </div>
-            {evaluation.successProbability && (
-              <p className="text-lg text-gray-700 mb-4">
-                <span className="font-bold">احتمالية النجاح:</span> {evaluation.successProbability}%
-              </p>
-            )}
-            {evaluation.investmentRecommendation && (
-              <div className={`inline-block px-6 py-3 rounded-full font-bold ${
-                evaluation.investmentRecommendation.includes('موصى به') ? 'bg-green-100 text-green-800' :
-                evaluation.investmentRecommendation.includes('محتمل') ? 'bg-blue-100 text-blue-800' :
-                evaluation.investmentRecommendation.includes('تطوير') ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
-              }`}>
-                {evaluation.investmentRecommendation}
-              </div>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Detailed Scores */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white rounded-3xl shadow-2xl p-8 mb-8"
-        >
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">التقييمات التفصيلية</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            <ScoreCircle score={evaluation.strategicAnalyst?.score || 70} label="الاستراتيجية" />
-            <ScoreCircle score={evaluation.financialExpert?.score || 70} label="المالية" />
-            <ScoreCircle score={evaluation.saudiMarketExpert?.score || 70} label="السوق السعودي" />
-
-          </div>
-        </motion.div>
-
-        {/* Immediate Actions */}
-        {evaluation.immediateActions && evaluation.immediateActions.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="bg-white rounded-3xl shadow-2xl p-8 mb-8"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <Zap className="w-8 h-8 text-orange-500" />
-              <h2 className="text-2xl font-bold text-gray-900">إجراءات فورية</h2>
-            </div>
-            <div className="space-y-3">
-              {evaluation.immediateActions.map((action, index) => (
-                <div key={index} className="flex items-start gap-3 p-4 bg-orange-50 rounded-xl">
-                  <CheckCircle className="w-6 h-6 text-orange-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-gray-800">{action}</p>
-                </div>
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-green-50 rounded-2xl p-6">
+            <h3 className="text-xl font-bold text-green-900 mb-4 flex items-center gap-2">
+              <span>✅</span> نقاط القوة
+            </h3>
+            <ul className="space-y-2">
+              {results.strengths.map((item, i) => (
+                <li key={i} className="text-green-800 flex gap-2">
+                  <span className="text-green-600 font-bold">{i + 1}.</span>
+                  <span>{item}</span>
+                </li>
               ))}
-            </div>
-          </motion.div>
-        )}
+            </ul>
+          </div>
 
-        {/* Submit to Bithrah Button */}
-        <SubmitToBithrahButton
-          ideaTitle={ideaTitle}
-          overallScore={evaluation.overallScore}
-        />
+          <div className="bg-red-50 rounded-2xl p-6">
+            <h3 className="text-xl font-bold text-red-900 mb-4 flex items-center gap-2">
+              <span>⚠️</span> نقاط الضعف
+            </h3>
+            <ul className="space-y-2">
+              {results.weaknesses.map((item, i) => (
+                <li key={i} className="text-red-800 flex gap-2">
+                  <span className="text-red-600 font-bold">{i + 1}.</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        {/* Back Button */}
-        <div className="mt-8 text-center">
+          <div className="bg-blue-50 rounded-2xl p-6">
+            <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
+              <span>🚀</span> الفرص
+            </h3>
+            <ul className="space-y-2">
+              {results.opportunities.map((item, i) => (
+                <li key={i} className="text-blue-800 flex gap-2">
+                  <span className="text-blue-600 font-bold">{i + 1}.</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="bg-orange-50 rounded-2xl p-6">
+            <h3 className="text-xl font-bold text-orange-900 mb-4 flex items-center gap-2">
+              <span>⚡</span> المخاطر
+            </h3>
+            <ul className="space-y-2">
+              {results.risks.map((item, i) => (
+                <li key={i} className="text-orange-800 flex gap-2">
+                  <span className="text-orange-600 font-bold">{i + 1}.</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="bg-purple-50 rounded-2xl p-6 mb-8">
+          <h3 className="text-xl font-bold text-purple-900 mb-4 flex items-center gap-2">
+            <span>💡</span> التوصيات الاستراتيجية
+          </h3>
+          <ul className="space-y-2">
+            {results.recommendations.map((item, i) => (
+              <li key={i} className="text-purple-800 flex gap-2">
+                <span className="text-purple-600 font-bold">{i + 1}.</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="bg-gray-50 rounded-2xl p-6 mb-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <span>📊</span> تحليل السوق
+          </h3>
+          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{results.marketAnalysis}</p>
+        </div>
+
+        <div className="bg-gray-50 rounded-2xl p-6 mb-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <span>💰</span> التوقعات المالية
+          </h3>
+          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{results.financialProjection}</p>
+        </div>
+
+        <div className="flex gap-4">
           <button
-            onClick={onBack}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
+            onClick={onReset}
+            className="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-4 rounded-xl font-semibold hover:from-purple-600 hover:to-blue-600 transition-all shadow-lg hover:shadow-xl"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span>تقييم فكرة جديدة</span>
+            تقييم فكرة جديدة
           </button>
         </div>
       </div>

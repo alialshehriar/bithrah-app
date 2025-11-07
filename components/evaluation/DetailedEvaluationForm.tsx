@@ -1,339 +1,202 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import {
-  Sparkles, ArrowRight, ArrowLeft, Loader2, Brain, Target, Users, DollarSign, Clock, Zap, Shield, Globe, TrendingUp
-} from 'lucide-react';
-import { Input, Textarea } from '@/components/ui/Input';
-import { useToast } from '@/components/ui/Toast';
 
-const categories = [
-  { value: 'technology', label: 'التقنية', icon: Zap },
-  { value: 'health', label: 'الصحة', icon: Shield },
-  { value: 'education', label: 'التعليم', icon: Brain },
-  { value: 'business', label: 'الأعمال', icon: TrendingUp },
-  { value: 'environment', label: 'البيئة', icon: Globe },
-  { value: 'other', label: 'أخرى', icon: Target },
-];
-
-interface Props {
+interface DetailedEvaluationFormProps {
+  onResults: (results: any) => void;
   onBack: () => void;
-  onSubmit: (data: any) => void;
 }
 
-export default function DetailedEvaluationForm({ onBack, onSubmit }: Props) {
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const { showToast } = useToast();
+const categories = [
+  { id: 'tech', label: 'التقنية' },
+  { id: 'health', label: 'الصحة' },
+  { id: 'education', label: 'التعليم' },
+  { id: 'business', label: 'الأعمال' },
+  { id: 'environment', label: 'البيئة' },
+  { id: 'other', label: 'أخرى' },
+];
 
+export default function DetailedEvaluationForm({ onResults, onBack }: DetailedEvaluationFormProps) {
   const [formData, setFormData] = useState({
-    title: '',
-    category: '',
-    description: '',
+    projectName: '',
+    idea: '',
     problem: '',
     solution: '',
-    targetMarket: '',
-    competitiveAdvantage: '',
-    businessModel: '',
-    fundingNeeded: '',
-    timeline: '',
+    targetAudience: '',
+    competitors: '',
+    category: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const isStepComplete = () => {
-    if (step === 1) {
-      return formData.title && formData.category && formData.description;
-    }
-    if (step === 2) {
-      return formData.problem && formData.solution && formData.targetMarket &&
-             formData.competitiveAdvantage && formData.businessModel;
-    }
-    return true;
-  };
-
-  const handleNext = () => {
-    if (!isStepComplete()) {
-      showToast({ type: 'error', title: 'الرجاء إكمال جميع الحقول المطلوبة' });
-      return;
-    }
-    setStep(2);
-  };
-
-  const handleSubmit = async () => {
-    if (!isStepComplete()) {
-      showToast({ type: 'error', title: 'الرجاء إكمال جميع الحقول المطلوبة' });
-      return;
-    }
-
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
     setLoading(true);
+
     try {
-      await onSubmit(formData);
-    } catch (error) {
-      showToast({ type: 'error', title: 'حدث خطأ أثناء التقييم' });
+      const response = await fetch('/api/evaluate/detailed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'حدث خطأ أثناء التقييم');
+      }
+
+      onResults(data.result);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl mb-4">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            تقييم تفصيلي 📋
-          </h1>
-          <p className="text-lg text-gray-600">
-            املأ جميع التفاصيل للحصول على تقييم دقيق من 6 خبراء
-          </p>
-        </motion.div>
-
-        {/* Progress */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-gray-600">
-              الخطوة {step} من 2
-            </span>
-            <span className="text-sm font-medium text-cyan-600">
-              {Math.round((step / 2) * 100)}%
-            </span>
-          </div>
-          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
-              initial={{ width: 0 }}
-              animate={{ width: `${(step / 2) * 100}%` }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">تقييم تفصيلي</h2>
+          <p className="text-gray-600">املأ التفاصيل للحصول على تقييم شامل ودقيق</p>
         </div>
 
-        {/* Form Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl shadow-2xl p-8 md:p-10"
-        >
-          {/* Step 1: Basic Info */}
-          {step === 1 && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="space-y-6"
-            >
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">المعلومات الأساسية</h2>
-                <p className="text-gray-600">أخبرنا عن فكرتك الاستثمارية</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  عنوان الفكرة *
-                </label>
-                <Input
-                  value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
-                  placeholder="مثال: منصة تعليمية بالذكاء الاصطناعي"
-                  disabled={loading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  التصنيف *
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {categories.map((cat) => {
-                    const Icon = cat.icon;
-                    return (
-                      <button
-                        key={cat.value}
-                        onClick={() => handleInputChange('category', cat.value)}
-                        disabled={loading}
-                        className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all ${
-                          formData.category === cat.value
-                            ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span>{cat.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  وصف الفكرة *
-                </label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  placeholder="اشرح فكرتك بالتفصيل..."
-                  rows={5}
-                  disabled={loading}
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 2: Detailed Info */}
-          {step === 2 && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="space-y-6"
-            >
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">التفاصيل الاستراتيجية</h2>
-                <p className="text-gray-600">معلومات إضافية لتقييم أدق</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  المشكلة التي تحلها *
-                </label>
-                <Textarea
-                  value={formData.problem}
-                  onChange={(e) => handleInputChange('problem', e.target.value)}
-                  placeholder="ما هي المشكلة الأساسية التي تحلها فكرتك؟"
-                  rows={3}
-                  disabled={loading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  الحل المقترح *
-                </label>
-                <Textarea
-                  value={formData.solution}
-                  onChange={(e) => handleInputChange('solution', e.target.value)}
-                  placeholder="كيف تحل فكرتك هذه المشكلة؟"
-                  rows={3}
-                  disabled={loading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  السوق المستهدف *
-                </label>
-                <Input
-                  value={formData.targetMarket}
-                  onChange={(e) => handleInputChange('targetMarket', e.target.value)}
-                  placeholder="من هم عملاؤك المستهدفون؟"
-                  disabled={loading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  الميزة التنافسية *
-                </label>
-                <Textarea
-                  value={formData.competitiveAdvantage}
-                  onChange={(e) => handleInputChange('competitiveAdvantage', e.target.value)}
-                  placeholder="ما الذي يميز فكرتك عن المنافسين؟"
-                  rows={3}
-                  disabled={loading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  نموذج العمل *
-                </label>
-                <Textarea
-                  value={formData.businessModel}
-                  onChange={(e) => handleInputChange('businessModel', e.target.value)}
-                  placeholder="كيف ستحقق الإيرادات؟"
-                  rows={3}
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    التمويل المطلوب (اختياري)
-                  </label>
-                  <Input
-                    value={formData.fundingNeeded}
-                    onChange={(e) => handleInputChange('fundingNeeded', e.target.value)}
-                    placeholder="مثال: 500,000 ريال"
-                    disabled={loading}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    الإطار الزمني (اختياري)
-                  </label>
-                  <Input
-                    value={formData.timeline}
-                    onChange={(e) => handleInputChange('timeline', e.target.value)}
-                    placeholder="مثال: 12 شهر"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-4 mt-8 pt-8 border-t border-gray-200">
-            <button
-              onClick={step === 1 ? onBack : () => setStep(1)}
-              disabled={loading}
-              className="flex items-center justify-center gap-2 px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>رجوع</span>
-            </button>
-
-            {step === 1 ? (
-              <button
-                onClick={handleNext}
-                disabled={loading || !isStepComplete()}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span>التالي</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={loading || !isStepComplete()}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>جاري التقييم...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>تقييم الفكرة</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </>
-                )}
-              </button>
-            )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-lg font-semibold text-gray-900 mb-3">
+              1. اسم المشروع *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.projectName}
+              onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 transition-colors"
+              placeholder="مثال: منصة تعليم"
+            />
           </div>
-        </motion.div>
+
+          <div>
+            <label className="block text-lg font-semibold text-gray-900 mb-3">
+              2. وصف الفكرة *
+            </label>
+            <textarea
+              required
+              value={formData.idea}
+              onChange={(e) => setFormData({ ...formData, idea: e.target.value })}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 transition-colors resize-none"
+              rows={4}
+              placeholder="اشرح فكرتك بالتفصيل..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-lg font-semibold text-gray-900 mb-3">
+              3. المشكلة *
+            </label>
+            <textarea
+              required
+              value={formData.problem}
+              onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 transition-colors resize-none"
+              rows={3}
+              placeholder="ما المشكلة التي يحلها مشروعك؟"
+            />
+          </div>
+
+          <div>
+            <label className="block text-lg font-semibold text-gray-900 mb-3">
+              4. الحل المقترح *
+            </label>
+            <textarea
+              required
+              value={formData.solution}
+              onChange={(e) => setFormData({ ...formData, solution: e.target.value })}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 transition-colors resize-none"
+              rows={4}
+              placeholder="كيف يحل مشروعك هذه المشكلة؟"
+            />
+          </div>
+
+          <div>
+            <label className="block text-lg font-semibold text-gray-900 mb-3">
+              5. الجمهور المستهدف *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.targetAudience}
+              onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 transition-colors"
+              placeholder="من هم عملاؤك المستهدفون؟"
+            />
+          </div>
+
+          <div>
+            <label className="block text-lg font-semibold text-gray-900 mb-3">
+              6. المنافسون *
+            </label>
+            <textarea
+              required
+              value={formData.competitors}
+              onChange={(e) => setFormData({ ...formData, competitors: e.target.value })}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 transition-colors resize-none"
+              rows={3}
+              placeholder="من هم منافسوك الرئيسيون؟"
+            />
+          </div>
+
+          <div>
+            <label className="block text-lg font-semibold text-gray-900 mb-3">
+              7. التصنيف (اختياري)
+            </label>
+            <select
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 transition-colors"
+            >
+              <option value="">اختر التصنيف</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-4 pt-4">
+            <button
+              type="button"
+              onClick={onBack}
+              className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50"
+            >
+              رجوع
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-3 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  جاري التحليل التفصيلي...
+                </>
+              ) : (
+                'تحليل المشروع بالذكاء الاصطناعي'
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
