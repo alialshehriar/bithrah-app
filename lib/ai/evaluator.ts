@@ -32,6 +32,10 @@ export interface EvaluationResult {
  * Evaluate a quick idea using GPT-4 Turbo with comprehensive analysis
  */
 export async function evaluateQuickIdea(input: QuickEvaluationInput): Promise<EvaluationResult> {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured');
+  }
+
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
@@ -180,6 +184,10 @@ ${input.category ? `**التصنيف:** ${input.category}` : ''}
  * Evaluate a detailed idea using GPT-4 Turbo with comprehensive analysis
  */
 export async function evaluateDetailedIdea(input: DetailedEvaluationInput): Promise<EvaluationResult> {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured');
+  }
+
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
