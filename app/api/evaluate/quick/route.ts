@@ -20,8 +20,11 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Quick evaluation error:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     return NextResponse.json(
-      { error: error.message || 'حدث خطأ أثناء تقييم الفكرة' },
+      { error: `${error.name}: ${error.message}` || 'حدث خطأ أثناء تقييم الفكرة' },
       { status: 500 }
     );
   }
