@@ -152,7 +152,8 @@ ${generateJsonExample()}`;
       ],
       temperature: 0.7,
       max_tokens: 2500,
-      response_format: { type: 'json_object' },
+      response_format: { type: 'json_object' }
+    }, {
       timeout: 80000 // 80 seconds timeout (within 90s route limit)
     });
 
