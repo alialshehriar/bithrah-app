@@ -114,12 +114,20 @@ export default function EvaluatePage() {
 
   // Detailed Evaluation Handlers
   const handleDetailedSubmit = async (formData: any) => {
+    setIsLoading(true);
     try {
+      // Use AbortController with 120s timeout for comprehensive evaluation
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000);
+      
       const response = await fetch('/api/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       const data = await response.json();
       
@@ -129,9 +137,15 @@ export default function EvaluatePage() {
       } else {
         throw new Error(data.error || 'Failed to evaluate idea');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Detailed evaluation error:', error);
-      alert('حدث خطأ أثناء التقييم. يرجى المحاولة مرة أخرى.');
+      if (error.name === 'AbortError') {
+        alert('انتهت مهلة التقييم. يرجى المحاولة مرة أخرى.');
+      } else {
+        alert('حدث خطأ أثناء التقييم. يرجى المحاولة مرة أخرى.');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
