@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { expandQuickIdea, QuickIdeaInput } from '@/lib/ai/quickIdeaExpander';
 
+// Increase timeout for AI evaluation (max 60s for Pro plan)
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
