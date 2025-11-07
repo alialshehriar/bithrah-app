@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { evaluateIdea } from '@/lib/ai/ideaEvaluator';
 
+// Increase timeout for AI evaluation (max 60s for Pro plan, 10s for Hobby)
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     console.log('=== AI Evaluation API Called ===');

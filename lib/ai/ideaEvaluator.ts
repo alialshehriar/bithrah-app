@@ -318,7 +318,7 @@ ${input.existingTraction ? `الإنجازات الحالية: ${input.existingT
         { role: 'user', content: userPrompt }
       ],
       temperature: 0.8,
-      max_tokens: 16000,
+      max_tokens: 8000,
       response_format: { type: 'json_object' }
     });
 

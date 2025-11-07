@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { projects, users, negotiations, negotiationMessages } from '@/lib/db/schema';
+
+// Increase timeout for AI negotiation
+export const maxDuration = 60;
 import { eq } from 'drizzle-orm';
 import { generateInitialGreeting } from '@/lib/ai/negotiationAgent';
 
