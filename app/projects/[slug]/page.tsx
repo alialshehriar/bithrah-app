@@ -381,7 +381,7 @@ export default function ProjectPage() {
             >
               <h3 className="text-xl font-bold text-gray-900 mb-6">اتخذ إجراء</h3>
                             <Link
-                href={`/negotiate/${project.id}`}
+                href={`/projects/${project.slug || project.id}/negotiate`}
                 className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2 mb-4"
               >
                 <Shield className="w-5 h-5" />
