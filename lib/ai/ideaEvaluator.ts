@@ -145,7 +145,7 @@ ${generatePerspectivePrompts()}
 ${generateJsonExample()}`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Faster and cheaper than gpt-4o
+      model: 'gpt-4-turbo', // Faster and cheaper than gpt-4o
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
