@@ -68,35 +68,25 @@ export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEval
 **المطلوب:**
 
 1. **التقييم الإجمالي:**
-- overallScore: رقم من 100 (60-70 = متوسط، 70-80 = جيد، 80+ = ممتاز)
-- successProbability: نسبة النجاح المئوية (20-40% = عادي، 40-60% = جيد)
-- investmentRecommendation: أحد هذه ("استثمار موصى به"، "استثمار محتمل"، "يحتاج تطوير"، "غير موصى به")
+- overallScore: رقم من 100
+- successProbability: نسبة النجاح %
+- investmentRecommendation: ("استثمار موصى به" أو "استثمار محتمل" أو "يحتاج تطوير" أو "غير موصى به")
 
-2. **ثلاثة منظورات:**
-
-**أ) المحلل الاستراتيجي** (strategicAnalyst):
+2. **ثلاثة منظورات** (كل منظور يحتوي):
 - score: من 100
-- strengths: 3 نقاط قوة محددة
-- weaknesses: 3 نقاط ضعف صريحة
-- recommendations: 3 توصيات عملية
-- keyInsight: رؤية رئيسية (جملتين)
+- strengths: 3 نقاط قوة (جملة واحدة لكل نقطة)
+- weaknesses: 3 نقاط ضعف (جملة واحدة لكل نقطة)
+- recommendations: 3 توصيات (جملة واحدة لكل توصية)
+- keyInsight: رؤية رئيسية (جملة واحدة)
 
-**ب) الخبير المالي** (financialExpert):
-- نفس البنية
-- ركز على: نموذج الإيرادات، التكاليف، ROI
+**strategicAnalyst**: التحليل الاستراتيجي
+**financialExpert**: التحليل المالي (نموذج الإيرادات، التكاليف، ROI)
+**saudiMarketExpert**: السوق السعودي (المنافسة، سلوك المستهلك)
 
-**ج) خبير السوق السعودي** (saudiMarketExpert):
-- نفس البنية
-- ركز على: المنافسة المحلية، سلوك المستهلك السعودي
-
-3. **توصيات مرحلية** (كل توصية = 2-3 جمل):
-
-**immediateActions** (3-5 إجراءات فورية)
-**shortTermSteps** (3-5 خطوات قصيرة المدى)
-**longTermVision** (3-5 رؤية طويلة المدى)
-
-**مثال للتوصية الجيدة:**
-"إجراء 30 مقابلة مع عملاء محتملين خلال 3 أسابيع للتحقق من الحاجة الفعلية. استخدم استبيان منظم من 10 أسئلة وسجل النتائج في جدول."
+3. **توصيات مرحلية** (3 توصيات لكل مرحلة، جملة واحدة لكل توصية):
+- immediateActions: إجراءات فورية
+- shortTermSteps: خطوات قصيرة المدى
+- longTermVision: رؤية طويلة المدى
 
 أرجع JSON فقط بهذا الشكل:
 {
@@ -118,8 +108,9 @@ export async function evaluateIdea(input: IdeaEvaluationInput): Promise<IdeaEval
         { role: 'user', content: userPrompt }
       ],
       temperature: 0.7,
-      max_tokens: 3000,
-      response_format: { type: 'json_object' }
+      max_tokens: 2000,
+      response_format: { type: 'json_object' },
+      timeout: 50000 // 50 seconds timeout
     });
 
     const content = response.choices[0]?.message?.content;
