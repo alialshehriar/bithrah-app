@@ -150,7 +150,7 @@ export async function expandQuickIdea(
       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini', // Fast and cost-effective for quick analysis
+      model: 'gpt-4-turbo', // GPT-4 Turbo for high-quality analysis
       messages: [
         {
           role: 'system',
