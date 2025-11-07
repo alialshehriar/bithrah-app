@@ -7,10 +7,6 @@
 
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export interface QuickIdeaInput {
   idea: string;
   problem: string;
@@ -148,6 +144,11 @@ export async function expandQuickIdea(
   input: QuickIdeaInput
 ): Promise<ExpandedIdeaDetails> {
   const prompt = buildQuickIdeaExpansionPrompt(input);
+
+  // Initialize OpenAI client (must be inside function to access runtime env vars)
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
 
   const completion = await openai.chat.completions.create({
     model: 'gpt-4-turbo',
