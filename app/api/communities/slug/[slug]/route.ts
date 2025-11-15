@@ -37,7 +37,7 @@ export async function GET(
       .limit(1);
 
     // Fetch posts with authors
-    const postsData = await db
+    let postsData = await db
       .select({
         id: communityPosts.id,
         content: communityPosts.content,
@@ -56,6 +56,167 @@ export async function GET(
       .where(eq(communityPosts.communityId, community.id))
       .orderBy(communityPosts.createdAt)
       .limit(20);
+
+    // Add hardcoded demo posts if no posts exist
+    if (postsData.length === 0) {
+      const demoPosts: any[] = [];
+      
+      if (slug === 'bithrah-demo-community') {
+        demoPosts.push(
+          {
+            id: 1,
+            content: 'مرحباً بالجميع في مجتمع بذرة! 🌱 نحن متحمسون لرؤية أفكاركم ومشاريعكم تنمو وتزدهر. شاركونا تجاربكم!',
+            attachments: null,
+            likesCount: 15,
+            commentsCount: 3,
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+            authorId: 32,
+            authorName: 'مدير بذرة',
+            authorUsername: 'bithrah_admin',
+            authorAvatar: null,
+            authorLevel: 'expert',
+          },
+          {
+            id: 2,
+            content: 'نصيحة اليوم: التواصل مع المستثمرين يتطلب عرضاً واضحاً ومختصراً لفكرتك. ركز على المشكلة والحل والسوق المستهدف 💡',
+            attachments: null,
+            likesCount: 23,
+            commentsCount: 5,
+            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+            authorId: 32,
+            authorName: 'مدير بذرة',
+            authorUsername: 'bithrah_admin',
+            authorAvatar: null,
+            authorLevel: 'expert',
+          },
+          {
+            id: 3,
+            content: 'هل تعلم؟ 70% من المشاريع الناجحة بدأت بفكرة بسيطة تم تطويرها تدريجياً. لا تنتظر الفكرة المثالية، ابدأ الآن! 🚀',
+            attachments: null,
+            likesCount: 18,
+            commentsCount: 4,
+            createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+            authorId: 32,
+            authorName: 'مدير بذرة',
+            authorUsername: 'bithrah_admin',
+            authorAvatar: null,
+            authorLevel: 'expert',
+          },
+          {
+            id: 4,
+            content: 'سؤال للمجتمع: ما أكبر تحدي واجهتموه في رحلة ريادة الأعمال؟ شاركونا تجاربكم 🤔',
+            attachments: null,
+            likesCount: 31,
+            commentsCount: 12,
+            createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+            authorId: 32,
+            authorName: 'مدير بذرة',
+            authorUsername: 'bithrah_admin',
+            authorAvatar: null,
+            authorLevel: 'expert',
+          },
+          {
+            id: 5,
+            content: 'تهانينا لجميع الأعضاء الذين أطلقوا مشاريعهم هذا الشهر! 🎉 نحن فخورون بكم ونتطلع لرؤية نجاحاتكم',
+            attachments: null,
+            likesCount: 42,
+            commentsCount: 8,
+            createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+            authorId: 32,
+            authorName: 'مدير بذرة',
+            authorUsername: 'bithrah_admin',
+            authorAvatar: null,
+            authorLevel: 'expert',
+          }
+        );
+      } else if (slug === 'tech-innovation-community') {
+        demoPosts.push(
+          {
+            id: 6,
+            content: 'مرحباً بكم في مجتمع التقنية والابتكار! 💻 هنا نناقش أحدث التقنيات وكيفية استخدامها في مشاريعكم',
+            attachments: null,
+            likesCount: 12,
+            commentsCount: 2,
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+            authorId: 32,
+            authorName: 'مدير بذرة',
+            authorUsername: 'bithrah_admin',
+            authorAvatar: null,
+            authorLevel: 'expert',
+          },
+          {
+            id: 7,
+            content: 'الذكاء الاصطناعي يغير قواعد اللعبة في ريادة الأعمال. كيف تستخدمون AI في مشاريعكم؟ 🤖',
+            attachments: null,
+            likesCount: 28,
+            commentsCount: 7,
+            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+            authorId: 32,
+            authorName: 'مدير بذرة',
+            authorUsername: 'bithrah_admin',
+            authorAvatar: null,
+            authorLevel: 'expert',
+          },
+          {
+            id: 8,
+            content: 'نصيحة تقنية: استخدموا أدوات no-code لبناء MVP سريع قبل الاستثمار في التطوير الكامل 🛠️',
+            attachments: null,
+            likesCount: 19,
+            commentsCount: 4,
+            createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
+            authorId: 32,
+            authorName: 'مدير بذرة',
+            authorUsername: 'bithrah_admin',
+            authorAvatar: null,
+            authorLevel: 'expert',
+          }
+        );
+      } else if (slug === 'entrepreneurship-community') {
+        demoPosts.push(
+          {
+            id: 9,
+            content: 'أهلاً بكم في مجتمع ريادة الأعمال! 🚀 هنا نتشارك الخبرات والدروس المستفادة من رحلتنا',
+            attachments: null,
+            likesCount: 16,
+            commentsCount: 3,
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+            authorId: 32,
+            authorName: 'مدير بذرة',
+            authorUsername: 'bithrah_admin',
+            authorAvatar: null,
+            authorLevel: 'expert',
+          },
+          {
+            id: 10,
+            content: 'درس مهم: الفشل جزء من النجاح. كل رائد أعمال ناجح فشل عدة مرات قبل أن ينجح 💪',
+            attachments: null,
+            likesCount: 35,
+            commentsCount: 9,
+            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+            authorId: 32,
+            authorName: 'مدير بذرة',
+            authorUsername: 'bithrah_admin',
+            authorAvatar: null,
+            authorLevel: 'expert',
+          },
+          {
+            id: 11,
+            content: 'كيف تبني فريقاً قوياً؟ شاركونا تجاربكم في اختيار الشركاء والموظفين 👥',
+            attachments: null,
+            likesCount: 22,
+            commentsCount: 6,
+            createdAt: new Date(Date.now() - 10 * 60 * 60 * 1000),
+            authorId: 32,
+            authorName: 'مدير بذرة',
+            authorUsername: 'bithrah_admin',
+            authorAvatar: null,
+            authorLevel: 'expert',
+          }
+        );
+      }
+      
+      postsData = demoPosts;
+    }
 
     // Fetch members with user data
     const membersData = await db
