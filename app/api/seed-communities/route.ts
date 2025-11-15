@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 export async function GET() {
   try {
     // Add posts for community 13 (مجتمع بذره التجريبي)
-    const community13Posts = [
+    const community13Posts: any[] = [
       {
         communityId: 13,
         userId: 32,
@@ -55,7 +55,7 @@ export async function GET() {
     ];
 
     // Add posts for community 14 (مجتمع التقنية والابتكار)
-    const community14Posts = [
+    const community14Posts: any[] = [
       {
         communityId: 14,
         userId: 32,
@@ -86,7 +86,7 @@ export async function GET() {
     ];
 
     // Add posts for community 15 (مجتمع ريادة الأعمال)
-    const community15Posts = [
+    const community15Posts: any[] = [
       {
         communityId: 15,
         userId: 32,
