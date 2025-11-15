@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Logo from '../brand/Logo';
-import { Twitter, Linkedin, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { Linkedin, Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -36,9 +36,9 @@ const Footer = () => {
   };
 
   const socialLinks = [
-    { name: 'Twitter', icon: Twitter, href: 'https://twitter.com/bithrah' },
-    { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com/company/bithrah' },
-    { name: 'Instagram', icon: Instagram, href: 'https://instagram.com/bithrah' },
+    { name: 'Email', icon: Mail, href: 'mailto:info@bithrahapp.com' },
+    { name: 'WhatsApp', icon: MessageCircle, href: 'https://wa.me/966592725341' },
+    { name: 'LinkedIn', icon: Linkedin, href: 'https://www.linkedin.com/in/ali-saeed-alshehri-ar?utm_source=share_via&utm_content=profile&utm_medium=member_ios' },
   ];
 
   return (
