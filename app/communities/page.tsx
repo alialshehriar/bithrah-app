@@ -14,6 +14,7 @@ import EmptyState from '@/components/ui/EmptyState';
 interface Community {
   id: number;
   name: string;
+  slug: string;
   description: string;
   category: string;
   privacy: string;
@@ -220,7 +221,7 @@ export default function CommunitiesPage() {
                   transition={{ delay: index * 0.05 }}
                 >
                   <Link
-                    href={`/communities/${community.id}`}
+                    href={`/communities/${community.slug}`}
                     className="block bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden group"
                   >
                     {/* Cover Image */}
