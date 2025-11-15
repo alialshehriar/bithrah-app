@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
       .select({
         id: communities.id,
         name: communities.name,
+        slug: communities.slug,
         description: communities.description,
         category: communities.category,
         tier: communities.tier,
@@ -59,6 +60,7 @@ export async function GET(request: NextRequest) {
     const formatted = result.map(c => ({
       id: c.id,
       name: c.name || '',
+      slug: c.slug || '',
       description: c.description || '',
       category: c.category || 'other',
       privacy: c.tier === 'public' ? 'public' : 'private',
