@@ -9,6 +9,7 @@ import {
   Heart, MessageCircle, Award, Shield, Clock, DollarSign, CheckCircle,
   Star, MapPin, Briefcase, Globe, Mail, Phone, Sparkles
 } from 'lucide-react';
+import ShareButton from '@/components/ShareButton';
 
 interface Project {
   id: number;
@@ -392,9 +393,14 @@ export default function ProjectPage() {
               </button>
 
               <div className="grid grid-cols-3 gap-3">
-                <button className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all">
-                  <Share2 className="w-5 h-5 text-gray-600 mx-auto" />
-                </button>
+                <ShareButton
+                  url={typeof window !== 'undefined' ? window.location.href : ''}
+                  title={project?.title || ''}
+                  description={project?.description || ''}
+                  variant="secondary"
+                  size="md"
+                  shape="icon"
+                />
                 <button className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all">
                   <Bookmark className="w-5 h-5 text-gray-600 mx-auto" />
                 </button>

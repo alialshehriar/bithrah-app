@@ -13,8 +13,10 @@ import {
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import OnboardingPopup from '@/components/OnboardingPopup';
 
 export default function HomePage() {
+  const [user, setUser] = useState<any>(null);
   const [featuredProjects, setFeaturedProjects] = useState<any[]>([]);
   const [trendingProjects, setTrendingProjects] = useState<any[]>([]);
   const [communities, setCommunities] = useState<any[]>([]);
@@ -41,6 +43,15 @@ export default function HomePage() {
 
   const fetchHomeData = async () => {
     try {
+      // Fetch user profile
+      const userRes = await fetch('/api/user/profile');
+      if (userRes.ok) {
+        const data = await userRes.json();
+        if (data.success) {
+          setUser(data.user);
+        }
+      }
+
       // Fetch platform stats
       const platformStatsRes = await fetch('/api/stats/platform');
       if (platformStatsRes.ok) {
@@ -155,6 +166,15 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-teal-50/20">
       <Navigation />
+      
+      {/* Onboarding Popup for new users */}
+      {user && (
+        <OnboardingPopup
+          userName={user.name}
+          referralCode={user.referralCode}
+          subscriptionEndDate={user.subscriptionEndDate}
+        />
+      )}
 
       <div className="pt-20 pb-12">
         {/* Hero Section with User Stats */}

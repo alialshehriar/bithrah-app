@@ -54,7 +54,7 @@ export default function MessagesPage() {
   const fetchConversations = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/messages');
+      const response = await fetch('/api/conversations');
       const data = await response.json();
 
       if (data.success) {
@@ -69,7 +69,7 @@ export default function MessagesPage() {
 
   const fetchMessages = async (conversationId: number) => {
     try {
-      const response = await fetch(`/api/messages/${conversationId}`);
+      const response = await fetch(`/api/conversations/${conversationId}/messages`);
       const data = await response.json();
 
       if (data.success) {
@@ -85,7 +85,7 @@ export default function MessagesPage() {
     if (!messageInput.trim() || !selectedConversation) return;
 
     try {
-      const response = await fetch(`/api/messages/${selectedConversation}`, {
+      const response = await fetch(`/api/conversations/${selectedConversation}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

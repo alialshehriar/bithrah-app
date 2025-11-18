@@ -5,6 +5,8 @@ import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 import { randomUUID } from 'crypto';
+import { nanoid } from 'nanoid';
+import { sendWelcomeEmail } from '@/lib/resend-service';
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.NEXTAUTH_SECRET || 'bithrah-super-secret-key-2025-production-v1'
@@ -70,6 +72,14 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Generate referral code
+    const referralCode = nanoid(10).toUpperCase();
+
+    // Set subscription (Investor tier for 1 year for beta users)
+    const subscriptionStartDate = new Date();
+    const subscriptionEndDate = new Date();
+    subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
+
     // Create user
     const [newUser] = await db
       .insert(users)
@@ -78,6 +88,11 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         username,
         name: name,
+        referralCode,
+        subscriptionTier: 'investor', // Beta users get investor tier
+        subscriptionStatus: 'active',
+        subscriptionStartDate,
+        subscriptionEndDate,
       } as any)
       .returning();
 
@@ -113,6 +128,13 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
+
+    // Send welcome email (don't wait for it)
+    sendWelcomeEmail({
+      to: newUser.email,
+      name: newUser.name || newUser.email,
+      referralCode: newUser.referralCode || '',
+    }).catch(err => console.error('Failed to send welcome email:', err));
 
     return response;
   } catch (error) {

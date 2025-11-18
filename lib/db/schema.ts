@@ -1415,3 +1415,64 @@ export const supportPackages = pgTable('support_packages', {
 
 
 
+
+// ============================================
+// SOCIAL - FOLLOWS & FRIENDS
+// ============================================
+
+export const follows = pgTable('follows', {
+  id: serial('id').primaryKey(),
+  followerId: integer('follower_id').references(() => users.id).notNull(), // User who follows
+  followingId: integer('following_id').references(() => users.id).notNull(), // User being followed
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  followerIdx: index('follows_follower_idx').on(table.followerId),
+  followingIdx: index('follows_following_idx').on(table.followingId),
+  uniqueFollow: index('follows_unique_idx').on(table.followerId, table.followingId),
+}));
+
+// ============================================
+// MESSAGES & CONVERSATIONS
+// ============================================
+
+export const conversations = pgTable('conversations', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  type: varchar('type', { length: 50 }).default('direct').notNull(), // direct, group
+  name: varchar('name', { length: 255 }), // For group chats
+  avatar: varchar('avatar', { length: 500 }), // For group chats
+  lastMessageAt: timestamp('last_message_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const conversationParticipants = pgTable('conversation_participants', {
+  id: serial('id').primaryKey(),
+  conversationId: integer('conversation_id').references(() => conversations.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  role: varchar('role', { length: 50 }).default('member'), // admin, member
+  joinedAt: timestamp('joined_at').defaultNow().notNull(),
+  lastReadAt: timestamp('last_read_at'),
+  mutedUntil: timestamp('muted_until'),
+}, (table) => ({
+  conversationIdx: index('conversation_participants_conversation_idx').on(table.conversationId),
+  userIdx: index('conversation_participants_user_idx').on(table.userId),
+}));
+
+export const messages = pgTable('messages', {
+  id: serial('id').primaryKey(),
+  uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  conversationId: integer('conversation_id').references(() => conversations.id).notNull(),
+  senderId: integer('sender_id').references(() => users.id).notNull(),
+  content: text('content'),
+  type: varchar('type', { length: 50 }).default('text'), // text, image, file, system
+  attachments: jsonb('attachments'), // Array of file URLs
+  metadata: jsonb('metadata'),
+  isEdited: boolean('is_edited').default(false),
+  isDeleted: boolean('is_deleted').default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  conversationIdx: index('messages_conversation_idx').on(table.conversationId),
+  senderIdx: index('messages_sender_idx').on(table.senderId),
+}));

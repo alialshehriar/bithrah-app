@@ -28,7 +28,7 @@ export default function ProfilePage() {
     experience: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'projects' | 'backings' | 'activity'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'backings' | 'marketing' | 'communities' | 'favorites' | 'referrals'>('projects');
   const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
@@ -103,7 +103,10 @@ export default function ProfilePage() {
   const tabs = [
     { id: 'projects', label: 'مشاريعي', icon: Briefcase, count: stats.totalProjects },
     { id: 'backings', label: 'دعمت', icon: Heart, count: stats.totalBackings },
-    { id: 'activity', label: 'النشاط', icon: Activity, count: 0 },
+    { id: 'marketing', label: 'سوّقت', icon: TrendingUp, count: 0 },
+    { id: 'communities', label: 'مجتمعاتي', icon: Users, count: 0 },
+    { id: 'favorites', label: 'المفضلة', icon: Star, count: 0 },
+    { id: 'referrals', label: 'إحالاتي', icon: Gift, count: stats.totalReferrals },
   ];
 
   return (
@@ -444,16 +447,167 @@ export default function ProfilePage() {
                   </motion.div>
                 )}
 
-                {activeTab === 'activity' && (
+                {activeTab === 'marketing' && (
                   <motion.div
-                    key="activity"
+                    key="marketing"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     className="text-center py-16"
                   >
-                    <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-600 font-bold">لا يوجد نشاط حديث</p>
+                    <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600 font-bold mb-2">لم تسوّق لأي مشاريع حتى الآن</p>
+                    <p className="text-gray-500 text-sm">سوّق للمشاريع واحصل على عمولة عن كل دعم!</p>
+                  </motion.div>
+                )}
+
+                {activeTab === 'communities' && (
+                  <motion.div
+                    key="communities"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="text-center py-16"
+                  >
+                    <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600 font-bold mb-2">لم تنضم إلى أي مجتمعات حتى الآن</p>
+                    <p className="text-gray-500 text-sm">انضم إلى المجتمعات وتواصل مع المبدعين!</p>
+                  </motion.div>
+                )}
+
+                {activeTab === 'favorites' && (
+                  <motion.div
+                    key="favorites"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="text-center py-16"
+                  >
+                    <Star className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600 font-bold mb-2">لا توجد مفضلة حتى الآن</p>
+                    <p className="text-gray-500 text-sm">أضف مشاريع إلى المفضلة لتتابعها لاحقاً!</p>
+                  </motion.div>
+                )}
+
+                {activeTab === 'referrals' && (
+                  <motion.div
+                    key="referrals"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="space-y-6"
+                  >
+                    {/* Referral Code Card */}
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
+                      
+                      <div className="relative bg-gradient-to-br from-teal-50 to-purple-50 rounded-2xl p-8 border-2 border-dashed border-[#14B8A6]">
+                        <div className="text-center mb-6">
+                          <Gift className="w-16 h-16 text-[#14B8A6] mx-auto mb-4" />
+                          <h3 className="text-2xl font-black text-gray-900 mb-2">كود الإحالة الخاص بك</h3>
+                          <p className="text-gray-600">شارك هذا الكود مع أصدقائك واحصل على سنة إضافية مجاناً!</p>
+                        </div>
+                        
+                        <div className="bg-white rounded-xl p-6 mb-6">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1">
+                              <label className="text-sm text-gray-600 mb-2 block">كود الإحالة</label>
+                              <code className="text-3xl font-black text-[#14B8A6] tracking-wider">{user?.referralCode || 'LOADING...'}</code>
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(user?.referralCode || '');
+                                alert('تم نسخ كود الإحالة!');
+                              }}
+                              className="px-6 py-3 bg-gradient-to-r from-[#14B8A6] to-[#8B5CF6] text-white rounded-xl font-bold hover:shadow-2xl transition-all flex items-center gap-2"
+                            >
+                              <Share2 className="w-5 h-5" />
+                              نسخ
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-white rounded-xl p-6">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1">
+                              <label className="text-sm text-gray-600 mb-2 block">رابط الإحالة</label>
+                              <code className="text-sm text-gray-700 break-all">https://bithrahapp.com?ref={user?.referralCode}</code>
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(`https://bithrahapp.com?ref=${user?.referralCode}`);
+                                alert('تم نسخ رابط الإحالة!');
+                              }}
+                              className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all flex items-center gap-2"
+                            >
+                              <Share2 className="w-5 h-5" />
+                              نسخ
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Referral Stats */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                            <Users className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                        <div className="text-3xl font-black text-gray-900 mb-1">{stats.totalReferrals}</div>
+                        <div className="text-sm font-bold text-gray-600">إجمالي الإحالات</div>
+                      </div>
+                      
+                      <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                            <Gift className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                        <div className="text-3xl font-black text-gray-900 mb-1">{stats.totalReferrals}</div>
+                        <div className="text-sm font-bold text-gray-600">سنوات مجانية مكتسبة</div>
+                      </div>
+                      
+                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                            <DollarSign className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                        <div className="text-3xl font-black text-gray-900 mb-1">{stats.referralEarnings || '0'} ر.س</div>
+                        <div className="text-sm font-bold text-gray-600">أرباح الإحالة</div>
+                      </div>
+                    </div>
+                    
+                    {/* How it works */}
+                    <div className="bg-white rounded-2xl p-8 border border-gray-200">
+                      <h4 className="text-xl font-black text-gray-900 mb-6">كيف يعمل نظام الإحالة؟</h4>
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-full bg-[#14B8A6] text-white flex items-center justify-center font-bold flex-shrink-0">1</div>
+                          <div>
+                            <h5 className="font-bold text-gray-900 mb-1">شارك كودك أو رابطك</h5>
+                            <p className="text-gray-600 text-sm">أرسل كود الإحالة أو الرابط لأصدقائك عبر واتساب أو تويتر أو أي وسيلة أخرى</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-full bg-[#14B8A6] text-white flex items-center justify-center font-bold flex-shrink-0">2</div>
+                          <div>
+                            <h5 className="font-bold text-gray-900 mb-1">صديقك يسجل</h5>
+                            <p className="text-gray-600 text-sm">عندما يسجل صديقك عبر رابطك، يحصل على اشتراك مستثمر لمدة سنة</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-full bg-[#14B8A6] text-white flex items-center justify-center font-bold flex-shrink-0">3</div>
+                          <div>
+                            <h5 className="font-bold text-gray-900 mb-1">أنت تحصل على سنة إضافية!</h5>
+                            <p className="text-gray-600 text-sm">عند تسجيل كل شخص عبر رابطك، تحصل على سنة إضافية مجانًا من اشتراك المستثمر!</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
