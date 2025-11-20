@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import { users, projects, communities } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     // Check if admin
@@ -36,8 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { action, targetType, targetId, data } = body;
+    const { action, targetId, data } = await request.json();
 
     let result: any = {};
 
@@ -58,35 +59,35 @@ export async function POST(request: NextRequest) {
 
       case 'suspend_user':
         await db.update(users)
-          .set({ status: 'suspended', updatedAt: new Date() })
+          .set({ status: 'suspended' } as any)
           .where(eq(users.id, targetId));
         result = { message: 'تم تعليق المستخدم' };
         break;
 
       case 'activate_user':
         await db.update(users)
-          .set({ status: 'active', updatedAt: new Date() })
+          .set({ status: 'active' } as any)
           .where(eq(users.id, targetId));
         result = { message: 'تم تفعيل المستخدم' };
         break;
 
       case 'ban_user':
         await db.update(users)
-          .set({ status: 'banned', updatedAt: new Date() })
+          .set({ status: 'banned' } as any)
           .where(eq(users.id, targetId));
         result = { message: 'تم حظر المستخدم' };
         break;
 
       case 'make_admin':
         await db.update(users)
-          .set({ role: 'admin', updatedAt: new Date() })
+          .set({ role: 'admin' } as any)
           .where(eq(users.id, targetId));
         result = { message: 'تم ترقية المستخدم لمسؤول' };
         break;
 
       case 'remove_admin':
         await db.update(users)
-          .set({ role: 'user', updatedAt: new Date() })
+          .set({ role: 'user' } as any)
           .where(eq(users.id, targetId));
         result = { message: 'تم إزالة صلاحيات المسؤول' };
         break;
@@ -97,8 +98,7 @@ export async function POST(request: NextRequest) {
             subscriptionTier: data.tier,
             subscriptionStatus: data.status,
             subscriptionEndDate: data.endDate ? new Date(data.endDate) : null,
-            updatedAt: new Date()
-          })
+          } as any)
           .where(eq(users.id, targetId));
         result = { message: 'تم تحديث الاشتراك' };
         break;
@@ -115,14 +115,14 @@ export async function POST(request: NextRequest) {
 
       case 'feature_project':
         await db.update(projects)
-          .set({ featured: true, updatedAt: new Date() })
+          .set({ featured: true } as any)
           .where(eq(projects.id, targetId));
         result = { message: 'تم تمييز المشروع' };
         break;
 
       case 'unfeature_project':
         await db.update(projects)
-          .set({ featured: false, updatedAt: new Date() })
+          .set({ featured: false } as any)
           .where(eq(projects.id, targetId));
         result = { message: 'تم إلغاء تمييز المشروع' };
         break;
