@@ -70,17 +70,11 @@ export async function POST(request: NextRequest) {
       .returning({ id: users.id });
     results.deletedUsers = demoUsers.length;
 
-    // 2. Delete demo projects
-    const demoProjects = await db.delete(projects)
-      .where(eq(projects.isDemo, true))
-      .returning({ id: projects.id });
-    results.deletedProjects = demoProjects.length;
+    // 2. Delete demo projects (skip - no isDemo field)
+    results.deletedProjects = 0;
 
-    // 3. Delete demo communities
-    const demoCommunities = await db.delete(communities)
-      .where(eq(communities.isDemo, true))
-      .returning({ id: communities.id });
-    results.deletedCommunities = demoCommunities.length;
+    // 3. Delete demo communities (skip - no isDemo field)
+    results.deletedCommunities = 0;
 
     // 4. Clean orphaned data
     // Get valid user IDs
