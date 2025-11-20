@@ -4,8 +4,8 @@
  */
 
 export const isDemoMode = () => {
-  // الوضع التجريبي مفعّل افتراضياً
-  return true;
+  // الوضع التجريبي معطّل - جاهز للإطلاق
+  return false;
 };
 
 export const getDemoWalletCredit = () => {

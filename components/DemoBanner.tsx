@@ -4,11 +4,13 @@ import { Sparkles, X, Wallet, Info } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { demoConfig } from '@/lib/demo-config';
+import { isDemoMode } from '@/lib/demo-mode';
 
 export default function DemoBanner() {
   const [isVisible, setIsVisible] = useState(true);
 
-  if (!isVisible) return null;
+  // Don't show banner if not in demo mode
+  if (!isDemoMode() || !isVisible) return null;
 
   return (
     <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 border-b border-purple-700 sticky top-0 z-50 shadow-lg">

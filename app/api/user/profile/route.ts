@@ -58,6 +58,10 @@ export async function GET(request: NextRequest) {
         level: user.level || 1,
         points: user.points || 0,
         subscriptionTier: user.subscriptionTier || 'free',
+        subscriptionStatus: user.subscriptionStatus,
+        subscriptionEndDate: user.subscriptionEndDate,
+        referralCode: user.referralCode,
+        referralCount: user.referralCount || 0,
         createdAt: user.createdAt,
       },
     });

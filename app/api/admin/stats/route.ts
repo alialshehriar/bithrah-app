@@ -1,12 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
-import { users, projects, communities } from '@/lib/db/schema';
+import { users, projects, communities, backings, referrals, messages } from '@/lib/db/schema';
 import { count, sql, desc, gte, eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if admin
+    const cookieStore = await cookies();
+    const token = cookieStore.get('bithrah-token')?.value;
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'غير مصرح' },
+        { status: 401 }
+      );
+    }
+
+    const { jwtVerify } = await import('jose');
+    const JWT_SECRET = new TextEncoder().encode(
+      process.env.NEXTAUTH_SECRET || 'bithrah-super-secret-key-2025-production-v1'
+    );
+    
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const userId = payload.userId as number;
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId)
+    });
+
+    if (!user || user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, error: 'غير مصرح - يجب أن تكون مسؤولاً' },
+        { status: 403 }
+      );
+    }
     // Get total users
     const totalUsersResult = await db.select({ count: count() }).from(users);
     const totalUsers = totalUsersResult[0]?.count || 0;
@@ -55,6 +85,27 @@ export async function GET(request: NextRequest) {
       .from(communities)
       .where(eq(communities.status, 'active'));
     const activeCommunities = activeCommunitiesResult[0]?.count || 0;
+
+    // Get total backings
+    const totalBackingsResult = await db.select({ count: count() }).from(backings);
+    const totalBackings = totalBackingsResult[0]?.count || 0;
+
+    // Get total referrals
+    const totalReferralsResult = await db.select({ count: count() }).from(referrals);
+    const totalReferrals = totalReferralsResult[0]?.count || 0;
+
+    // Get subscription stats
+    const investorSubsResult = await db
+      .select({ count: count() })
+      .from(users)
+      .where(eq(users.subscriptionTier, 'investor'));
+    const investorSubs = investorSubsResult[0]?.count || 0;
+
+    const freeSubsResult = await db
+      .select({ count: count() })
+      .from(users)
+      .where(eq(users.subscriptionTier, 'free'));
+    const freeSubs = freeSubsResult[0]?.count || 0;
 
     // Get recent users
     const recentUsers = await db
@@ -105,10 +156,17 @@ export async function GET(request: NextRequest) {
         thisMonth: 0,
         avgPerProject: totalProjects > 0 ? totalFunding / totalProjects : 0,
       },
+      backings: {
+        total: totalBackings,
+        thisMonth: 0,
+      },
+      referrals: {
+        total: totalReferrals,
+        thisMonth: 0,
+      },
       subscriptions: [
-        { tier: 'مجاني', count: totalUsers, percentage: 100 },
-        { tier: 'مميز', count: 0, percentage: 0 },
-        { tier: 'احترافي', count: 0, percentage: 0 },
+        { tier: 'مجاني', count: freeSubs, percentage: totalUsers > 0 ? Math.round((freeSubs / totalUsers) * 100) : 0 },
+        { tier: 'مستثمر', count: investorSubs, percentage: totalUsers > 0 ? Math.round((investorSubs / totalUsers) * 100) : 0 },
       ],
       recentUsers: recentUsers.map(user => ({
         id: user.id,

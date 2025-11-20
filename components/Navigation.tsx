@@ -148,8 +148,9 @@ export default function Navigation() {
 
                   {/* Profile */}
                   <Link
-                    href="/settings"
+                    href="/profile"
                     className="p-3 rounded-xl bg-gray-100 hover:bg-gray-200 transition-all"
+                    title="الملف الشخصي"
                   >
                     <User className="w-5 h-5 text-gray-700" />
                   </Link>

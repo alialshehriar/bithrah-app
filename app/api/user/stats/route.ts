@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const userId = payload.userId as number;
 
     const { db } = await import('@/lib/db');
-    const { users, projects, backings, referrals } = await import('@/lib/db/schema');
+    const { users, projects, backings } = await import('@/lib/db/schema');
     const { eq, count, sql } = await import('drizzle-orm');
 
     // Get user info
@@ -53,11 +53,11 @@ export async function GET(request: NextRequest) {
       .from(backings)
       .where(eq(backings.userId, userId));
 
-    // Count referrals
+    // Count referrals (users referred by this user)
     const [referralCount] = await db
       .select({ count: count() })
-      .from(referrals)
-      .where(eq(referrals.referrerId, userId));
+      .from(users)
+      .where(eq(users.referredBy, userId));
 
     // Calculate total earnings (sum of current_funding from user's projects)
     const [earnings] = await db

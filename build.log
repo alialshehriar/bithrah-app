@@ -1,0 +1,151 @@
+
+> bithrah-app@1.0.1 build /home/ubuntu/bithrah-app-clean
+> next build
+
+  ▲ Next.js 14.2.5
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings
+
+./app/api/admin/clean-demo-data/route.ts
+Attempted import error: 'projectUpdates' is not exported from '@/lib/db/schema' (imported as 'projectUpdates').
+
+Import trace for requested module:
+./app/api/admin/clean-demo-data/route.ts
+
+./app/api/admin/clean-demo-data/route.ts
+Attempted import error: 'projectUpdates' is not exported from '@/lib/db/schema' (imported as 'projectUpdates').
+
+Import trace for requested module:
+./app/api/admin/clean-demo-data/route.ts
+
+./app/api/admin/clean-demo-data/route.ts
+Attempted import error: 'projectUpdates' is not exported from '@/lib/db/schema' (imported as 'projectUpdates').
+
+Import trace for requested module:
+./app/api/admin/clean-demo-data/route.ts
+
+./app/api/admin/clean-demo-data/route.ts
+Attempted import error: 'marketingCampaigns' is not exported from '@/lib/db/schema' (imported as 'marketingCampaigns').
+
+Import trace for requested module:
+./app/api/admin/clean-demo-data/route.ts
+
+./app/api/admin/clean-demo-data/route.ts
+Attempted import error: 'marketingCampaigns' is not exported from '@/lib/db/schema' (imported as 'marketingCampaigns').
+
+Import trace for requested module:
+./app/api/admin/clean-demo-data/route.ts
+
+./app/api/admin/clean-demo-data/route.ts
+Attempted import error: 'marketingCampaigns' is not exported from '@/lib/db/schema' (imported as 'marketingCampaigns').
+
+Import trace for requested module:
+./app/api/admin/clean-demo-data/route.ts
+
+./app/api/admin/clean-demo-data/route.ts
+Attempted import error: 'marketingCampaigns' is not exported from '@/lib/db/schema' (imported as 'marketingCampaigns').
+
+Import trace for requested module:
+./app/api/admin/clean-demo-data/route.ts
+
+./app/api/conversations/[conversationId]/messages/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/conversations/[conversationId]/messages/route.ts
+
+./app/api/conversations/[conversationId]/messages/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/conversations/[conversationId]/messages/route.ts
+
+./app/api/conversations/[conversationId]/messages/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/conversations/[conversationId]/messages/route.ts
+
+./app/api/conversations/[conversationId]/messages/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/conversations/[conversationId]/messages/route.ts
+
+./app/api/conversations/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/conversations/route.ts
+
+./app/api/conversations/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/conversations/route.ts
+
+./app/api/conversations/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/conversations/route.ts
+
+./app/api/conversations/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/conversations/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/api/admin/actions/route.ts:47:18
+Type error: Object literal may only specify known properties, and 'status' does not exist in type '{ creatorId?: number | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; title?: string | SQL<unknown> | PgColumn<...>; fundingGoal?: string | ... 1 more ... | PgColumn<...>; }'.
+
+[0m [90m 45 |[39m       [36mcase[39m [32m'approve_project'[39m[33m:[39m[0m
+[0m [90m 46 |[39m         [36mawait[39m db[33m.[39mupdate(projects)[0m
+[0m[31m[1m>[22m[39m[90m 47 |[39m           [33m.[39m[36mset[39m({ status[33m:[39m [32m'active'[39m[33m,[39m updatedAt[33m:[39m [36mnew[39m [33mDate[39m() })[0m
+[0m [90m    |[39m                  [31m[1m^[22m[39m[0m
+[0m [90m 48 |[39m           [33m.[39mwhere(eq(projects[33m.[39mid[33m,[39m targetId))[33m;[39m[0m
+[0m [90m 49 |[39m         result [33m=[39m { message[33m:[39m [32m'تم الموافقة على المشروع'[39m }[33m;[39m[0m
+[0m [90m 50 |[39m         [36mbreak[39m[33m;[39m[0m
+ ELIFECYCLE  Command failed with exit code 1.

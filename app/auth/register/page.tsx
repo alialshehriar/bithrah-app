@@ -14,6 +14,7 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
+    referralCode: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -58,6 +59,7 @@ export default function RegisterPage() {
           username: formData.username,
           email: formData.email,
           password: formData.password,
+          referralCode: formData.referralCode || undefined,
         }),
       });
 
@@ -67,10 +69,8 @@ export default function RegisterPage() {
         setError(data.error || 'حدث خطأ أثناء إنشاء الحساب');
       } else {
         setSuccess(true);
-        // Auto redirect to home page after 2 seconds
-        setTimeout(() => {
-          router.push('/home');
-        }, 2000);
+        // Show success message - user needs to verify email
+        // No auto redirect - they need to check their email
       }
     } catch (err) {
       setError('حدث خطأ أثناء إنشاء الحساب');
@@ -97,15 +97,26 @@ export default function RegisterPage() {
               <CheckCircle2 className="w-10 h-10 text-white" />
             </div>
           </motion.div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">تم إنشاء الحساب بنجاح!</h2>
-          <p className="text-gray-600 mb-6">
-            تم إرسال رابط التحقق إلى بريدك الإلكتروني. يرجى التحقق من بريدك لتفعيل حسابك.
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">تم إنشاء الحساب بنجاح! 🎉</h2>
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-4 mb-4">
+            <p className="text-emerald-800 font-medium text-sm">
+              🎁 حصلت على اشتراك مستثمر لمدة سنة كاملة مجاناً!
+            </p>
+          </div>
+          <p className="text-gray-600 mb-4">
+            تم إرسال رابط التحقق إلى بريدك الإلكتروني:
+          </p>
+          <p className="text-gray-900 font-medium mb-6">
+            {formData.email}
+          </p>
+          <p className="text-sm text-gray-500 mb-6">
+            يرجى التحقق من بريدك الإلكتروني (وصندوق الرسائل غير المرغوب فيها) لتفعيل حسابك.
           </p>
           <Link
-            href={`/auth/verify-email?token=${verificationToken}`}
-            className="inline-block bg-gradient-to-r from-teal-500 to-purple-600 text-white py-3 px-6 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+            href="/auth/signin"
+            className="inline-block bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-3 px-6 rounded-xl font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
           >
-            التحقق من البريد الإلكتروني
+            العودة لتسجيل الدخول
           </Link>
         </motion.div>
       </div>
@@ -293,6 +304,28 @@ export default function RegisterPage() {
                   )}
                 </button>
               </div>
+            </div>
+
+            {/* Referral Code Field (Optional) */}
+            <div>
+              <label htmlFor="referralCode" className="block text-sm font-medium text-gray-700 mb-2">
+                كود الإحالة (اختياري)
+              </label>
+              <div className="relative">
+                <input
+                  id="referralCode"
+                  name="referralCode"
+                  type="text"
+                  value={formData.referralCode}
+                  onChange={handleChange}
+                  className="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-center uppercase"
+                  placeholder="أدخل كود الإحالة إن وجد"
+                  maxLength={10}
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-500 text-center">
+                احصل على سنة إضافية عند استخدام كود إحالة صديق
+              </p>
             </div>
 
             {/* Submit Button */}

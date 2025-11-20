@@ -29,7 +29,11 @@ export default function SignInPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'حدث خطأ أثناء تسجيل الدخول');
+        if (data.needsVerification) {
+          setError('يرجى تأكيد بريدك الإلكتروني أولاً. تحقق من بريدك للحصول على رابط التفعيل.');
+        } else {
+          setError(data.error || 'حدث خطأ أثناء تسجيل الدخول');
+        }
         setLoading(false);
         return;
       }

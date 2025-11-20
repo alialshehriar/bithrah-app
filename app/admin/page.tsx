@@ -136,11 +136,12 @@ export default function AdminDashboard() {
   ];
 
   const quickActions = [
-    { title: 'إدارة المستخدمين', icon: Users, link: '/admin/users', color: 'from-blue-500 to-blue-600', desc: 'تحكم كامل في المستخدمين', count: stats?.users?.total || 2847 },
-    { title: 'إدارة المشاريع', icon: Rocket, link: '/admin/projects', color: 'from-purple-500 to-purple-600', desc: 'اعتماد ومراجعة المشاريع', count: stats?.projects?.total || 1234 },
-    { title: 'إدارة المحافظ', icon: Wallet, link: '/admin/wallets', color: 'from-green-500 to-green-600', desc: 'إدارة الأرصدة والمعاملات', count: stats?.wallets?.total || 2847 },
-    { title: 'إدارة المجتمعات', icon: MessageSquare, link: '/admin/communities', color: 'from-teal-500 to-teal-600', desc: 'إدارة المجتمعات والمحتوى', count: stats?.communities?.total || 45 },
-    { title: 'تقييمات الأفكار', icon: Lightbulb, link: '/admin/evaluations', color: 'from-yellow-500 to-orange-600', desc: 'عرض جميع التقييمات بالذكاء الاصطناعي', count: stats?.evaluations?.total || 567 },
+    { title: 'إدارة المستخدمين', icon: Users, link: '/admin/users', color: 'from-blue-500 to-blue-600', desc: 'تحكم كامل في المستخدمين', count: stats?.users?.total || 0 },
+    { title: 'إدارة المشاريع', icon: Rocket, link: '/admin/projects', color: 'from-purple-500 to-purple-600', desc: 'اعتماد ومراجعة المشاريع', count: stats?.projects?.total || 0 },
+    { title: 'إدارة الإحالات', icon: Award, link: '/admin/referrals', color: 'from-amber-500 to-orange-600', desc: 'تتبع نظام الإحالة والمكافآت', count: stats?.referrals?.total || 0 },
+    { title: 'إدارة المحافظ', icon: Wallet, link: '/admin/wallets', color: 'from-green-500 to-green-600', desc: 'إدارة الأرصدة والمعاملات', count: stats?.backings?.total || 0 },
+    { title: 'إدارة المجتمعات', icon: MessageSquare, link: '/admin/communities', color: 'from-teal-500 to-teal-600', desc: 'إدارة المجتمعات والمحتوى', count: stats?.communities?.total || 0 },
+    { title: 'تقييمات الأفكار', icon: Lightbulb, link: '/admin/evaluations', color: 'from-yellow-500 to-orange-600', desc: 'عرض جميع التقييمات بالذكاء الاصطناعي', count: stats?.evaluations?.total || 0 },
   ];
 
   return (

@@ -22,16 +22,33 @@ export async function POST(request: NextRequest) {
     }
 
     // Find user
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, email)
+    });
 
     if (!user) {
       return NextResponse.json(
         { error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' },
         { status: 401 }
+      );
+    }
+
+    // Check if email is verified
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        { 
+          error: 'يرجى تأكيد بريدك الإلكتروني أولاً',
+          needsVerification: true 
+        },
+        { status: 403 }
+      );
+    }
+
+    // Check if account is active
+    if (user.status !== 'active') {
+      return NextResponse.json(
+        { error: 'هذا الحساب غير نشط' },
+        { status: 403 }
       );
     }
 
@@ -45,11 +62,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Update last login
+    await db.update(users)
+      .set({ 
+        lastLoginAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, user.id));
+
     // Create JWT token
     const token = await new SignJWT({
       userId: user.id,
       email: user.email,
       name: user.name,
+      username: user.username,
+      role: user.role,
     })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
@@ -65,6 +92,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         username: user.username,
         avatar: user.avatar,
+        role: user.role,
       },
     });
 
@@ -86,4 +114,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

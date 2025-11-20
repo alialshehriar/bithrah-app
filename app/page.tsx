@@ -8,6 +8,7 @@ import {
   Rocket, Target, Heart, Award, CheckCircle, Star
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
+import BetaLaunchPopup from '@/components/BetaLaunchPopup';
 
 export default function HomePage() {
   const [stats, setStats] = useState({
@@ -43,6 +44,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50/20">
+      <BetaLaunchPopup />
       <Navbar />
       
       {/* Hero Section */}

@@ -11,7 +11,7 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'already_verified'>('loading');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -23,19 +23,20 @@ function VerifyEmailContent() {
 
     const verifyEmail = async () => {
       try {
-        const response = await fetch('/api/auth/verify-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ token }),
+        const response = await fetch(`/api/auth/verify-email?token=${token}`, {
+          method: 'GET',
         });
 
         const data = await response.json();
 
         if (response.ok) {
-          setStatus('success');
-          setMessage(data.message);
+          if (data.alreadyVerified) {
+            setStatus('already_verified');
+            setMessage(data.message);
+          } else {
+            setStatus('success');
+            setMessage(data.message);
+          }
           // Redirect to signin after 3 seconds
           setTimeout(() => {
             router.push('/auth/signin');
@@ -54,7 +55,7 @@ function VerifyEmailContent() {
   }, [token, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-500 via-purple-600 to-purple-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-4">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{
@@ -75,7 +76,7 @@ function VerifyEmailContent() {
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               className="inline-block mb-6"
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-teal-500 to-purple-600 rounded-full flex items-center justify-center mx-auto">
+              <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto">
                 <Loader2 className="w-10 h-10 text-white" />
               </div>
             </motion.div>
@@ -84,7 +85,7 @@ function VerifyEmailContent() {
           </>
         )}
 
-        {status === 'success' && (
+        {(status === 'success' || status === 'already_verified') && (
           <>
             <motion.div
               initial={{ scale: 0 }}
@@ -92,16 +93,27 @@ function VerifyEmailContent() {
               transition={{ type: 'spring', stiffness: 200 }}
               className="inline-block mb-6"
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center mx-auto">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
                 <CheckCircle2 className="w-10 h-10 text-white" />
               </div>
             </motion.div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">تم التحقق بنجاح!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              {status === 'already_verified' ? 'تم التحقق مسبقاً!' : 'تم التحقق بنجاح! 🎉'}
+            </h2>
             <p className="text-gray-600 mb-6">{message}</p>
+            
+            {status === 'success' && (
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-4 mb-6">
+                <p className="text-emerald-800 font-medium text-sm">
+                  🎁 تم تفعيل اشتراكك المجاني لمدة سنة كاملة!
+                </p>
+              </div>
+            )}
+            
             <p className="text-sm text-gray-500 mb-6">سيتم توجيهك إلى صفحة تسجيل الدخول...</p>
             <Link
               href="/auth/signin"
-              className="inline-block bg-gradient-to-r from-teal-500 to-purple-600 text-white py-3 px-6 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+              className="inline-block bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-3 px-6 rounded-xl font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
             >
               تسجيل الدخول الآن
             </Link>
@@ -116,7 +128,7 @@ function VerifyEmailContent() {
               transition={{ type: 'spring', stiffness: 200 }}
               className="inline-block mb-6"
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center mx-auto">
+              <div className="w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
                 <XCircle className="w-10 h-10 text-white" />
               </div>
             </motion.div>
@@ -124,16 +136,16 @@ function VerifyEmailContent() {
             <p className="text-gray-600 mb-6">{message}</p>
             <div className="space-y-3">
               <Link
-                href="/auth/register"
-                className="block bg-gradient-to-r from-teal-500 to-purple-600 text-white py-3 px-6 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                href="/auth/signin"
+                className="block bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-3 px-6 rounded-xl font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
               >
-                إنشاء حساب جديد
+                تسجيل الدخول
               </Link>
               <Link
-                href="/auth/signin"
+                href="/auth/signup"
                 className="block bg-gray-100 text-gray-700 py-3 px-6 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200"
               >
-                العودة لتسجيل الدخول
+                إنشاء حساب جديد
               </Link>
             </div>
           </>
@@ -146,7 +158,7 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-500 via-purple-600 to-purple-800">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700">
         <Loader2 className="w-10 h-10 text-white animate-spin" />
       </div>
     }>
@@ -154,4 +166,3 @@ export default function VerifyEmailPage() {
     </Suspense>
   );
 }
-
