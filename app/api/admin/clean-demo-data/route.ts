@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { 
   users, projects, communities, backings, comments, likes, 
   messages, notifications, follows, referrals, communityMembers,
-  communityPosts, projectUpdates, marketingCampaigns
+  communityPosts
 } from '@/lib/db/schema';
 import { eq, or, like, notInArray, sql } from 'drizzle-orm';
 
@@ -55,8 +55,7 @@ export async function POST(request: NextRequest) {
       deletedReferrals: 0,
       deletedCommunityMembers: 0,
       deletedCommunityPosts: 0,
-      deletedProjectUpdates: 0,
-      deletedMarketingCampaigns: 0,
+
     };
 
     // 1. Delete demo users
@@ -198,26 +197,7 @@ export async function POST(request: NextRequest) {
       results.deletedCommunityPosts = orphanedPosts.length;
     }
 
-    // Delete orphaned project updates
-    if (validProjectIds.length > 0) {
-      const orphanedUpdates = await db.delete(projectUpdates)
-        .where(notInArray(projectUpdates.projectId, validProjectIds))
-        .returning({ id: projectUpdates.id });
-      results.deletedProjectUpdates = orphanedUpdates.length;
-    }
 
-    // Delete orphaned marketing campaigns
-    if (validProjectIds.length > 0 && validUserIds.length > 0) {
-      const orphanedCampaigns = await db.delete(marketingCampaigns)
-        .where(
-          or(
-            notInArray(marketingCampaigns.projectId, validProjectIds),
-            notInArray(marketingCampaigns.marketerId, validUserIds)
-          )
-        )
-        .returning({ id: marketingCampaigns.id });
-      results.deletedMarketingCampaigns = orphanedCampaigns.length;
-    }
 
     return NextResponse.json({
       success: true,
