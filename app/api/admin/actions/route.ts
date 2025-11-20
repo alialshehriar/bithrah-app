@@ -43,17 +43,15 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'approve_project':
-        // @ts-ignore - status field exists in database
         await db.update(projects)
-          .set({ status: 'active' })
+          .set({ status: 'active' } as any)
           .where(eq(projects.id, targetId));
         result = { message: 'تم الموافقة على المشروع' };
         break;
 
       case 'reject_project':
-        // @ts-ignore - status field exists in database
         await db.update(projects)
-          .set({ status: 'rejected' })
+          .set({ status: 'rejected' } as any)
           .where(eq(projects.id, targetId));
         result = { message: 'تم رفض المشروع' };
         break;
