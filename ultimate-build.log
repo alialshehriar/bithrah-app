@@ -1,0 +1,23 @@
+
+> bithrah-app@1.0.1 build /home/ubuntu/bithrah-app-clean
+> next build
+
+  ▲ Next.js 14.2.5
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./auth.ts:147:21
+Type error: Property 'token' does not exist on type '{ session: void | AdapterSession; } | { token: JWT; }'.
+
+[0m [90m 145 |[39m       console[33m.[39mlog([32m`✅ User signed in: ${user.email}`[39m)[33m;[39m[0m
+[0m [90m 146 |[39m     }[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 147 |[39m     [36masync[39m signOut({ token }) {[0m
+[0m [90m     |[39m                     [31m[1m^[22m[39m[0m
+[0m [90m 148 |[39m       console[33m.[39mlog([32m`👋 User signed out: ${token.email}`[39m)[33m;[39m[0m
+[0m [90m 149 |[39m     }[33m,[39m[0m
+[0m [90m 150 |[39m   }[33m,[39m[0m
+ ELIFECYCLE  Command failed with exit code 1.
