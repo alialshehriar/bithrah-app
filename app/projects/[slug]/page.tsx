@@ -399,7 +399,6 @@ export default function ProjectPage() {
                   description={project?.description || ''}
                   variant="secondary"
                   size="md"
-                  shape="icon"
                 />
                 <button className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all">
                   <Bookmark className="w-5 h-5 text-gray-600 mx-auto" />
