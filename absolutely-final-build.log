@@ -1,0 +1,52 @@
+
+> bithrah-app@1.0.1 build /home/ubuntu/bithrah-app-clean
+> next build
+
+  ▲ Next.js 14.2.5
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+Error: DATABASE_URL environment variable is not set
+    at 89941 (/home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/register/route.js:62:1079)
+    at t (/home/ubuntu/bithrah-app-clean/.next/server/webpack-runtime.js:1:143)
+    at 57251 (/home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/register/route.js:1:546)
+    at t (/home/ubuntu/bithrah-app-clean/.next/server/webpack-runtime.js:1:143)
+    at t (/home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/register/route.js:62:1265)
+    at /home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/register/route.js:62:1327
+    at t.X (/home/ubuntu/bithrah-app-clean/.next/server/webpack-runtime.js:1:1285)
+    at /home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/register/route.js:62:1278
+    at Object.<anonymous> (/home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/register/route.js:62:1355)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+Error: DATABASE_URL environment variable is not set
+    at 89941 (/home/ubuntu/bithrah-app-clean/.next/server/app/api/admin/users/[id]/route.js:1:3714)
+    at t (/home/ubuntu/bithrah-app-clean/.next/server/webpack-runtime.js:1:143)
+    at 69281 (/home/ubuntu/bithrah-app-clean/.next/server/app/api/admin/users/[id]/route.js:1:562)
+    at t (/home/ubuntu/bithrah-app-clean/.next/server/webpack-runtime.js:1:143)
+    at r (/home/ubuntu/bithrah-app-clean/.next/server/app/api/admin/users/[id]/route.js:1:3903)
+    at /home/ubuntu/bithrah-app-clean/.next/server/app/api/admin/users/[id]/route.js:1:3965
+    at t.X (/home/ubuntu/bithrah-app-clean/.next/server/webpack-runtime.js:1:1285)
+    at /home/ubuntu/bithrah-app-clean/.next/server/app/api/admin/users/[id]/route.js:1:3916
+    at Object.<anonymous> (/home/ubuntu/bithrah-app-clean/.next/server/app/api/admin/users/[id]/route.js:1:3993)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+Error: DATABASE_URL environment variable is not set
+    at 89941 (/home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/login/route.js:1:2835)
+    at t (/home/ubuntu/bithrah-app-clean/.next/server/webpack-runtime.js:1:143)
+    at 21157 (/home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/login/route.js:1:944)
+    at t (/home/ubuntu/bithrah-app-clean/.next/server/webpack-runtime.js:1:143)
+    at t (/home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/login/route.js:1:3021)
+    at /home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/login/route.js:1:3088
+    at t.X (/home/ubuntu/bithrah-app-clean/.next/server/webpack-runtime.js:1:1285)
+    at /home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/login/route.js:1:3034
+    at Object.<anonymous> (/home/ubuntu/bithrah-app-clean/.next/server/app/api/auth/login/route.js:1:3116)
+    at Module._compile (node:internal/modules/cjs/loader:1562:14)
+
+> Build error occurred
+Error: Failed to collect page data for /api/admin/users/[id]
+    at /home/ubuntu/bithrah-app-clean/node_modules/.pnpm/next@14.2.5_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/next/dist/build/utils.js:1268:15
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  type: 'Error'
+}
+ ELIFECYCLE  Command failed with exit code 1.
