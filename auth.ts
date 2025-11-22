@@ -10,9 +10,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
     signIn: "/auth/signin",
-    signUp: "/auth/signup",
     error: "/auth/error",
-    verifyRequest: "/auth/verify-email",
   },
   providers: [
     Google({
@@ -61,8 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         await db.update(users)
           .set({ 
             lastLoginAt: new Date(),
-            updatedAt: new Date()
-          })
+          } as any)
           .where(eq(users.id, user.id));
 
         return {
