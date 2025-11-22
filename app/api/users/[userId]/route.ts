@@ -47,7 +47,7 @@ export async function GET(
     // Get total funding from user's projects
     const [fundingResult] = await db
       .select({
-        total: sql<string>`COALESCE(SUM(${projects.currentAmount}), 0)`
+        total: sql<string>`COALESCE(SUM(${projects.currentFunding}), 0)`
       })
       .from(projects)
       .where(eq(projects.creatorId, user.id));
