@@ -576,7 +576,7 @@ export default function ProfilePage() {
                             <DollarSign className="w-6 h-6 text-white" />
                           </div>
                         </div>
-                        <div className="text-3xl font-black text-gray-900 mb-1">{stats.referralEarnings || '0'} ر.س</div>
+                        <div className="text-3xl font-black text-gray-900 mb-1">{0 || '0'} ر.س</div>
                         <div className="text-sm font-bold text-gray-600">أرباح الإحالة</div>
                       </div>
                     </div>
