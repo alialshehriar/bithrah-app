@@ -1,0 +1,109 @@
+
+> bithrah-app@1.0.1 build /home/ubuntu/bithrah-app-clean
+> next build
+
+  ▲ Next.js 14.2.5
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings
+
+./app/api/conversations/[conversationId]/messages/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/conversations/[conversationId]/messages/route.ts
+
+./app/api/conversations/[conversationId]/messages/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/conversations/[conversationId]/messages/route.ts
+
+./app/api/conversations/[conversationId]/messages/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/conversations/[conversationId]/messages/route.ts
+
+./app/api/conversations/[conversationId]/messages/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/conversations/[conversationId]/messages/route.ts
+
+./app/api/conversations/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/conversations/route.ts
+
+./app/api/conversations/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/conversations/route.ts
+
+./app/api/conversations/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/conversations/route.ts
+
+./app/api/conversations/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/conversations/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'getServerSession' is not exported from 'next-auth' (imported as 'getServerSession').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+./app/api/users/[userId]/follow/route.ts
+Attempted import error: 'authOptions' is not exported from '@/auth' (imported as 'authOptions').
+
+Import trace for requested module:
+./app/api/users/[userId]/follow/route.ts
+
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/api/auth/verify-email/route.ts:99:9
+Type error: Object literal may only specify known properties, and 'emailVerificationToken' does not exist in type '{ email?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; password?: string | SQL<unknown> | PgColumn<...>; }'.
+
+[0m [90m  97 |[39m     [36mawait[39m db[33m.[39mupdate(users)[0m
+[0m [90m  98 |[39m       [33m.[39m[36mset[39m({[0m
+[0m[31m[1m>[22m[39m[90m  99 |[39m         emailVerificationToken[33m:[39m newToken[33m,[39m[0m
+[0m [90m     |[39m         [31m[1m^[22m[39m[0m
+[0m [90m 100 |[39m         updatedAt[33m:[39m [36mnew[39m [33mDate[39m()[33m,[39m[0m
+[0m [90m 101 |[39m       })[0m
+[0m [90m 102 |[39m       [33m.[39mwhere(eq(users[33m.[39mid[33m,[39m user[33m.[39mid))[33m;[39m[0m
+ ELIFECYCLE  Command failed with exit code 1.

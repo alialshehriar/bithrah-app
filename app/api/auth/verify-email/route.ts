@@ -97,8 +97,7 @@ export async function POST(request: NextRequest) {
     await db.update(users)
       .set({
         emailVerificationToken: newToken,
-        updatedAt: new Date(),
-      })
+      } as any)
       .where(eq(users.id, user.id));
 
     // Send verification email
