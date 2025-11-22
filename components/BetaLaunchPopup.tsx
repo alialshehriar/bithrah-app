@@ -18,29 +18,14 @@ export default function BetaLaunchPopup() {
     // Check if user has seen the beta popup
     const hasSeenBetaPopup = localStorage.getItem('hasSeenBetaPopup');
     
-    // Check if user is logged in
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/session');
-        if (!response.ok) {
-          // User not logged in, show popup
-          if (!hasSeenBetaPopup) {
-            setTimeout(() => {
-              setIsOpen(true);
-            }, 2000);
-          }
-        }
-      } catch (error) {
-        // Error checking auth, show popup
-        if (!hasSeenBetaPopup) {
-          setTimeout(() => {
-            setIsOpen(true);
-          }, 2000);
-        }
-      }
-    };
-
-    checkAuth();
+    // Show popup after 2 seconds if not seen before
+    if (!hasSeenBetaPopup) {
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const handleClose = () => {
