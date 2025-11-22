@@ -120,7 +120,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             role: "user",
             status: "active",
             onboardingCompleted: false,
-          }).returning();
+          } as any).returning();
 
           user.id = newUser[0].id.toString();
         } else {
@@ -130,8 +130,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               avatar: user.image,
               emailVerified: true,
               lastLoginAt: new Date(),
-              updatedAt: new Date(),
-            })
+            } as any)
             .where(eq(users.id, existingUser.id));
 
           user.id = existingUser.id.toString();
