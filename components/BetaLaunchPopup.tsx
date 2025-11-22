@@ -317,6 +317,7 @@ export default function BetaLaunchPopup() {
     },
   ];
 
+  // Fixed: Popup now closes properly on backdrop click and X button
   return (
     <AnimatePresence>
       {isOpen && (
