@@ -42,8 +42,7 @@ export async function GET(request: NextRequest) {
         emailVerified: true,
         emailVerificationToken: null,
         subscriptionStatus: 'active', // Activate the 1-year investor subscription
-        updatedAt: new Date(),
-      })
+      } as any)
       .where(eq(users.id, user.id));
 
     return NextResponse.json({

@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         referredId: referrals.referredId,
         status: referrals.status,
         createdAt: referrals.createdAt,
-        activatedAt: referrals.activatedAt,
+        rewardedAt: referrals.rewardedAt,
       })
       .from(referrals)
       .orderBy(desc(referrals.createdAt));

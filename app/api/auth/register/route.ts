@@ -150,8 +150,7 @@ export async function POST(request: NextRequest) {
             subscriptionTier: 'investor',
             subscriptionStatus: 'active',
             subscriptionEndDate: newEndDate,
-            updatedAt: new Date(),
-          })
+          } as any)
           .where(eq(users.id, referredBy));
       }
     }

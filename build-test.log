@@ -1,0 +1,11 @@
+
+> bithrah-app@1.0.1 build /home/ubuntu/bithrah-app-clean
+> next build
+
+  ▲ Next.js 14.2.5
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+ ELIFECYCLE  Command failed with exit code 1.

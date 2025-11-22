@@ -66,8 +66,7 @@ export async function POST(request: NextRequest) {
     await db.update(users)
       .set({ 
         lastLoginAt: new Date(),
-        updatedAt: new Date()
-      })
+      } as any)
       .where(eq(users.id, user.id));
 
     // Create JWT token
