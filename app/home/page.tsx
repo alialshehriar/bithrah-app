@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import OnboardingPopup from '@/components/OnboardingPopup';
+
 
 export default function HomePage() {
   const [user, setUser] = useState<any>(null);
@@ -167,14 +167,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-teal-50/20">
       <Navigation />
       
-      {/* Onboarding Popup for new users */}
-      {user && (
-        <OnboardingPopup
-          userName={user.name}
-          referralCode={user.referralCode}
-          subscriptionEndDate={user.subscriptionEndDate}
-        />
-      )}
+
 
       <div className="pt-20 pb-12">
         {/* Hero Section with User Stats */}
