@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { conversations, messages, users } from '@/lib/db/schema';
-import { eq, or, and, desc } from 'drizzle-orm';
+import { conversations, conversationParticipants, messages, users } from '@/lib/db/schema';
+import { eq, or, and, desc, inArray } from 'drizzle-orm';
 import { auth } from '@/auth';
 
 export async function GET(request: NextRequest) {
@@ -17,28 +17,46 @@ export async function GET(request: NextRequest) {
 
     const userId = parseInt(session.user.id);
 
-    // Get all conversations for this user
+    // Get all conversations for this user via participants
+    const userParticipations = await db
+      .select()
+      .from(conversationParticipants)
+      .where(eq(conversationParticipants.userId, userId));
+
+    if (userParticipations.length === 0) {
+      return NextResponse.json({
+        success: true,
+        conversations: [],
+      });
+    }
+
+    const conversationIds = userParticipations.map(p => p.conversationId);
+
     const userConversations = await db
       .select()
       .from(conversations)
-      .where(
-        or(
-          eq(conversations.user1Id, userId),
-          eq(conversations.user2Id, userId)
-        )
-      )
-      .orderBy(desc(conversations.updatedAt));
+      .where(inArray(conversations.id, conversationIds))
+      .orderBy(desc(conversations.lastMessageAt));
 
-    // Get the other user's details and last message for each conversation
+    // Get details for each conversation
     const conversationsWithDetails = await Promise.all(
       userConversations.map(async (conv) => {
-        const otherUserId = conv.user1Id === userId ? conv.user2Id : conv.user1Id;
-        
-        const [otherUser] = await db
+        // Get other participants
+        const allParticipants = await db
           .select()
-          .from(users)
-          .where(eq(users.id, otherUserId))
-          .limit(1);
+          .from(conversationParticipants)
+          .where(eq(conversationParticipants.conversationId, conv.id));
+
+        const otherParticipant = allParticipants.find(p => p.userId !== userId);
+        
+        let otherUser = null;
+        if (otherParticipant) {
+          [otherUser] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, otherParticipant.userId))
+            .limit(1);
+        }
 
         const [lastMessage] = await db
           .select()
@@ -54,19 +72,19 @@ export async function GET(request: NextRequest) {
           .where(
             and(
               eq(messages.conversationId, conv.id),
-              eq(messages.receiverId, userId),
-              eq(messages.isRead, false)
+              eq(messages.recipientId, userId),
+              eq(messages.read, false)
             )
           );
 
         return {
           ...conv,
-          otherUser: {
+          otherUser: otherUser ? {
             id: otherUser.id,
             name: otherUser.name,
             username: otherUser.username,
             avatar: otherUser.avatar,
-          },
+          } : null,
           lastMessage: lastMessage || null,
           unreadCount: unreadMessages.length,
         };
@@ -110,28 +128,31 @@ export async function POST(request: NextRequest) {
     const userId = parseInt(session.user.id);
     const otherUserIdInt = parseInt(otherUserId);
 
-    // Check if conversation already exists
-    const existingConversation = await db
+    // Check if conversation already exists between these users
+    const user1Convs = await db
       .select()
-      .from(conversations)
-      .where(
-        or(
-          and(
-            eq(conversations.user1Id, userId),
-            eq(conversations.user2Id, otherUserIdInt)
-          ),
-          and(
-            eq(conversations.user1Id, otherUserIdInt),
-            eq(conversations.user2Id, userId)
-          )
-        )
-      )
-      .limit(1);
+      .from(conversationParticipants)
+      .where(eq(conversationParticipants.userId, userId));
 
-    if (existingConversation.length > 0) {
+    const user2Convs = await db
+      .select()
+      .from(conversationParticipants)
+      .where(eq(conversationParticipants.userId, otherUserIdInt));
+
+    const commonConvId = user1Convs.find(c1 => 
+      user2Convs.some(c2 => c2.conversationId === c1.conversationId)
+    )?.conversationId;
+
+    if (commonConvId) {
+      const [existingConv] = await db
+        .select()
+        .from(conversations)
+        .where(eq(conversations.id, commonConvId))
+        .limit(1);
+
       return NextResponse.json({
         success: true,
-        conversation: existingConversation[0],
+        conversation: existingConv,
       });
     }
 
@@ -139,12 +160,27 @@ export async function POST(request: NextRequest) {
     const [newConversation] = await db
       .insert(conversations)
       .values({
-        user1Id: userId,
-        user2Id: otherUserIdInt,
+        type: 'direct',
         createdAt: new Date(),
         updatedAt: new Date(),
       } as any)
       .returning();
+
+    // Add both users as participants
+    await db.insert(conversationParticipants).values([
+      {
+        conversationId: newConversation.id,
+        userId: userId,
+        role: 'member',
+        joinedAt: new Date(),
+      },
+      {
+        conversationId: newConversation.id,
+        userId: otherUserIdInt,
+        role: 'member',
+        joinedAt: new Date(),
+      },
+    ] as any);
 
     return NextResponse.json({
       success: true,
