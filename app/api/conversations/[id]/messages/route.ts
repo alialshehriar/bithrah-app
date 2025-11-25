@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { messages, conversations, notifications } from '@/lib/db/schema';
+import { messages, conversations, conversationParticipants, notifications } from '@/lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { auth } from '@/auth';
 
@@ -22,13 +22,18 @@ export async function GET(
     const userId = parseInt(session.user.id);
 
     // Verify user is part of this conversation
-    const [conversation] = await db
+    const [participant] = await db
       .select()
-      .from(conversations)
-      .where(eq(conversations.id, conversationId))
+      .from(conversationParticipants)
+      .where(
+        and(
+          eq(conversationParticipants.conversationId, conversationId),
+          eq(conversationParticipants.userId, userId)
+        )
+      )
       .limit(1);
 
-    if (!conversation || (conversation.user1Id !== userId && conversation.user2Id !== userId)) {
+    if (!participant) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -95,21 +100,36 @@ export async function POST(
     }
 
     // Verify user is part of this conversation
-    const [conversation] = await db
+    const [participant] = await db
       .select()
-      .from(conversations)
-      .where(eq(conversations.id, conversationId))
+      .from(conversationParticipants)
+      .where(
+        and(
+          eq(conversationParticipants.conversationId, conversationId),
+          eq(conversationParticipants.userId, userId)
+        )
+      )
       .limit(1);
 
-    if (!conversation || (conversation.user1Id !== userId && conversation.user2Id !== userId)) {
+    if (!participant) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
       );
     }
 
-    // Determine receiver
-    const receiverId = conversation.user1Id === userId ? conversation.user2Id : conversation.user1Id;
+    // Get other participants (receiver)
+    const otherParticipants = await db
+      .select()
+      .from(conversationParticipants)
+      .where(
+        and(
+          eq(conversationParticipants.conversationId, conversationId),
+          eq(conversationParticipants.userId, userId)
+        )
+      );
+    
+    const receiverId = otherParticipants[0]?.userId || userId;
 
     // Create message
     const [newMessage] = await db
