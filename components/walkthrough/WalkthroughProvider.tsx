@@ -106,24 +106,25 @@ export function WalkthroughProvider({ children }: { children: ReactNode }) {
     if (!mounted) return;
 
     // Check if user has seen the walkthrough
-    try {
-      const seen = localStorage.getItem('bithrah_walkthrough_seen');
-      if (!seen) {
-        // Show walkthrough after page is fully loaded
-        const timer = setTimeout(() => {
-          // Double check document is ready
-          if (document.readyState === 'complete') {
-            setIsActive(true);
-          } else {
-            window.addEventListener('load', () => setIsActive(true), { once: true });
-          }
-        }, 2000);
-        return () => clearTimeout(timer);
-      }
-    } catch (error) {
-      console.error('Error accessing localStorage:', error);
-      // Fail silently - don't show walkthrough if localStorage fails
-    }
+    // Temporarily disabled for testing
+    // try {
+    //   const seen = localStorage.getItem('bithrah_walkthrough_seen');
+    //   if (!seen) {
+    //     // Show walkthrough after page is fully loaded
+    //     const timer = setTimeout(() => {
+    //       // Double check document is ready
+    //       if (document.readyState === 'complete') {
+    //         setIsActive(true);
+    //       } else {
+    //         window.addEventListener('load', () => setIsActive(true), { once: true });
+    //       }
+    //     }, 2000);
+    //     return () => clearTimeout(timer);
+    //   }
+    // } catch (error) {
+    //   console.error('Error accessing localStorage:', error);
+    //   // Fail silently - don't show walkthrough if localStorage fails
+    // }
   }, [mounted]);
 
   const startWalkthrough = () => {
