@@ -1367,20 +1367,27 @@ export const ideaEvaluations = pgTable('idea_evaluations', {
   id: serial('id').primaryKey(),
   uuid: uuid('uuid').defaultRandom().unique().notNull(),
   userId: integer('user_id').references(() => users.id),
-  ideaTitle: varchar('idea_title', { length: 500 }).notNull(),
-  ideaDescription: text('idea_description').notNull(),
+  
+  // Project/Idea details
+  projectName: varchar('project_name', { length: 500 }),
+  idea: text('idea').notNull(),
+  problem: text('problem').notNull(),
+  solution: text('solution'),
+  targetAudience: text('target_audience').notNull(),
+  competitors: text('competitors'),
   category: varchar('category', { length: 100 }),
-  targetMarket: varchar('target_market', { length: 200 }),
-  aiScore: decimal('ai_score', { precision: 3, scale: 1 }),
-  aiAnalysis: jsonb('ai_analysis'),
-  strengths: text('strengths').array(),
-  weaknesses: text('weaknesses').array(),
-  opportunities: text('opportunities').array(),
-  risks: text('risks').array(),
-  recommendations: text('recommendations').array(),
+  
+  // AI Evaluation results
+  score: integer('score').notNull(), // 0-100
+  strengths: text('strengths').notNull(), // JSON string array
+  weaknesses: text('weaknesses').notNull(), // JSON string array
+  opportunities: text('opportunities').notNull(), // JSON string array
+  risks: text('risks').notNull(), // JSON string array
+  recommendations: text('recommendations').notNull(), // JSON string array
   marketAnalysis: text('market_analysis'),
   financialProjection: text('financial_projection'),
-  status: varchar('status', { length: 50 }).default('pending'),
+  
+  status: varchar('status', { length: 50 }).default('completed'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
@@ -1389,7 +1396,8 @@ export const ideaEvaluations = pgTable('idea_evaluations', {
   createdAtIdx: index('idea_evaluations_created_at_idx').on(table.createdAt),
 }));
 
-
+// Alias for backward compatibility
+export const evaluations = ideaEvaluations;
 
 // ============================================
 // SUPPORT PACKAGES

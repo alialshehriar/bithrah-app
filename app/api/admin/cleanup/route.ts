@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       await db.delete(backings).where(
         or(
           sql`${backings.userId} IN (${sql.join(demoUserIds, sql`, `)})`,
-          sql`${backings.projectId} IN (SELECT id FROM ${projects} WHERE ${projects.userId} IN (${sql.join(demoUserIds, sql`, `)}))`
+          sql`${backings.projectId} IN (SELECT id FROM ${projects} WHERE ${projects.creatorId} IN (${sql.join(demoUserIds, sql`, `)}))`
         )
       );
 
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
 
       // Delete projects
       const deletedProjects = await db.delete(projects).where(
-        sql`${projects.userId} IN (${sql.join(demoUserIds, sql`, `)})`
+        sql`${projects.creatorId} IN (${sql.join(demoUserIds, sql`, `)})`
       );
 
       // Delete communities
