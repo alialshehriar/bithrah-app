@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
 
       // Delete communities
       const deletedCommunities = await db.delete(communities).where(
-        sql`${communities.createdBy} IN (${sql.join(demoUserIds, sql`, `)})`
+        sql`${communities.creatorId} IN (${sql.join(demoUserIds, sql`, `)})`
       );
 
       // Delete users
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
         await db.delete(messages).where(
           or(
             sql`${messages.senderId} NOT IN (${sql.join(validUserIds, sql`, `)})`,
-            sql`${messages.receiverId} NOT IN (${sql.join(validUserIds, sql`, `)})`
+            sql`${messages.recipientId} NOT IN (${sql.join(validUserIds, sql`, `)})`
           )
         );
 
