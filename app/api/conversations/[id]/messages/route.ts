@@ -50,12 +50,12 @@ export async function GET(
     // Mark messages as read
     await db
       .update(messages)
-      .set({ isRead: true } as any)
+      .set({ read: true, readAt: new Date() } as any)
       .where(
         and(
           eq(messages.conversationId, conversationId),
-          eq(messages.receiverId, userId),
-          eq(messages.isRead, false)
+          eq(messages.recipientId, userId),
+          eq(messages.read, false)
         )
       );
 
@@ -137,11 +137,10 @@ export async function POST(
       .values({
         conversationId,
         senderId: userId,
-        receiverId,
+        recipientId: receiverId,
         content: content || '',
-        type,
-        imageUrl: imageUrl || null,
-        isRead: false,
+        contentType: type || 'text',
+        read: false,
         createdAt: new Date(),
       } as any)
       .returning();
