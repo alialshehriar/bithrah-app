@@ -1460,3 +1460,29 @@ export const conversationParticipants = pgTable('conversation_participants', {
 }));
 
 // Duplicate messages table removed - using the one defined above at line 605
+
+
+// ============================================
+// EARLY SIGNUP / WAITLIST
+// ============================================
+
+export const earlySignups = pgTable('early_signups', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).unique().notNull(),
+  name: varchar('name', { length: 255 }),
+  phone: varchar('phone', { length: 50 }),
+  referralCode: varchar('referral_code', { length: 50 }), // Who referred them
+  ownReferralCode: varchar('own_referral_code', { length: 50 }).unique(), // Their unique code
+  referralCount: integer('referral_count').default(0), // How many they referred
+  source: varchar('source', { length: 100 }), // Where they came from
+  interests: text('interests'), // JSON array of interests
+  status: varchar('status', { length: 50 }).default('pending'), // pending, invited, registered
+  invitedAt: timestamp('invited_at'),
+  registeredAt: timestamp('registered_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  emailIdx: index('early_signups_email_idx').on(table.email),
+  referralCodeIdx: index('early_signups_referral_code_idx').on(table.referralCode),
+  ownReferralCodeIdx: index('early_signups_own_referral_code_idx').on(table.ownReferralCode),
+  statusIdx: index('early_signups_status_idx').on(table.status),
+}));
