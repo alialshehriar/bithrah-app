@@ -605,6 +605,7 @@ export const notifications = pgTable('notifications', {
 export const messages = pgTable('messages', {
   id: serial('id').primaryKey(),
   uuid: uuid('uuid').defaultRandom().unique().notNull(),
+  conversationId: integer('conversation_id').references(() => conversations.id),
   senderId: integer('sender_id').references(() => users.id).notNull(),
   recipientId: integer('recipient_id').references(() => users.id).notNull(),
   
