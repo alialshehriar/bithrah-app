@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 interface UnifiedEvaluationFormProps {
-  onResults: (results: any) => void;
+  onResults: (results: any, formData: any) => void;
   onBack: () => void;
 }
 
@@ -49,7 +49,7 @@ export default function UnifiedEvaluationForm({ onResults, onBack }: UnifiedEval
         throw new Error(data.error || 'حدث خطأ أثناء التقييم');
       }
 
-      onResults(data.result);
+      onResults(data.result, formData);
     } catch (err: any) {
       setError(err.message);
     } finally {

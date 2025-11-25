@@ -1,5 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Eye, Rocket } from 'lucide-react';
+
 interface EvaluationResultsProps {
   results: {
     score: number;
@@ -11,10 +15,52 @@ interface EvaluationResultsProps {
     marketAnalysis: string;
     financialProjection: string;
   };
+  formData: {
+    projectName: string;
+    idea: string;
+    problem: string;
+    solution: string;
+    targetAudience: string;
+    competitors: string;
+    category: string;
+  };
   onReset: () => void;
 }
 
-export default function EvaluationResults({ results, onReset }: EvaluationResultsProps) {
+export default function EvaluationResults({ results, formData, onReset }: EvaluationResultsProps) {
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [evaluationId, setEvaluationId] = useState<number | null>(null);
+
+  useEffect(() => {
+    saveEvaluation();
+  }, []);
+
+  const saveEvaluation = async () => {
+    setSaving(true);
+    try {
+      const response = await fetch('/api/evaluations/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          ...results,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSaved(true);
+        setEvaluationId(data.evaluation.id);
+      }
+    } catch (error) {
+      console.error('Failed to save evaluation:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
@@ -137,7 +183,28 @@ export default function EvaluationResults({ results, onReset }: EvaluationResult
           <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{results.financialProjection}</p>
         </div>
 
+        {saving && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-center">
+            <p className="text-blue-700 font-medium">جاري حفظ التقييم...</p>
+          </div>
+        )}
+
+        {saved && (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 text-center">
+            <p className="text-green-700 font-medium">✅ تم حفظ التقييم بنجاح!</p>
+          </div>
+        )}
+
         <div className="flex gap-4">
+          {saved && evaluationId && (
+            <button
+              onClick={() => router.push(`/evaluations/${evaluationId}`)}
+              className="flex-1 bg-gradient-to-r from-[#14B8A6] to-[#0F9D8F] text-white px-8 py-4 rounded-xl font-semibold hover:from-[#0F9D8F] hover:to-[#0D8B7F] transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+            >
+              <Eye className="w-5 h-5" />
+              عرض التقييم الكامل
+            </button>
+          )}
           <button
             onClick={onReset}
             className="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-4 rounded-xl font-semibold hover:from-purple-600 hover:to-blue-600 transition-all shadow-lg hover:shadow-xl"
