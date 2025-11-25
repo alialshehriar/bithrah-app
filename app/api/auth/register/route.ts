@@ -116,6 +116,18 @@ export async function POST(request: NextRequest) {
       } as any)
       .returning();
 
+    // WORKAROUND: Update user immediately after creation to ensure values are saved
+    // This fixes an issue where Drizzle ORM with 'as any' doesn't properly set some fields
+    await db.update(users)
+      .set({
+        emailVerificationToken: verificationToken,
+        subscriptionTier: 'investor',
+        subscriptionStatus: 'pending',
+        subscriptionStartDate,
+        subscriptionEndDate,
+      } as any)
+      .where(eq(users.id, newUser.id));
+
     // If user was referred, create referral record and update referrer
     if (referredBy) {
       // Create referral record in referrals table
