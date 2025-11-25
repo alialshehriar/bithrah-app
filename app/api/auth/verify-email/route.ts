@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       .where(eq(users.id, user.id));
 
     // Send verification email
-    const verificationUrl = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${newToken}`;
+    const verificationUrl = `${process.env.NEXTAUTH_URL}/api/auth/verify-email?token=${newToken}`;
     
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
