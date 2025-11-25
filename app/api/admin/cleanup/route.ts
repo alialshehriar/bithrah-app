@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       await db.delete(messages).where(
         or(
           sql`${messages.senderId} IN (${sql.join(demoUserIds, sql`, `)})`,
-          sql`${messages.receiverId} IN (${sql.join(demoUserIds, sql`, `)})`
+          sql`${messages.recipientId} IN (${sql.join(demoUserIds, sql`, `)})`
         )
       );
 
