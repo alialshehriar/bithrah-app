@@ -13,7 +13,7 @@ export async function sendVerificationEmail(options: SendVerificationEmailOption
     const { to, name, verificationUrl } = options;
 
     const { data, error } = await resend.emails.send({
-      from: 'منصة بذرة <onboarding@resend.dev>',
+      from: 'بذرة Bithrah <info@bithrahapp.com>',
       to: [to],
       subject: 'تأكيد البريد الإلكتروني - منصة بذرة',
       html: generateVerificationEmailHTML(name, verificationUrl),
@@ -135,7 +135,7 @@ export async function sendWelcomeEmail(options: SendWelcomeEmailOptions) {
     const { to, name, referralCode } = options;
 
     const { data, error } = await resend.emails.send({
-      from: 'منصة بذرة <onboarding@resend.dev>',
+      from: 'بذرة Bithrah <info@bithrahapp.com>',
       to: [to],
       subject: 'مرحباً بك في بذرة! 🌱',
       html: generateWelcomeEmailHTML(name, referralCode),
