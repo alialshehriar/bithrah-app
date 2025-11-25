@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
               <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                 <div style="text-align: center; margin-bottom: 30px;">
                   <h1 style="color: #10b981; margin: 0;">🌱 بذرة</h1>
-                  <p style="color: #666; margin-top: 10px;">منصة التمويل الجماعي</p>
+                  <p style="color: #666; margin-top: 10px;">منصة الوساطة الذكية</p>
                 </div>
                 
                 <h2 style="color: #333; text-align: center;">مرحباً ${name}! 👋</h2>
