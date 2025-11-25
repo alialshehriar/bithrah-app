@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         source: source || 'website',
         interests: interests ? JSON.stringify(interests) : null,
         status: 'pending',
-      })
+      } as any)
       .returning();
 
     // If they used a referral code, increment the referrer's count
